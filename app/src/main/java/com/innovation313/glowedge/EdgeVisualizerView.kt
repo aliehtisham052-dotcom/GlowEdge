@@ -19,6 +19,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
     private var styleId = GlowStyles.GLOW_LINE
     private var colorStart = Color.parseColor("#00E5FF")
     private var colorEnd = Color.parseColor("#7C4DFF")
+    private var rainbow = false
     private var baseThickness = 16f
     private var speed = 1f
 
@@ -30,26 +31,38 @@ class EdgeVisualizerView(context: Context) : View(context) {
     private var level = 0f
     private var displayLevel = 0f
     private var rotationDeg = 0f
+    private var hueShift = 0f
     private var lastActiveTime = 0L
     private var visibility01 = 0f
 
     private var shader: SweepGradient? = null
     private val shaderMatrix = Matrix()
     private val rect = RectF()
+    private val hsv = floatArrayOf(0f, 1f, 1f)
 
     companion object {
-        private const val SOUND_THRESHOLD = 0.05f
+        private const val SOUND_THRESHOLD = 0.06f
         private const val HOLD_MS = 1200L
+        private val RAINBOW = intArrayOf(
+            Color.parseColor("#FF1744"), Color.parseColor("#FF9100"),
+            Color.parseColor("#FFEA00"), Color.parseColor("#00E676"),
+            Color.parseColor("#00E5FF"), Color.parseColor("#2979FF"),
+            Color.parseColor("#D500F9"), Color.parseColor("#FF1744")
+        )
     }
 
     init {
         setLayerType(LAYER_TYPE_SOFTWARE, null)
     }
 
-    fun applySettings(style: Int, cStart: Int, cEnd: Int, thickness: Float, spd: Float) {
+    fun applySettings(
+        style: Int, cStart: Int, cEnd: Int,
+        isRainbow: Boolean, thickness: Float, spd: Float
+    ) {
         styleId = style
         colorStart = cStart
         colorEnd = cEnd
+        rainbow = isRainbow
         baseThickness = thickness
         speed = spd
         shader = null
@@ -80,11 +93,22 @@ class EdgeVisualizerView(context: Context) : View(context) {
         )
     }
 
+    /** Color along the gradient. In rainbow mode this walks the full hue wheel and slowly rotates. */
+    private fun colorAt(t: Float): Int {
+        return if (rainbow) {
+            hsv[0] = (hueShift + t * 300f) % 360f
+            hsv[1] = 1f
+            hsv[2] = 1f
+            Color.HSVToColor(hsv)
+        } else {
+            lerpColor(colorStart, colorEnd, t)
+        }
+    }
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         if (width == 0 || height == 0) return
 
-        // Only visible while sound is playing: fade in on music, fade out on silence
         val soundActive =
             SystemClock.elapsedRealtime() - lastActiveTime < HOLD_MS
         val target = if (soundActive) 1f else 0f
@@ -93,18 +117,25 @@ class EdgeVisualizerView(context: Context) : View(context) {
         if (visibility01 < 0.02f) {
             visibility01 = 0f
             alpha = 0f
-            // Sleep lightly while silent, keep checking for new sound
             postDelayed({ invalidate() }, 200)
             return
         }
         alpha = visibility01
 
+        // Punchy equalizer motion: fast attack, slower musical decay
         for (i in 0 until bandCount) {
-            displayBands[i] += (bands[i] - displayBands[i]) * 0.35f
+            val t = bands[i]
+            if (t > displayBands[i]) {
+                displayBands[i] += (t - displayBands[i]) * 0.55f
+            } else {
+                displayBands[i] *= 0.82f
+            }
         }
-        displayLevel += (level - displayLevel) * 0.25f
+        displayLevel += (level - displayLevel) * 0.30f
         rotationDeg += 0.6f * speed + displayLevel * 4f
         if (rotationDeg > 360f) rotationDeg -= 360f
+        hueShift += 0.5f * speed + displayLevel * 1.5f
+        if (hueShift > 360f) hueShift -= 360f
 
         when (styleId) {
             GlowStyles.SIDE_BARS -> drawSideBars(canvas)
@@ -118,10 +149,9 @@ class EdgeVisualizerView(context: Context) : View(context) {
 
     private fun drawGlowLine(canvas: Canvas) {
         if (shader == null) {
-            shader = SweepGradient(
-                width / 2f, height / 2f,
-                intArrayOf(colorStart, colorEnd, colorStart), null
-            )
+            val colors = if (rainbow) RAINBOW
+            else intArrayOf(colorStart, colorEnd, colorStart)
+            shader = SweepGradient(width / 2f, height / 2f, colors, null)
         }
         shaderMatrix.setRotate(rotationDeg, width / 2f, height / 2f)
         shader?.setLocalMatrix(shaderMatrix)
@@ -147,10 +177,12 @@ class EdgeVisualizerView(context: Context) : View(context) {
         val gap = height / n.toFloat()
         val barH = max(4f, baseThickness * 0.6f)
         for (i in 0 until n) {
-            val mag = displayBands[i * bandCount / n]
-            val len = 8f + mag * width * 0.30f
+            // Bass at the bottom, treble at the top - like a real equalizer
+            val band = (n - 1 - i) * bandCount / n
+            val mag = displayBands[band]
+            val len = 8f + mag * width * 0.32f
             val cy = gap * i + gap / 2f
-            paint.color = lerpColor(colorStart, colorEnd, i / (n - 1f))
+            paint.color = colorAt(i / (n - 1f))
             rect.set(0f, cy - barH / 2f, len, cy + barH / 2f)
             canvas.drawRoundRect(rect, barH, barH, paint)
             rect.set(width - len, cy - barH / 2f, width.toFloat(), cy + barH / 2f)
@@ -168,10 +200,11 @@ class EdgeVisualizerView(context: Context) : View(context) {
         val nSide = 20
         val gapV = height / nSide.toFloat()
         for (i in 0 until nSide) {
-            val mag = displayBands[i * bandCount / nSide]
-            val len = 6f + mag * width * 0.22f
+            val band = (nSide - 1 - i) * bandCount / nSide
+            val mag = displayBands[band]
+            val len = 6f + mag * width * 0.24f
             val cy = gapV * i + gapV / 2f
-            paint.color = lerpColor(colorStart, colorEnd, i / (nSide - 1f))
+            paint.color = colorAt(i / (nSide - 1f))
             rect.set(0f, cy - barH / 2f, len, cy + barH / 2f)
             canvas.drawRoundRect(rect, barH, barH, paint)
             rect.set(width - len, cy - barH / 2f, width.toFloat(), cy + barH / 2f)
@@ -181,10 +214,10 @@ class EdgeVisualizerView(context: Context) : View(context) {
         val nTop = 14
         val gapH = width / nTop.toFloat()
         for (i in 0 until nTop) {
-            val mag = displayBands[(i + 6) % bandCount]
-            val len = 6f + mag * height * 0.12f
+            val mag = displayBands[(i * 2 + 4) % bandCount]
+            val len = 6f + mag * height * 0.13f
             val cx = gapH * i + gapH / 2f
-            paint.color = lerpColor(colorEnd, colorStart, i / (nTop - 1f))
+            paint.color = colorAt(1f - i / (nTop - 1f))
             rect.set(cx - barH / 2f, 0f, cx + barH / 2f, len)
             canvas.drawRoundRect(rect, barH, barH, paint)
             rect.set(cx - barH / 2f, height - len, cx + barH / 2f, height.toFloat())
@@ -204,19 +237,19 @@ class EdgeVisualizerView(context: Context) : View(context) {
         val r = 90f + displayLevel * 210f
         val off = thickness
 
-        paint.color = colorStart
+        paint.color = colorAt(0f)
         rect.set(off, off, off + 2 * r, off + 2 * r)
         canvas.drawArc(rect, 180f, 90f, false, paint)
 
-        paint.color = lerpColor(colorStart, colorEnd, 0.4f)
+        paint.color = colorAt(0.33f)
         rect.set(width - off - 2 * r, off, width - off, off + 2 * r)
         canvas.drawArc(rect, 270f, 90f, false, paint)
 
-        paint.color = colorEnd
+        paint.color = colorAt(0.66f)
         rect.set(width - off - 2 * r, height - off - 2 * r, width - off, height - off)
         canvas.drawArc(rect, 0f, 90f, false, paint)
 
-        paint.color = lerpColor(colorStart, colorEnd, 0.7f)
+        paint.color = colorAt(1f)
         rect.set(off, height - off - 2 * r, off + 2 * r, height - off)
         canvas.drawArc(rect, 90f, 90f, false, paint)
     }

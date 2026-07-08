@@ -26,6 +26,7 @@ class VisualizerService : Service() {
     }
 
     private var windowManager: WindowManager? = null
+    private val bandMax = FloatArray(32) { 0.05f }
     private var edgeView: EdgeVisualizerView? = null
     private var visualizer: Visualizer? = null
 
@@ -55,6 +56,7 @@ class VisualizerService : Service() {
             ProfileManager.style(this),
             theme.colorStart,
             theme.colorEnd,
+            theme.rainbow,
             ProfileManager.thickness(this).toFloat(),
             ProfileManager.speed(this) / 10f
         )
@@ -123,20 +125,36 @@ class VisualizerService : Service() {
                     override fun onFftDataCapture(
                         v: Visualizer?, fft: ByteArray?, samplingRate: Int
                     ) {
-                        if (fft == null || fft.size < 130) return
+                        if (fft == null || fft.size < 256) return
                         val bandCount = 32
                         val bands = FloatArray(bandCount)
+                        val maxBin = (fft.size / 2 - 1).coerceAtMost(220)
                         var sum = 0f
                         for (i in 0 until bandCount) {
-                            val bin = 1 + i * 2
-                            val re = fft[bin * 2].toFloat()
-                            val im = fft[bin * 2 + 1].toFloat()
-                            var mag = sqrt(re * re + im * im) / 128f
-                            mag = sqrt(mag.coerceIn(0f, 1f))
-                            bands[i] = mag
-                            sum += mag
+                            // Logarithmic mapping: low bands = bass, high bands = treble,
+                            // matching how the human ear hears music
+                            val start = (2.0 * Math.pow(110.0, i / bandCount.toDouble()))
+                                .toInt().coerceIn(2, maxBin)
+                            val end = (2.0 * Math.pow(110.0, (i + 1) / bandCount.toDouble()))
+                                .toInt().coerceIn(start + 1, maxBin + 1)
+                            var peak = 0f
+                            for (bin in start until end) {
+                                val re = fft[bin * 2].toFloat()
+                                val im = fft[bin * 2 + 1].toFloat()
+                                val m = sqrt(re * re + im * im) / 128f
+                                if (m > peak) peak = m
+                            }
+                            // Per-band auto gain: quiet songs and loud songs both dance fully
+                            bandMax[i] = kotlin.math.max(bandMax[i] * 0.994f, 0.045f)
+                            if (peak > bandMax[i]) bandMax[i] = peak
+                            val norm = (peak / bandMax[i]).coerceIn(0f, 1f)
+                            bands[i] = norm * norm * (3f - 2f * norm) // smoothstep for natural feel
+                            sum += bands[i]
                         }
-                        val level = (sum / bandCount * 1.8f).coerceIn(0f, 1f)
+                        // Overall pulse driven mostly by bass (first third of bands)
+                        var bass = 0f
+                        for (i in 0 until 10) bass += bands[i]
+                        val level = ((bass / 10f) * 0.7f + (sum / bandCount) * 0.5f).coerceIn(0f, 1f)
                         edgeView?.setAudioData(level, bands)
                     }
                 }, Visualizer.getMaxCaptureRate() / 2, false, true)

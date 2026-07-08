@@ -6,7 +6,8 @@ import android.graphics.Color
 data class Profile(
     val name: String,
     val colorStart: Int,
-    val colorEnd: Int
+    val colorEnd: Int,
+    val rainbow: Boolean = false
 )
 
 data class GlowStyle(
@@ -43,10 +44,13 @@ object ProfileManager {
     private const val KEY_ONBOARDED = "onboarded"
 
     val themes = listOf(
+        Profile("Spectrum (All Colors)", Color.parseColor("#FF0000"), Color.parseColor("#AA00FF"), rainbow = true),
         Profile("Neon", Color.parseColor("#00E5FF"), Color.parseColor("#7C4DFF")),
         Profile("Sunset", Color.parseColor("#FF6D00"), Color.parseColor("#D500F9")),
         Profile("Ocean", Color.parseColor("#00B0FF"), Color.parseColor("#00E676")),
-        Profile("Royal Gold", Color.parseColor("#FFD54F"), Color.parseColor("#3949AB"))
+        Profile("Royal Gold", Color.parseColor("#FFD54F"), Color.parseColor("#3949AB")),
+        Profile("Fire", Color.parseColor("#FF1744"), Color.parseColor("#FFD600")),
+        Profile("Ice", Color.parseColor("#00E5FF"), Color.parseColor("#E1F5FE"))
     )
 
     private fun prefs(context: Context) =
