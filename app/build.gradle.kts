@@ -11,13 +11,26 @@ android {
         applicationId = "com.innovation313.glowedge"
         minSdk = 26
         targetSdk = 34
-        versionCode = 3
-        versionName = "2.1"
+        versionCode = 4
+        versionName = "2.2"
+    }
+
+    signingConfigs {
+        create("shared") {
+            storeFile = rootProject.file("glowedge.keystore")
+            storePassword = "glowedge313"
+            keyAlias = "glowedge"
+            keyPassword = "glowedge313"
+        }
     }
 
     buildTypes {
-        release {
+        getByName("debug") {
+            signingConfig = signingConfigs.getByName("shared")
+        }
+        getByName("release") {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("shared")
         }
     }
     compileOptions {
