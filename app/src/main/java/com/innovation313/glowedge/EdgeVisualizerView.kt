@@ -11,7 +11,6 @@ import android.graphics.SweepGradient
 import android.os.SystemClock
 import android.view.View
 import kotlin.math.max
-import kotlin.math.sin
 
 class EdgeVisualizerView(context: Context) : View(context) {
 
@@ -31,12 +30,17 @@ class EdgeVisualizerView(context: Context) : View(context) {
     private var level = 0f
     private var displayLevel = 0f
     private var rotationDeg = 0f
-    private var phase = 0f
-    private var lastDataTime = 0L
+    private var lastActiveTime = 0L
+    private var visibility01 = 0f
 
     private var shader: SweepGradient? = null
     private val shaderMatrix = Matrix()
     private val rect = RectF()
+
+    companion object {
+        private const val SOUND_THRESHOLD = 0.05f
+        private const val HOLD_MS = 1200L
+    }
 
     init {
         setLayerType(LAYER_TYPE_SOFTWARE, null)
@@ -55,7 +59,9 @@ class EdgeVisualizerView(context: Context) : View(context) {
     fun setAudioData(l: Float, newBands: FloatArray) {
         level = l.coerceIn(0f, 1f)
         if (newBands.size == bandCount) bands = newBands
-        lastDataTime = SystemClock.elapsedRealtime()
+        if (level > SOUND_THRESHOLD) {
+            lastActiveTime = SystemClock.elapsedRealtime()
+        }
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -78,20 +84,25 @@ class EdgeVisualizerView(context: Context) : View(context) {
         super.onDraw(canvas)
         if (width == 0 || height == 0) return
 
-        // Idle animation if no audio data is coming (restricted devices)
-        val idle = SystemClock.elapsedRealtime() - lastDataTime > 1500
-        if (idle) {
-            for (i in 0 until bandCount) {
-                bands[i] = 0.25f + 0.2f * sin(phase * 2f + i * 0.5f)
-            }
-            level = 0.3f + 0.1f * sin(phase * 1.5f)
+        // Only visible while sound is playing: fade in on music, fade out on silence
+        val soundActive =
+            SystemClock.elapsedRealtime() - lastActiveTime < HOLD_MS
+        val target = if (soundActive) 1f else 0f
+        visibility01 += (target - visibility01) * (if (soundActive) 0.25f else 0.10f)
+
+        if (visibility01 < 0.02f) {
+            visibility01 = 0f
+            alpha = 0f
+            // Sleep lightly while silent, keep checking for new sound
+            postDelayed({ invalidate() }, 200)
+            return
         }
+        alpha = visibility01
 
         for (i in 0 until bandCount) {
             displayBands[i] += (bands[i] - displayBands[i]) * 0.35f
         }
         displayLevel += (level - displayLevel) * 0.25f
-        phase += 0.03f * speed
         rotationDeg += 0.6f * speed + displayLevel * 4f
         if (rotationDeg > 360f) rotationDeg -= 360f
 
@@ -137,7 +148,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
         val barH = max(4f, baseThickness * 0.6f)
         for (i in 0 until n) {
             val mag = displayBands[i * bandCount / n]
-            val len = 14f + mag * width * 0.30f
+            val len = 8f + mag * width * 0.30f
             val cy = gap * i + gap / 2f
             paint.color = lerpColor(colorStart, colorEnd, i / (n - 1f))
             rect.set(0f, cy - barH / 2f, len, cy + barH / 2f)
@@ -158,7 +169,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
         val gapV = height / nSide.toFloat()
         for (i in 0 until nSide) {
             val mag = displayBands[i * bandCount / nSide]
-            val len = 10f + mag * width * 0.22f
+            val len = 6f + mag * width * 0.22f
             val cy = gapV * i + gapV / 2f
             paint.color = lerpColor(colorStart, colorEnd, i / (nSide - 1f))
             rect.set(0f, cy - barH / 2f, len, cy + barH / 2f)
@@ -171,7 +182,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
         val gapH = width / nTop.toFloat()
         for (i in 0 until nTop) {
             val mag = displayBands[(i + 6) % bandCount]
-            val len = 10f + mag * height * 0.12f
+            val len = 6f + mag * height * 0.12f
             val cx = gapH * i + gapH / 2f
             paint.color = lerpColor(colorEnd, colorStart, i / (nTop - 1f))
             rect.set(cx - barH / 2f, 0f, cx + barH / 2f, len)
@@ -190,7 +201,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
         paint.strokeWidth = thickness
         paint.maskFilter = BlurMaskFilter(max(3f, thickness * 0.8f), BlurMaskFilter.Blur.NORMAL)
 
-        val r = 110f + displayLevel * 190f
+        val r = 90f + displayLevel * 210f
         val off = thickness
 
         paint.color = colorStart

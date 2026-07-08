@@ -30,24 +30,24 @@ jobs:
         run: gradle assembleDebug --no-daemon
 
       - name: Rename APK
-        run: cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v2.0.apk
+        run: cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v2.1.apk
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-APK
-          path: GlowEdge-v2.0.apk
+          path: GlowEdge-v2.1.apk
 
       - name: Publish APK to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v2.0
-          name: GlowEdge v2.0
+          tag_name: v2.1
+          name: GlowEdge v2.1
           body: |
-            🎵 GlowEdge v2.0 — Professional redesign!
+            🎵 GlowEdge v2.1 — Glow only while music plays!
             ✦ New interface with bottom navigation (Styles / Settings / Premium)
             ✦ 4 visualizer styles: Glow Line, Side Bars, Bars Around, Corner Glow
             ✦ Color themes, thickness & speed controls
             ✦ New app icon
             Developed by Innovation-313
-          files: GlowEdge-v2.0.apk
+          files: GlowEdge-v2.1.apk
