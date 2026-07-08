@@ -36,6 +36,7 @@ class VisualizerService : Service() {
         isRunning = true
         startForegroundWithNotification()
         addOverlay()
+        applyCurrentSettings()
         startVisualizer()
     }
 
@@ -44,8 +45,19 @@ class VisualizerService : Service() {
             stopSelf()
             return START_NOT_STICKY
         }
-        edgeView?.applyProfile(ProfileManager.selectedProfile(this))
+        applyCurrentSettings()
         return START_STICKY
+    }
+
+    private fun applyCurrentSettings() {
+        val theme = ProfileManager.theme(this)
+        edgeView?.applySettings(
+            ProfileManager.style(this),
+            theme.colorStart,
+            theme.colorEnd,
+            ProfileManager.thickness(this).toFloat(),
+            ProfileManager.speed(this) / 10f
+        )
     }
 
     private fun startForegroundWithNotification() {
@@ -80,9 +92,7 @@ class VisualizerService : Service() {
 
     private fun addOverlay() {
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        edgeView = EdgeVisualizerView(this).also {
-            it.applyProfile(ProfileManager.selectedProfile(this))
-        }
+        edgeView = EdgeVisualizerView(this)
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.MATCH_PARENT,
@@ -108,26 +118,32 @@ class VisualizerService : Service() {
                 setDataCaptureListener(object : Visualizer.OnDataCaptureListener {
                     override fun onWaveFormDataCapture(
                         v: Visualizer?, waveform: ByteArray?, samplingRate: Int
-                    ) {
-                        if (waveform == null || waveform.isEmpty()) return
-                        var sum = 0.0
-                        for (b in waveform) {
-                            val f = (b.toInt() and 0xFF) - 128
-                            sum += (f * f).toDouble()
-                        }
-                        val rms = sqrt(sum / waveform.size) / 128.0
-                        edgeView?.setLevel((rms * 2.2).toFloat())
-                    }
+                    ) = Unit
 
                     override fun onFftDataCapture(
                         v: Visualizer?, fft: ByteArray?, samplingRate: Int
-                    ) = Unit
-                }, Visualizer.getMaxCaptureRate() / 2, true, false)
+                    ) {
+                        if (fft == null || fft.size < 130) return
+                        val bandCount = 32
+                        val bands = FloatArray(bandCount)
+                        var sum = 0f
+                        for (i in 0 until bandCount) {
+                            val bin = 1 + i * 2
+                            val re = fft[bin * 2].toFloat()
+                            val im = fft[bin * 2 + 1].toFloat()
+                            var mag = sqrt(re * re + im * im) / 128f
+                            mag = sqrt(mag.coerceIn(0f, 1f))
+                            bands[i] = mag
+                            sum += mag
+                        }
+                        val level = (sum / bandCount * 1.8f).coerceIn(0f, 1f)
+                        edgeView?.setAudioData(level, bands)
+                    }
+                }, Visualizer.getMaxCaptureRate() / 2, false, true)
                 enabled = true
             }
         } catch (_: Exception) {
-            // Some devices restrict the system audio mix; fall back to a gentle glow
-            edgeView?.setLevel(0.35f)
+            // Restricted device: the view falls back to its idle animation
         }
     }
 

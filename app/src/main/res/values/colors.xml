@@ -1,5 +1,6 @@
 <resources>
     <color name="navy">#0A1128</color>
+    <color name="navy2">#101832</color>
     <color name="gold">#FFD54F</color>
     <color name="white">#FFFFFF</color>
 </resources>
