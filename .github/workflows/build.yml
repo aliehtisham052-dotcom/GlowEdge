@@ -5,6 +5,9 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -34,3 +37,13 @@ jobs:
         with:
           name: GlowEdge-APK
           path: GlowEdge-v1.0.apk
+
+      - name: Publish APK to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0
+          name: GlowEdge v1.0
+          body: |
+            🎵 GlowEdge v1.0 — Music-reactive edge lighting visualizer for Android.
+            Download the APK below and install it on any Android 8.0+ phone.
+          files: GlowEdge-v1.0.apk
