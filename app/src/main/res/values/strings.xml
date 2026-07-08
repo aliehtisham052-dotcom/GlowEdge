@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">GlowEdge</string>
+    <string name="welcome_subtitle">Music-reactive edge lighting for your screen\nAap ki music, screen ke kinaron par jagmagati roshni 🎵</string>
+    <string name="get_started">Get Started</string>
+
+    <string name="overlay_title">Display over other apps</string>
+    <string name="overlay_desc">GlowEdge needs this permission to show the glowing edges on top of your music apps. Nothing else is touched.</string>
+    <string name="grant_permission">Grant Permission</string>
+
+    <string name="audio_title">Audio access</string>
+    <string name="audio_desc">This lets GlowEdge react to the music that is playing. Audio is only used for the live visualizer — nothing is ever recorded or stored.</string>
+
+    <string name="notif_title">Notifications</string>
+    <string name="notif_desc">A small notification keeps GlowEdge running smoothly and gives you a quick Stop button.</string>
+    <string name="skip">Skip for now</string>
+
+    <string name="start_glow">Start Glow</string>
+    <string name="stop_glow">Stop Glow</string>
+    <string name="status_running">GlowEdge is ON — play some music! ✨</string>
+    <string name="status_stopped">GlowEdge is OFF</string>
+    <string name="profiles">Profiles</string>
+    <string name="stop">Stop</string>
+    <string name="notification_running">Edge glow is running</string>
+    <string name="footer">Innovation-313 • AI Command Master</string>
+</resources>
