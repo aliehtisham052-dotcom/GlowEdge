@@ -178,9 +178,16 @@ class EdgeVisualizerView(context: Context) : View(context) {
         // Brighter, wider glow when loud
         paint.maskFilter = BlurMaskFilter(max(2f, thickness * (0.7f + loud)), BlurMaskFilter.Blur.NORMAL)
 
-        val half = paint.strokeWidth / 2f
-        rect.set(half, half, width - half, height - half)
-        canvas.drawRoundRect(rect, 64f, 64f, paint)
+        // Sit flush against the true screen edge and match phone's rounded corners
+        val inset = paint.strokeWidth * 0.28f
+        rect.set(inset, inset, width - inset, height - inset)
+        val corner = screenCornerRadius()
+        canvas.drawRoundRect(rect, corner, corner, paint)
+    }
+
+    private fun screenCornerRadius(): Float {
+        // Approximate modern phone screen corner radius; scales with screen size
+        return (width.coerceAtMost(height) * 0.09f).coerceIn(40f, 130f)
     }
 
     /** Eased 0..1 curve so quiet stays subtle and loud pops - like a designer's response curve. */
@@ -264,7 +271,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
         paint.maskFilter = BlurMaskFilter(max(3f, thickness * 0.8f), BlurMaskFilter.Blur.NORMAL)
 
         val r = 90f + displayLevel * 210f
-        val off = thickness
+        val off = thickness * 0.4f
 
         paint.color = colorAt(0f)
         rect.set(off, off, off + 2 * r, off + 2 * r)
