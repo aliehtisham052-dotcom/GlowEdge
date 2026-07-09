@@ -77,7 +77,7 @@ class EdgeView @JvmOverloads constructor(
 
     fun setPreview(on: Boolean) { preview = on }
 
-    fun apply(styleId: Int, cStart: Int, cEnd: Int, rainbow: Boolean,
+    fun configure(styleId: Int, cStart: Int, cEnd: Int, rainbow: Boolean,
               thickness: Float, speed: Float, intensity: Float, saver: Boolean) {
         this.styleId = styleId
         this.colorStart = cStart
@@ -122,9 +122,16 @@ class EdgeView @JvmOverloads constructor(
     }
 
     private val hsv = floatArrayOf(0f, 1f, 1f)
-    private fun colorAt(t: Float): Int =
-        if (rainbow) { hsv[0] = (hue + t * 300f) % 360f; hsv[1] = 1f; hsv[2] = 1f; Color.HSVToColor(hsv) }
-        else mix(colorStart, colorEnd, t)
+    private fun colorAt(t: Float): Int {
+        return if (rainbow) {
+            hsv[0] = (hue + t * 300f) % 360f
+            hsv[1] = 1f
+            hsv[2] = 1f
+            Color.HSVToColor(hsv)
+        } else {
+            mix(colorStart, colorEnd, t)
+        }
+    }
 
     private fun corner(): Float = (width.coerceAtMost(height) * 0.09f).coerceIn(40f, 130f)
 

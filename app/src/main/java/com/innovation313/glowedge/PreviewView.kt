@@ -20,7 +20,7 @@ class PreviewView @JvmOverloads constructor(
 
     private fun applyNow() {
         val t = Settings.theme(context)
-        edge.apply(
+        edge.configure(
             Settings.styleId(context), t.start, t.end, t.rainbow,
             Settings.thickness(context).toFloat() * 0.7f,
             Settings.speed(context) / 10f,

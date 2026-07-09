@@ -88,7 +88,7 @@ class VisualizerService : Service() {
         musicOnly = Settings.musicOnly(this)
         sensitivity = Settings.sensitivity(this)
         val t = Settings.theme(this)
-        view?.apply(
+        view?.configure(
             Settings.styleId(this), t.start, t.end, t.rainbow,
             Settings.thickness(this).toFloat(),
             Settings.speed(this) / 10f,
