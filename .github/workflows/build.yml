@@ -34,27 +34,28 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v5.2.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v5.2.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v5.3.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v5.3.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v5.2.apk
-            GlowEdge-v5.2.aab
+            GlowEdge-v5.3.apk
+            GlowEdge-v5.3.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v5.2
-          name: GlowEdge v5.2
+          tag_name: v5.3
+          name: GlowEdge v5.3
           body: |
-            GlowEdge v5.2
-            - Removed the Charging Glow feature (per preference)
-            - Test Glow button, demo fallback, 11 styles, music/naat detection, privacy-first
+            GlowEdge v5.3
+            - Removed call glow and the phone permission; notification glow stays
+            - Fewer permissions = more privacy
+            - 11 styles, 7 themes, music/naat detection, privacy-first
             Developed by Innovation-313
           files: |
-            GlowEdge-v5.2.apk
-            GlowEdge-v5.2.aab
+            GlowEdge-v5.3.apk
+            GlowEdge-v5.3.aab

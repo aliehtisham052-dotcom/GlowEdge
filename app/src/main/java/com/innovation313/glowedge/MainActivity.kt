@@ -381,17 +381,9 @@ class MainActivity : AppCompatActivity() {
         notifGlow.isChecked = prefs.getBoolean("notif_glow", false)
         notifGlow.setOnCheckedChangeListener { _, checked ->
             prefs.edit().putBoolean("notif_glow", checked).apply()
-            if (checked) {
-                if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE)
-                    != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(
-                        this, arrayOf(Manifest.permission.READ_PHONE_STATE), 20
-                    )
-                }
-                if (!hasNotificationAccess()) {
-                    Toast.makeText(this, R.string.notif_glow_need_access, Toast.LENGTH_LONG).show()
-                    openNotificationAccess()
-                }
+            if (checked && !hasNotificationAccess()) {
+                Toast.makeText(this, R.string.notif_glow_need_access, Toast.LENGTH_LONG).show()
+                openNotificationAccess()
             }
         }
         findViewById<TextView>(R.id.btnNotifAccess).setOnClickListener {

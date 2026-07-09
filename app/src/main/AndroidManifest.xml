@@ -7,7 +7,6 @@
         Nothing can ever leave your device.
         - RECORD_AUDIO: required ONLY by Android's Visualizer to read the music
           waveform for the on-screen glow. No audio is recorded, saved, or sent.
-        - READ_PHONE_STATE: optional, only to glow the edges when a call rings.
         - Notification access: optional, only to glow on messages. Content is never read.
     -->
 
@@ -18,7 +17,6 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <application
         android:allowBackup="true"
@@ -61,12 +59,5 @@
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
-        <receiver
-            android:name=".PhoneStateReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.PHONE_STATE" />
-            </intent-filter>
-        </receiver>
     </application>
 </manifest>

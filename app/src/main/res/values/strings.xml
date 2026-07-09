@@ -41,7 +41,7 @@
     <string name="premium_lock">🔒 Premium</string>
     <string name="premium_toast">This style is part of GlowEdge Premium — coming soon with the Play Store release!</string>
     <string name="premium_desc">GlowEdge turns your music, naat and melodic audio into a living glow around your screen edges. Completely free — every style and feature unlocked.</string>
-    <string name="premium_features">✦ 8 visualizer styles\n✦ 7 color themes incl. full Spectrum\n✦ Music-Only smart detection\n✦ Call &amp; Notification Glow\n✦ Charging Glow\n✦ Thickness, speed &amp; intensity controls\n✦ Battery Saver &amp; Auto-start\n✦ Works with headphones &amp; earbuds\n✦ No ads · No tracking · No internet access</string>
+    <string name="premium_features">✦ 11 visualizer styles\n✦ 7 color themes incl. full Spectrum\n✦ Music-Only smart detection\n✦ Notification Glow\n✦ Thickness, speed &amp; intensity controls\n✦ Battery Saver &amp; Auto-start\n✦ Works with headphones &amp; earbuds\n✦ No ads · No tracking · No internet access</string>
     <string name="premium_note">Made with passion. Share GlowEdge with your friends! ⭐</string>
 
     <string name="intensity">Glow Intensity</string>
@@ -50,9 +50,9 @@
     <string name="developer_label">Developer</string>
     <string name="developer_name">Innovation-313</string>
     <string name="developer_email">aliehtisham052@gmail.com</string>
-    <string name="app_version">Version 5.2</string>
-    <string name="notif_glow">Call &amp; Notification Glow</string>
-    <string name="notif_glow_desc">Flash the edges in an app\'s color when a call or message arrives — even when no music is playing.</string>
+    <string name="app_version">Version 5.3</string>
+    <string name="notif_glow">Notification Glow</string>
+    <string name="notif_glow_desc">Flash the edges in an app color when a message or notification arrives. Works even without music.</string>
     <string name="notif_glow_need_access">Please allow notification access for GlowEdge to detect calls and messages.</string>
     <string name="notif_glow_grant">Enable Notification Access</string>
     <string name="live_preview">Live Preview</string>
@@ -64,7 +64,7 @@
     <string name="music_sensitivity_desc">Left = strict (only clear music) · Right = relaxed (more sounds)</string>
     <string name="about_title">About &amp; Help</string>
     <string name="how_header">HOW THE MENUS WORK</string>
-    <string name="how_menus">• Styles tab — Pick how the glow looks. Tap a style card or its Apply button to use it. The Live Preview at the top shows the selected style animating.\n\n• Start / Stop Glow — The gradient button turns the edge glow on or off. When on, the glow appears only while sound is playing.\n\n• Settings tab — Music-Only Mode, detection sensitivity, color theme, thickness, animation speed, glow intensity, auto-start, Call &amp; Notification Glow, Charging Glow, and Battery Saver.\n\n• About tab — This page: how the app works, features, and copyright.\n\n• Bottom bar — Switch between Styles, Settings and About.</string>
+    <string name="how_menus">• Styles tab: Pick how the glow looks. Tap a style card or its Apply button to use it. The Live Preview at the top shows the selected style animating.\n\n• Start / Stop Glow: The gradient button turns the edge glow on or off. When on, the glow appears only while sound is playing.\n\n• Settings tab: Music-Only Mode, detection sensitivity, color theme, thickness, animation speed, glow intensity, auto-start, Notification Glow, Battery Saver and startup animation.\n\n• About tab: How the app works, features, and copyright.\n\n• Bottom bar: Switch between Styles, Settings and About.</string>
 
     <string name="detect_header">SMART MUSIC DETECTION</string>
     <string name="detect_desc">GlowEdge uses a built-in smart audio algorithm to tell music, naat and melodic/poetry audio apart from normal talking and notification sounds. It listens in real time to how the sound is spread across frequencies, its bass and treble balance, its rhythm steadiness, and how sustained it is — all on your device, with nothing recorded or sent anywhere.\n\nWith Music-Only Mode on, the glow reacts only to musical audio. Use the Sensitivity slider to make detection stricter or more relaxed. No perfect detector exists, so if a naat or song is missed, nudge the sensitivity to the right.</string>
