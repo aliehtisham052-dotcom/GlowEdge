@@ -192,6 +192,35 @@ class VisualizerService : Service() {
         }
     }
 
+    override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
+        super.onConfigurationChanged(newConfig)
+        updateOverlaySize()
+    }
+
+    private fun updateOverlaySize() {
+        val view = edgeView ?: return
+        val wm = windowManager ?: return
+        try {
+            val params = view.layoutParams as WindowManager.LayoutParams
+            if (Build.VERSION.SDK_INT >= 30) {
+                val b = wm.currentWindowMetrics.bounds
+                params.width = b.width()
+                params.height = b.height()
+            } else {
+                @Suppress("DEPRECATION")
+                val dm = android.util.DisplayMetrics()
+                @Suppress("DEPRECATION")
+                wm.defaultDisplay?.getRealMetrics(dm)
+                params.width = dm.widthPixels
+                params.height = dm.heightPixels
+            }
+            wm.updateViewLayout(view, params)
+            view.requestLayout()
+            view.invalidate()
+        } catch (_: Exception) {
+        }
+    }
+
     override fun onDestroy() {
         isRunning = false
         try {

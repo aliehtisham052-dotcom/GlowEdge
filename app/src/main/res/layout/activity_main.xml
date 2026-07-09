@@ -176,26 +176,30 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    android:paddingStart="20dp"
+                    android:paddingEnd="20dp"
+                    android:paddingBottom="24dp">
 
-                    <!-- Header with logo -->
+                    <!-- Header band with logo -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:layout_marginTop="12dp">
+                        android:background="@drawable/bg_header"
+                        android:paddingTop="22dp"
+                        android:paddingBottom="22dp">
 
                         <ImageView
-                            android:layout_width="44dp"
-                            android:layout_height="44dp"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
                             android:src="@drawable/logo_header" />
 
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:layout_marginStart="12dp"
+                            android:layout_marginStart="14dp"
                             android:orientation="vertical">
 
                             <TextView
@@ -203,46 +207,74 @@
                                 android:layout_height="wrap_content"
                                 android:text="@string/app_name"
                                 android:textColor="@color/white"
-                                android:textSize="24sp"
-                                android:textStyle="bold"
-                                android:letterSpacing="0.01" />
+                                android:textSize="26sp"
+                                android:textStyle="bold" />
 
                             <TextView
-                                android:id="@+id/tvStatus"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/status_stopped"
+                                android:text="@string/tagline_short"
                                 android:textColor="#8A93B5"
-                                android:textSize="13sp" />
+                                android:textSize="12sp"
+                                android:letterSpacing="0.03" />
                         </LinearLayout>
                     </LinearLayout>
+
+                    <!-- Status pill -->
+                    <TextView
+                        android:id="@+id/tvStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:background="@drawable/chip_apply"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:paddingTop="7dp"
+                        android:paddingBottom="7dp"
+                        android:text="@string/status_stopped"
+                        android:textColor="#8A93B5"
+                        android:textSize="13sp" />
 
                     <!-- Primary action -->
                     <TextView
                         android:id="@+id/btnToggle"
                         android:layout_width="match_parent"
-                        android:layout_height="56dp"
-                        android:layout_marginTop="20dp"
+                        android:layout_height="58dp"
+                        android:layout_marginTop="18dp"
                         android:background="@drawable/btn_primary"
                         android:gravity="center"
                         android:text="@string/start_glow"
                         android:textColor="#0A1128"
-                        android:textSize="16sp"
+                        android:textSize="17sp"
                         android:textStyle="bold"
                         android:clickable="true"
                         android:focusable="true" />
 
-                    <!-- Section label -->
-                    <TextView
-                        android:layout_width="wrap_content"
+                    <!-- Section label with divider -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
                         android:layout_marginTop="30dp"
-                        android:layout_marginBottom="14dp"
-                        android:text="@string/styles_header"
-                        android:textColor="#8A93B5"
-                        android:textSize="13sp"
-                        android:textStyle="bold"
-                        android:letterSpacing="0.15" />
+                        android:layout_marginBottom="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/styles_header"
+                            android:textColor="@color/gold"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.15" />
+
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="1dp"
+                            android:layout_weight="1"
+                            android:layout_marginStart="14dp"
+                            android:background="#22FFFFFF" />
+                    </LinearLayout>
 
                     <LinearLayout
                         android:id="@+id/stylesContainer"
