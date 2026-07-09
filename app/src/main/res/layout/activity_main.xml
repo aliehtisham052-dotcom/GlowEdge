@@ -365,6 +365,20 @@
                         android:clickable="true"
                         android:focusable="true" />
 
+                    <TextView
+                        android:id="@+id/btnTest"
+                        android:layout_width="match_parent"
+                        android:layout_height="46dp"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/btn_ghost"
+                        android:gravity="center"
+                        android:text="@string/test_glow"
+                        android:textColor="@color/gold"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:clickable="true"
+                        android:focusable="true" />
+
                     <!-- Live Preview -->
                     <FrameLayout
                         android:layout_width="match_parent"

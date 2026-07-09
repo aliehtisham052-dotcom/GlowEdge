@@ -22,6 +22,7 @@ class VisualizerService : Service() {
         const val CHANNEL_ID = "glowedge_channel"
         const val ACTION_STOP = "com.innovation313.glowedge.STOP"
         const val ACTION_CHARGING_FLASH = "com.innovation313.glowedge.CHARGING_FLASH"
+        const val ACTION_TEST = "com.innovation313.glowedge.TEST"
         const val EXTRA_FLASH_COLOR = "flash_color"
         @Volatile
         var isRunning = false
@@ -105,6 +106,11 @@ class VisualizerService : Service() {
         if (intent?.action == ACTION_STOP) {
             stopSelf()
             return START_NOT_STICKY
+        }
+        if (intent?.action == ACTION_TEST) {
+            wasStartedByUser = true
+            edgeView?.forceTestGlow()
+            return START_STICKY
         }
         if (intent?.action == ACTION_CHARGING_FLASH) {
             val color = intent.getIntExtra(EXTRA_FLASH_COLOR, 0)

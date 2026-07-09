@@ -107,6 +107,17 @@ class EdgeVisualizerView(context: Context) : View(context) {
     /** Force a self-animating demo glow (used when the device blocks audio capture). */
     fun setDemoMode(on: Boolean) { demoMode = on }
 
+    private var testUntil = 0L
+    /** Show a guaranteed bright glow for a few seconds to verify the overlay works. */
+    fun forceTestGlow() {
+        testUntil = SystemClock.elapsedRealtime() + 5000L
+        demoMode = true
+        lastActiveTime = SystemClock.elapsedRealtime()
+        lastRealData = SystemClock.elapsedRealtime()
+        introActive = false
+        postInvalidate()
+    }
+
     /** Flash a colored glow around the edges for a couple of seconds (call/notification). */
     fun triggerNotificationFlash(color: Int) {
         flashColor = color
@@ -158,6 +169,36 @@ class EdgeVisualizerView(context: Context) : View(context) {
         if (width == 0 || height == 0) return
 
         val now = SystemClock.elapsedRealtime()
+
+        // ---- Test glow: guaranteed bright glow to verify overlay works ----
+        if (now < testUntil) {
+            visibility01 = 1f
+            alpha = 1f
+            demoPhase += 0.06f
+            var sum = 0f
+            for (i in 0 until bandCount) {
+                val v = 0.6f + 0.4f * kotlin.math.sin(demoPhase * 2f + i * 0.5f)
+                bands[i] = v.coerceIn(0f,1f); sum += v
+            }
+            level = 0.85f
+            displayLevel = 0.85f
+            for (i in 0 until bandCount) displayBands[i] = bands[i]
+            when (styleId) {
+                GlowStyles.SIDE_BARS -> drawSideBars(canvas)
+                GlowStyles.BARS_AROUND -> drawBarsAround(canvas)
+                GlowStyles.CORNER_GLOW -> drawCornerGlow(canvas)
+                GlowStyles.EMBER -> drawEmber(canvas)
+                GlowStyles.CHASE -> drawChase(canvas)
+                GlowStyles.PULSE -> drawPulse(canvas)
+                GlowStyles.DOTS -> drawDots(canvas)
+                GlowStyles.AURORA -> drawAurora(canvas)
+                GlowStyles.COMET -> drawComet(canvas)
+                GlowStyles.RIPPLE -> drawRipple(canvas)
+                else -> drawGlowLine(canvas)
+            }
+            postInvalidateOnAnimation()
+            return
+        }
 
         // ---- Intro animation: corner sweep lines -> settle into style ----
         if (introActive) {

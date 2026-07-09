@@ -24,6 +24,7 @@
     <string name="status_running">Glow is ON — play some music! ✨</string>
     <string name="status_stopped">Glow is OFF</string>
     <string name="styles">Styles</string>
+    <string name="test_glow">🔦 Test Glow (5 sec)</string>
     <string name="styles_header">CHOOSE A STYLE</string>
     <string name="tagline_short">Music-reactive edge lighting</string>
     <string name="applied">Applied ✓</string>
@@ -49,7 +50,7 @@
     <string name="developer_label">Developer</string>
     <string name="developer_name">Innovation-313</string>
     <string name="developer_email">aliehtisham052@gmail.com</string>
-    <string name="app_version">Version 5.0</string>
+    <string name="app_version">Version 5.1</string>
     <string name="notif_glow">Call &amp; Notification Glow</string>
     <string name="notif_glow_desc">Flash the edges in an app\'s color when a call or message arrives — even when no music is playing.</string>
     <string name="notif_glow_need_access">Please allow notification access for GlowEdge to detect calls and messages.</string>

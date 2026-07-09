@@ -83,6 +83,17 @@ class MainActivity : AppCompatActivity() {
 
         // Main UI
         findViewById<TextView>(R.id.btnToggle).setOnClickListener { toggleService() }
+        findViewById<TextView>(R.id.btnTest).setOnClickListener {
+            if (!Settings.canDrawOverlays(this)) {
+                Toast.makeText(this, R.string.overlay_title, Toast.LENGTH_LONG).show()
+                startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:$packageName")))
+                return@setOnClickListener
+            }
+            startForegroundService(Intent(this, VisualizerService::class.java)
+                .setAction(VisualizerService.ACTION_TEST))
+            Toast.makeText(this, "Test glow running for 5 seconds...", Toast.LENGTH_SHORT).show()
+        }
         findViewById<BottomNavigationView>(R.id.bottomNav).setOnItemSelectedListener { item ->
             mainFlipper.displayedChild = when (item.itemId) {
                 R.id.nav_settings -> 1
