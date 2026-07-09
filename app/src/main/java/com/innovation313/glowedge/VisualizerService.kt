@@ -34,6 +34,9 @@ class VisualizerService : Service() {
     private var sustainFrames = 0
     private var musicOnly = true
     private var sensitivity = 5
+    private val fluxHistory = FloatArray(16)
+    private var fluxIndex = 0
+    private val prevBands = FloatArray(32)
 
     private val notifReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: android.content.Context?, intent: Intent?) {
@@ -199,12 +202,13 @@ class VisualizerService : Service() {
      */
     private fun isMusical(bands: FloatArray, level: Float): Boolean {
         val n = bands.size
+
         // 1) Spectral spread: how many bands carry real energy
         var active = 0
         for (b in bands) if (b > 0.10f) active++
         val spread = active / n.toFloat()
 
-        // 2) Band balance: music has bass + treble; speech is mid-dominant
+        // 2) Band balance: music has bass + treble; speech is mid-dominant (300-3400 Hz)
         var bass = 0f; var mid = 0f; var treble = 0f
         for (i in 0 until n) {
             when {
@@ -215,23 +219,51 @@ class VisualizerService : Service() {
         }
         val balance = (bass + treble) / (mid + 0.001f)
 
-        // 3) Sustain: musical audio keeps energy going; speech has micro-gaps
+        // 3) Spectral flux: how much the spectrum changes frame to frame.
+        //    Music/naat has steady, rhythmic flux; speech is bursty and irregular.
+        var flux = 0f
+        for (i in 0 until n) {
+            val d = bands[i] - prevBands[i]
+            if (d > 0) flux += d
+            prevBands[i] = bands[i]
+        }
+        fluxHistory[fluxIndex] = flux
+        fluxIndex = (fluxIndex + 1) % fluxHistory.size
+        var mean = 0f
+        for (f in fluxHistory) mean += f
+        mean /= fluxHistory.size
+        var varc = 0f
+        for (f in fluxHistory) varc += (f - mean) * (f - mean)
+        varc /= fluxHistory.size
+        // Low variance in flux = steady rhythm (musical). High variance = choppy speech.
+        val steadiness = 1f / (1f + varc * 6f)
+
+        // 4) Sustain: musical/vocal audio keeps energy going (naat sustains notes);
+        //    speech has frequent micro-gaps between words.
         if (level > 0.05f) sustainFrames++ else sustainFrames = 0
-        val sustained = sustainFrames > 6
+        val sustained = sustainFrames > 5
+
         prevLevel = level
 
-        // Thresholds eased by the sensitivity setting (1 strict .. 10 loose)
+        // Sensitivity eases thresholds (1 strict .. 10 loose)
         val s = sensitivity / 10f
-        val spreadNeed = 0.42f - s * 0.22f      // 0.20 (loose) .. 0.40 (strict)
-        val balanceNeed = 0.55f - s * 0.35f     // low bar when loose
+        val spreadNeed = 0.40f - s * 0.20f
+        val balanceNeed = 0.50f - s * 0.32f
+        val steadyNeed = 0.45f - s * 0.28f
 
-        val looksMusical =
-            level > 0.06f && spread >= spreadNeed && balance >= balanceNeed && sustained
+        // Score each cue, combine. Naat (vocal, melodic, sustained, steady) passes via
+        // sustain + steadiness even when bass is light; instrumental music passes via balance+spread.
+        var cues = 0
+        if (spread >= spreadNeed) cues++
+        if (balance >= balanceNeed) cues++
+        if (steadiness >= steadyNeed) cues++
+        if (sustained) cues++
 
-        // Smooth so the glow does not flicker on/off between words
-        val target = if (looksMusical) 1f else 0f
+        val looksMusical = level > 0.06f && cues >= 3
+
         val rise = 0.08f + s * 0.05f
         val fall = 0.03f
+        val target = if (looksMusical) 1f else 0f
         musicScore += (target - musicScore) * (if (target > musicScore) rise else fall)
 
         return musicScore > 0.35f

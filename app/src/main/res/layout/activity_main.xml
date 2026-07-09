@@ -628,7 +628,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
-                        android:text="@string/premium"
+                        android:text="@string/about_title"
                         android:textColor="@color/gold"
                         android:textSize="28sp"
                         android:textStyle="bold" />
@@ -644,19 +644,78 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="24dp"
-                        android:lineSpacingExtra="8dp"
-                        android:text="@string/premium_features"
-                        android:textColor="@color/white"
-                        android:textSize="15sp" />
+                        android:layout_marginTop="26dp"
+                        android:text="@string/how_header"
+                        android:textColor="@color/gold"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.05" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="32dp"
-                        android:text="@string/premium_note"
-                        android:textColor="@color/gold"
+                        android:layout_marginTop="10dp"
+                        android:lineSpacingExtra="7dp"
+                        android:text="@string/how_menus"
+                        android:textColor="@color/white"
                         android:textSize="14sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="26dp"
+                        android:text="@string/detect_header"
+                        android:textColor="@color/gold"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.05" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:lineSpacingExtra="7dp"
+                        android:text="@string/detect_desc"
+                        android:textColor="@color/white"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="26dp"
+                        android:text="@string/features_header"
+                        android:textColor="@color/gold"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.05" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:lineSpacingExtra="8dp"
+                        android:text="@string/premium_features"
+                        android:textColor="@color/white"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="26dp"
+                        android:text="@string/copyright_header"
+                        android:textColor="@color/gold"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.05" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:lineSpacingExtra="6dp"
+                        android:text="@string/copyright_text"
+                        android:textColor="@color/white"
+                        android:textSize="13sp" />
 
                     <View
                         android:layout_width="match_parent"
