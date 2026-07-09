@@ -24,6 +24,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
     private var speed = 1f
     private var intensity = 1f
     private var flamePhase = 0f
+    private var batterySaver = false
 
     private val bandCount = 32
     private var bands = FloatArray(bandCount)
@@ -62,7 +63,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
 
     fun applySettings(
         style: Int, cStart: Int, cEnd: Int,
-        isRainbow: Boolean, thickness: Float, spd: Float, inten: Float
+        isRainbow: Boolean, thickness: Float, spd: Float, inten: Float, saver: Boolean
     ) {
         styleId = style
         colorStart = cStart
@@ -71,6 +72,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
         baseThickness = thickness
         speed = spd
         intensity = inten
+        batterySaver = saver
         shader = null
         postInvalidate()
     }
@@ -169,10 +171,50 @@ class EdgeVisualizerView(context: Context) : View(context) {
             GlowStyles.CORNER_GLOW -> drawCornerGlow(canvas)
             GlowStyles.EMBER -> drawEmber(canvas)
             GlowStyles.CHASE -> drawChase(canvas)
+            GlowStyles.PULSE -> drawPulse(canvas)
+            GlowStyles.DOTS -> drawDots(canvas)
             else -> drawGlowLine(canvas)
         }
 
         postInvalidateOnAnimation()
+    }
+
+    private fun drawPulse(canvas: Canvas) {
+        if (shader == null) {
+            val colors = if (rainbow) RAINBOW else intArrayOf(colorStart, colorEnd, colorStart)
+            shader = SweepGradient(width / 2f, height / 2f, colors, null)
+        }
+        shaderMatrix.setRotate(rotationDeg, width / 2f, height / 2f)
+        shader?.setLocalMatrix(shaderMatrix)
+        paint.shader = shader
+        paint.style = Paint.Style.STROKE
+        paint.strokeCap = Paint.Cap.ROUND
+        val loud = easeOut(displayLevel)
+        val thickness = baseThickness * (0.6f + loud * 3.0f * intensity)
+        paint.strokeWidth = max(4f, thickness)
+        val blurMul = if (batterySaver) 0.5f else 1.2f
+        paint.maskFilter = BlurMaskFilter(max(2f, thickness * blurMul), BlurMaskFilter.Blur.NORMAL)
+        val inset = paint.strokeWidth * 0.3f
+        rect.set(inset, inset, width - inset, height - inset)
+        val corner = screenCornerRadius()
+        canvas.drawRoundRect(rect, corner, corner, paint)
+    }
+
+    private fun drawDots(canvas: Canvas) {
+        paint.shader = null
+        paint.style = Paint.Style.FILL
+        val blurMul = if (batterySaver) 0.3f else 0.8f
+        paint.maskFilter = BlurMaskFilter(max(3f, baseThickness * blurMul), BlurMaskFilter.Blur.NORMAL)
+        val perimeter = 2f * (width + height)
+        val dotCount = 26
+        for (k in 0 until dotCount) {
+            val band = displayBands[k * bandCount / dotCount]
+            val d = (k.toFloat() / dotCount) * perimeter
+            val p = pointOnPerimeter(d)
+            val r = max(3f, baseThickness * (0.4f + band * 1.6f * intensity))
+            paint.color = colorAt(k / (dotCount - 1f))
+            canvas.drawCircle(p[0], p[1], r, paint)
+        }
     }
 
     private fun drawNotificationFlash(canvas: Canvas, now: Long) {

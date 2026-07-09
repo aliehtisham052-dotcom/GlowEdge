@@ -24,6 +24,8 @@ object GlowStyles {
     const val CORNER_GLOW = 3
     const val EMBER = 4
     const val CHASE = 5
+    const val PULSE = 6
+    const val DOTS = 7
 
     val all = listOf(
         GlowStyle(GLOW_LINE, "Glow Line", "Smooth glowing frame", false),
@@ -31,7 +33,9 @@ object GlowStyles {
         GlowStyle(BARS_AROUND, "Bars Around", "Bars dancing on every edge", false),
         GlowStyle(CORNER_GLOW, "Corner Glow", "Pulsing corner arcs", false),
         GlowStyle(EMBER, "Ember Flame", "Fiery edge flames", false),
-        GlowStyle(CHASE, "Chase", "Lights racing around the screen", false)
+        GlowStyle(CHASE, "Chase", "Lights racing around the screen", false),
+        GlowStyle(PULSE, "Pulse", "Whole edge breathes with the beat", false),
+        GlowStyle(DOTS, "Dots", "Glowing dots bouncing to the music", false)
     )
 }
 
@@ -42,6 +46,7 @@ object ProfileManager {
     private const val KEY_THICKNESS = "thickness"
     private const val KEY_SPEED = "speed"
     private const val KEY_INTENSITY = "intensity"
+    private const val KEY_SAVER = "battery_saver"
     private const val KEY_ONBOARDED = "onboarded"
 
     val themes = listOf(
@@ -91,6 +96,12 @@ object ProfileManager {
 
     fun intensity(context: Context): Int =
         prefs(context).getInt(KEY_INTENSITY, 10).coerceIn(3, 20)
+
+    fun setBatterySaver(context: Context, on: Boolean) =
+        prefs(context).edit().putBoolean(KEY_SAVER, on).apply()
+
+    fun batterySaver(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_SAVER, false)
 
     fun setOnboarded(context: Context) =
         prefs(context).edit().putBoolean(KEY_ONBOARDED, true).apply()

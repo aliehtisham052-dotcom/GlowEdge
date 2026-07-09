@@ -30,9 +30,23 @@ class VisualizerService : Service() {
 
     private val notifReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: android.content.Context?, intent: Intent?) {
-            if (intent?.action == GlowNotificationService.ACTION_NOTIFICATION_GLOW) {
-                val color = intent.getIntExtra(GlowNotificationService.EXTRA_COLOR, 0)
-                if (color != 0) edgeView?.triggerNotificationFlash(color)
+            when (intent?.action) {
+                GlowNotificationService.ACTION_NOTIFICATION_GLOW -> {
+                    val color = intent.getIntExtra(GlowNotificationService.EXTRA_COLOR, 0)
+                    if (color != 0) edgeView?.triggerNotificationFlash(color)
+                }
+                Intent.ACTION_POWER_CONNECTED -> {
+                    val prefs = getSharedPreferences("glowedge_prefs", MODE_PRIVATE)
+                    if (prefs.getBoolean("charging_glow", true)) {
+                        edgeView?.triggerNotificationFlash(android.graphics.Color.parseColor("#00E676"))
+                    }
+                }
+                Intent.ACTION_POWER_DISCONNECTED -> {
+                    val prefs = getSharedPreferences("glowedge_prefs", MODE_PRIVATE)
+                    if (prefs.getBoolean("charging_glow", true)) {
+                        edgeView?.triggerNotificationFlash(android.graphics.Color.parseColor("#FF9100"))
+                    }
+                }
             }
         }
     }
@@ -49,6 +63,8 @@ class VisualizerService : Service() {
         applyCurrentSettings()
         startVisualizer()
         val filter = android.content.IntentFilter(GlowNotificationService.ACTION_NOTIFICATION_GLOW)
+        filter.addAction(Intent.ACTION_POWER_CONNECTED)
+        filter.addAction(Intent.ACTION_POWER_DISCONNECTED)
         if (Build.VERSION.SDK_INT >= 33) {
             registerReceiver(notifReceiver, filter, android.content.Context.RECEIVER_NOT_EXPORTED)
         } else {
@@ -75,7 +91,8 @@ class VisualizerService : Service() {
             theme.rainbow,
             ProfileManager.thickness(this).toFloat(),
             ProfileManager.speed(this) / 10f,
-            ProfileManager.intensity(this) / 10f
+            ProfileManager.intensity(this) / 10f,
+            ProfileManager.batterySaver(this)
         )
     }
 

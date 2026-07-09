@@ -99,6 +99,7 @@ class MainActivity : AppCompatActivity() {
             goToNextNeededPage()
         }
         updateMainUi()
+        findViewById<PreviewView?>(R.id.previewView)?.refresh()
     }
 
     override fun onRequestPermissionsResult(
@@ -245,6 +246,7 @@ class MainActivity : AppCompatActivity() {
     private val styleChips = HashMap<Int, TextView>()
 
     private fun refreshStyleHighlights() {
+        findViewById<PreviewView?>(R.id.previewView)?.refresh()
         val selected = ProfileManager.style(this)
         styleCards.forEach { (id, card) ->
             card.setBackgroundResource(
@@ -368,6 +370,19 @@ class MainActivity : AppCompatActivity() {
         }
         findViewById<TextView>(R.id.btnNotifAccess).setOnClickListener {
             openNotificationAccess()
+        }
+
+        val charging = findViewById<MaterialSwitch>(R.id.switchCharging)
+        charging.isChecked = prefs.getBoolean("charging_glow", true)
+        charging.setOnCheckedChangeListener { _, checked ->
+            prefs.edit().putBoolean("charging_glow", checked).apply()
+        }
+
+        val saver = findViewById<MaterialSwitch>(R.id.switchSaver)
+        saver.isChecked = ProfileManager.batterySaver(this)
+        saver.setOnCheckedChangeListener { _, checked ->
+            ProfileManager.setBatterySaver(this, checked)
+            notifyService()
         }
     }
 
