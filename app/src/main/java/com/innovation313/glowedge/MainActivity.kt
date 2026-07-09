@@ -11,7 +11,10 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.Gravity
+import android.view.View
 import android.widget.Button
+import android.widget.ImageView
+import android.widget.TextView as TV
 import android.widget.LinearLayout
 import android.widget.SeekBar
 import android.widget.TextView
@@ -29,7 +32,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mainFlipper: ViewFlipper
     private lateinit var prefs: SharedPreferences
     private val styleNameViews = HashMap<Int, TextView>()
-    private val themeButtons = ArrayList<Button>()
 
     companion object {
         private const val PAGE_OVERLAY = 1
@@ -76,7 +78,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Main UI
-        findViewById<Button>(R.id.btnToggle).setOnClickListener { toggleService() }
+        findViewById<TextView>(R.id.btnToggle).setOnClickListener { toggleService() }
         findViewById<BottomNavigationView>(R.id.bottomNav).setOnItemSelectedListener { item ->
             mainFlipper.displayedChild = when (item.itemId) {
                 R.id.nav_settings -> 1
@@ -134,7 +136,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateMainUi() {
         val running = VisualizerService.isRunning
-        findViewById<Button>(R.id.btnToggle).text =
+        findViewById<TextView>(R.id.btnToggle).text =
             getString(if (running) R.string.stop_glow else R.string.start_glow)
         findViewById<TextView>(R.id.tvStatus).text =
             getString(if (running) R.string.status_running else R.string.status_stopped)
@@ -162,24 +164,37 @@ class MainActivity : AppCompatActivity() {
 
     // ---------- Styles page ----------
 
+    private val styleCards = HashMap<Int, LinearLayout>()
+
+    private fun dp(v: Int): Int = (v * resources.displayMetrics.density).toInt()
+
     private fun buildStyleCards() {
         val container = findViewById<LinearLayout>(R.id.stylesContainer)
         container.removeAllViews()
         styleNameViews.clear()
-        val gold = ContextCompat.getColor(this, R.color.gold)
+        styleCards.clear()
 
-        GlowStyles.all.forEach { s ->
+        GlowStyles.all.forEach { st ->
             val card = LinearLayout(this)
             card.orientation = LinearLayout.HORIZONTAL
             card.gravity = Gravity.CENTER_VERTICAL
             card.setBackgroundResource(R.drawable.bg_card)
-            card.setPadding(44, 36, 44, 36)
+            card.setPadding(dp(18), dp(16), dp(16), dp(16))
             val lp = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
             )
-            lp.bottomMargin = 28
+            lp.bottomMargin = dp(12)
             card.layoutParams = lp
+            styleCards[st.id] = card
+
+            // Accent dot
+            val dot = TextView(this)
+            dot.text = "●"
+            dot.textSize = 16f
+            dot.setTextColor(Color.parseColor("#FFD54F"))
+            dot.setPadding(0, 0, dp(14), 0)
+            card.addView(dot)
 
             val textCol = LinearLayout(this)
             textCol.orientation = LinearLayout.VERTICAL
@@ -188,49 +203,60 @@ class MainActivity : AppCompatActivity() {
             )
 
             val name = TextView(this)
-            name.text = s.name
-            name.textSize = 18f
+            name.text = st.name
+            name.textSize = 17f
             name.setTextColor(Color.WHITE)
-            styleNameViews[s.id] = name
+            name.setTypeface(name.typeface, android.graphics.Typeface.BOLD)
+            styleNameViews[st.id] = name
 
             val tagline = TextView(this)
-            tagline.text = s.tagline
+            tagline.text = st.tagline
             tagline.textSize = 13f
             tagline.setTextColor(Color.parseColor("#8A93B5"))
+            tagline.setPadding(0, dp(2), 0, 0)
 
             textCol.addView(name)
             textCol.addView(tagline)
             card.addView(textCol)
 
-            if (s.premium) {
-                val lock = TextView(this)
-                lock.text = getString(R.string.premium_lock)
-                lock.textSize = 14f
-                lock.setTextColor(gold)
-                card.addView(lock)
-                card.setOnClickListener {
-                    Toast.makeText(this, R.string.premium_toast, Toast.LENGTH_LONG).show()
-                }
-            } else {
-                val apply = Button(this)
-                apply.text = getString(R.string.apply)
-                apply.setOnClickListener {
-                    ProfileManager.setStyle(this, s.id)
-                    notifyService()
-                    refreshStyleHighlights()
-                }
-                card.addView(apply)
+            val apply = TextView(this)
+            apply.text = getString(R.string.apply)
+            apply.textSize = 13f
+            apply.setTextColor(Color.WHITE)
+            apply.setTypeface(apply.typeface, android.graphics.Typeface.BOLD)
+            apply.setBackgroundResource(R.drawable.chip_apply)
+            apply.setPadding(dp(18), dp(9), dp(18), dp(9))
+            styleChips[st.id] = apply
+            card.addView(apply)
+
+            val pick = View.OnClickListener {
+                ProfileManager.setStyle(this, st.id)
+                notifyService()
+                refreshStyleHighlights()
             }
+            apply.setOnClickListener(pick)
+            card.setOnClickListener(pick)
+
             container.addView(card)
         }
         refreshStyleHighlights()
     }
 
+    private val styleChips = HashMap<Int, TextView>()
+
     private fun refreshStyleHighlights() {
         val selected = ProfileManager.style(this)
-        val gold = ContextCompat.getColor(this, R.color.gold)
+        styleCards.forEach { (id, card) ->
+            card.setBackgroundResource(
+                if (id == selected) R.drawable.bg_card_active else R.drawable.bg_card
+            )
+        }
         styleNameViews.forEach { (id, tv) ->
-            tv.setTextColor(if (id == selected) gold else Color.WHITE)
+            tv.setTextColor(if (id == selected) ContextCompat.getColor(this, R.color.gold) else Color.WHITE)
+        }
+        styleChips.forEach { (id, chip) ->
+            chip.text = getString(if (id == selected) R.string.applied else R.string.apply)
+            chip.alpha = if (id == selected) 1f else 0.85f
         }
     }
 
@@ -239,26 +265,40 @@ class MainActivity : AppCompatActivity() {
     private fun buildThemeButtons() {
         val container = findViewById<LinearLayout>(R.id.themeContainer)
         container.removeAllViews()
-        themeButtons.clear()
+        themeChips.clear()
         ProfileManager.themes.forEachIndexed { index, theme ->
-            val btn = Button(this)
-            btn.text = theme.name
-            btn.tag = index
-            btn.setOnClickListener {
+            val chip = TextView(this)
+            chip.text = theme.name
+            chip.tag = index
+            chip.textSize = 14f
+            chip.setTextColor(Color.WHITE)
+            chip.setBackgroundResource(R.drawable.bg_card)
+            chip.setPadding(dp(18), dp(14), dp(18), dp(14))
+            val lp = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            lp.bottomMargin = dp(10)
+            chip.layoutParams = lp
+            chip.setOnClickListener {
                 ProfileManager.setTheme(this, index)
                 notifyService()
                 refreshThemeHighlights()
             }
-            themeButtons.add(btn)
-            container.addView(btn)
+            themeChips.add(chip)
+            container.addView(chip)
         }
         refreshThemeHighlights()
     }
 
+    private val themeChips = ArrayList<TextView>()
+
     private fun refreshThemeHighlights() {
         val selected = ProfileManager.themeIndex(this)
-        themeButtons.forEach { btn ->
-            btn.alpha = if ((btn.tag as? Int) == selected) 1.0f else 0.55f
+        themeChips.forEach { chip ->
+            val isSel = (chip.tag as? Int) == selected
+            chip.setBackgroundResource(if (isSel) R.drawable.bg_card_active else R.drawable.bg_card)
+            chip.setTextColor(if (isSel) ContextCompat.getColor(this, R.color.gold) else Color.WHITE)
         }
     }
 

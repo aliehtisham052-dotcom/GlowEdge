@@ -34,28 +34,29 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v3.2.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v3.2.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v3.3.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v3.3.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v3.2.apk
-            GlowEdge-v3.2.aab
+            GlowEdge-v3.3.apk
+            GlowEdge-v3.3.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v3.2
-          name: GlowEdge v3.2
+          tag_name: v3.3
+          name: GlowEdge v3.3
           body: |
-            🎵 GlowEdge v3.2
-            ✦ Glow now hugs the true screen edges — feels built into the phone
-            ✦ Reaches into notch/cutout area, matches rounded corners
-            ✦ Loudness-reactive colors, 6 styles, 7 themes, intensity, auto-start
+            🎵 GlowEdge v3.3
+            ✦ Professional redesigned interface — logo header, gradient action button
+            ✦ Style cards with clear active state & Apply/Applied chips
+            ✦ Refined color theme selector in Settings
+            ✦ Edge-to-edge glow, loudness-reactive, 6 styles, 7 themes
             Developed by Innovation-313
           files: |
-            GlowEdge-v3.2.apk
-            GlowEdge-v3.2.aab
+            GlowEdge-v3.3.apk
+            GlowEdge-v3.3.aab

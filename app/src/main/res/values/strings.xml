@@ -19,6 +19,8 @@
     <string name="status_running">Glow is ON — play some music! ✨</string>
     <string name="status_stopped">Glow is OFF</string>
     <string name="styles">Styles</string>
+    <string name="styles_header">CHOOSE A STYLE</string>
+    <string name="applied">Applied ✓</string>
     <string name="settings">Settings</string>
     <string name="premium">About</string>
     <string name="apply">Apply</string>
@@ -41,6 +43,6 @@
     <string name="developer_label">Developer</string>
     <string name="developer_name">Innovation-313</string>
     <string name="developer_email">aliehtisham052@gmail.com</string>
-    <string name="app_version">Version 3.2</string>
+    <string name="app_version">Version 3.3</string>
     <string name="footer">Developed by Innovation-313</string>
 </resources>
