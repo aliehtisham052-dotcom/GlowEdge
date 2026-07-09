@@ -43,7 +43,11 @@ class VisualizerService : Service() {
             when (intent?.action) {
                 GlowNotificationService.ACTION_NOTIFICATION_GLOW -> {
                     val color = intent.getIntExtra(GlowNotificationService.EXTRA_COLOR, 0)
-                    if (color != 0) edgeView?.triggerNotificationFlash(color)
+                    val repeat = intent.getBooleanExtra("repeat", false)
+                    if (color != 0) {
+                        if (repeat) edgeView?.triggerCallFlash(color)
+                        else edgeView?.triggerNotificationFlash(color)
+                    }
                 }
                 Intent.ACTION_POWER_CONNECTED -> {
                     val prefs = getSharedPreferences("glowedge_prefs", MODE_PRIVATE)

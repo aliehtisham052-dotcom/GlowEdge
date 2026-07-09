@@ -90,7 +90,16 @@ class EdgeVisualizerView(context: Context) : View(context) {
         flashColor = color
         flashStart = SystemClock.elapsedRealtime()
         flashUntil = flashStart + 2600L
-        lastActiveTime = SystemClock.elapsedRealtime() // wake the view up
+        lastActiveTime = SystemClock.elapsedRealtime()
+        postInvalidate()
+    }
+
+    /** Longer pulsing flash for phone calls (keeps glowing while ringing). */
+    fun triggerCallFlash(color: Int) {
+        flashColor = color
+        flashStart = SystemClock.elapsedRealtime()
+        flashUntil = flashStart + 8000L
+        lastActiveTime = SystemClock.elapsedRealtime()
         postInvalidate()
     }
 
