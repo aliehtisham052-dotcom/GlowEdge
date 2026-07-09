@@ -246,26 +246,33 @@ class VisualizerService : Service() {
 
         // Sensitivity eases thresholds (1 strict .. 10 loose)
         val s = sensitivity / 10f
-        val spreadNeed = 0.40f - s * 0.20f
-        val balanceNeed = 0.50f - s * 0.32f
-        val steadyNeed = 0.45f - s * 0.28f
+        val spreadNeed = 0.42f - s * 0.18f
+        val balanceNeed = 0.55f - s * 0.30f
+        val steadyNeed = 0.50f - s * 0.26f
 
-        // Score each cue, combine. Naat (vocal, melodic, sustained, steady) passes via
-        // sustain + steadiness even when bass is light; instrumental music passes via balance+spread.
+        // Speech rejection: normal talking is strongly mid-band dominant with low spread.
+        // If it looks like speech, do not treat it as music regardless of other cues.
+        val looksLikeSpeech = balance < 0.35f && spread < 0.34f
+        if (looksLikeSpeech) {
+            musicScore += (0f - musicScore) * 0.05f
+            return musicScore > 0.35f
+        }
+
+        // Score each cue. Music/naat needs at least 3 of 4 strong signals.
         var cues = 0
         if (spread >= spreadNeed) cues++
         if (balance >= balanceNeed) cues++
         if (steadiness >= steadyNeed) cues++
         if (sustained) cues++
 
-        val looksMusical = level > 0.06f && cues >= 3
+        val looksMusical = level > 0.07f && cues >= 3
 
-        val rise = 0.08f + s * 0.05f
-        val fall = 0.03f
+        val rise = 0.07f + s * 0.04f
+        val fall = 0.04f
         val target = if (looksMusical) 1f else 0f
         musicScore += (target - musicScore) * (if (target > musicScore) rise else fall)
 
-        return musicScore > 0.35f
+        return musicScore > 0.40f
     }
 
     private fun restartVisualizer() {
@@ -331,15 +338,16 @@ class VisualizerService : Service() {
                 enabled = true
             }
         } catch (_: Exception) {
-            // Device blocks audio capture -> show a self-animating demo glow so it is never dead
-            edgeView?.setDemoMode(true)
+            // Device blocks audio capture. Only show a demo glow if music-only mode is OFF,
+            // so users who want music-only keep a dark screen until real music plays.
+            if (!musicOnly) edgeView?.setDemoMode(true)
         }
 
-        // If we have no RECORD_AUDIO permission at all, run demo mode too
+        // No RECORD_AUDIO permission: demo only when music-only is OFF
         if (androidx.core.content.ContextCompat.checkSelfPermission(
                 this, android.Manifest.permission.RECORD_AUDIO
             ) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-            edgeView?.setDemoMode(true)
+            if (!musicOnly) edgeView?.setDemoMode(true)
         }
     }
 

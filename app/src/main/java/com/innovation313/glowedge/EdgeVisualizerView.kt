@@ -213,9 +213,9 @@ class EdgeVisualizerView(context: Context) : View(context) {
 
         val flashing = now < flashUntil
 
-        // If the device never delivers audio (some phones block it), keep a gentle self-animation
-        val audioDead = now - lastRealData > 2500L
-        if (demoMode || audioDead) {
+        // Demo animation runs ONLY if explicitly enabled (device truly blocks audio),
+        // never just because it is quiet. This keeps the screen dark on silence / normal voice.
+        if (demoMode) {
             demoPhase += 0.06f
             var sum = 0f
             for (i in 0 until bandCount) {
