@@ -1,4 +1,4 @@
-name: Build GlowEdge APK
+name: Build GlowEdge
 
 on:
   push:
@@ -29,25 +29,36 @@ jobs:
       - name: Build debug APK
         run: gradle assembleDebug --no-daemon
 
-      - name: Rename APK
-        run: cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v2.3.apk
+      - name: Build release AAB (for Play Store)
+        run: gradle bundleRelease --no-daemon
 
-      - name: Upload APK artifact
+      - name: Rename outputs
+        run: |
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v3.0.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v3.0.aab
+
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: GlowEdge-APK
-          path: GlowEdge-v2.3.apk
+          name: GlowEdge-Build
+          path: |
+            GlowEdge-v3.0.apk
+            GlowEdge-v3.0.aab
 
-      - name: Publish APK to Release
+      - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v2.3
-          name: GlowEdge v2.3
+          tag_name: v3.0
+          name: GlowEdge v3.0
           body: |
-            🎵 GlowEdge v2.3 — Spectrum colors + pro equalizer engine!
-            ✦ New interface with bottom navigation (Styles / Settings / Premium)
-            ✦ 4 visualizer styles: Glow Line, Side Bars, Bars Around, Corner Glow
-            ✦ Color themes, thickness & speed controls
-            ✦ New app icon
+            🎵 GlowEdge v3.0 — Big update!
+            ✦ Brand new app logo
+            ✦ All 6 styles unlocked: Glow Line, Side Bars, Bars Around, Corner Glow, Ember Flame, Chase
+            ✦ 7 color themes incl. full Spectrum
+            ✦ New Glow Intensity control
+            ✦ Auto-start on boot
+            ✦ Play Store AAB included
             Developed by Innovation-313
-          files: GlowEdge-v2.3.apk
+          files: |
+            GlowEdge-v3.0.apk
+            GlowEdge-v3.0.aab

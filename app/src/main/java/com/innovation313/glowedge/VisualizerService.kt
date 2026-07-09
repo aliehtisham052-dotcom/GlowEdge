@@ -58,7 +58,8 @@ class VisualizerService : Service() {
             theme.colorEnd,
             theme.rainbow,
             ProfileManager.thickness(this).toFloat(),
-            ProfileManager.speed(this) / 10f
+            ProfileManager.speed(this) / 10f,
+            ProfileManager.intensity(this) / 10f
         )
     }
 

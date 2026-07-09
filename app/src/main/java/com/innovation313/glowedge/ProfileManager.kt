@@ -30,8 +30,8 @@ object GlowStyles {
         GlowStyle(SIDE_BARS, "Side Bars", "Equalizer bars on both sides", false),
         GlowStyle(BARS_AROUND, "Bars Around", "Bars dancing on every edge", false),
         GlowStyle(CORNER_GLOW, "Corner Glow", "Pulsing corner arcs", false),
-        GlowStyle(EMBER, "Ember Flame", "Fiery edge flames", true),
-        GlowStyle(CHASE, "Chase", "Lights racing around the screen", true)
+        GlowStyle(EMBER, "Ember Flame", "Fiery edge flames", false),
+        GlowStyle(CHASE, "Chase", "Lights racing around the screen", false)
     )
 }
 
@@ -41,6 +41,7 @@ object ProfileManager {
     private const val KEY_STYLE = "style_id"
     private const val KEY_THICKNESS = "thickness"
     private const val KEY_SPEED = "speed"
+    private const val KEY_INTENSITY = "intensity"
     private const val KEY_ONBOARDED = "onboarded"
 
     val themes = listOf(
@@ -84,6 +85,12 @@ object ProfileManager {
 
     fun speed(context: Context): Int =
         prefs(context).getInt(KEY_SPEED, 10).coerceIn(2, 20)
+
+    fun setIntensity(context: Context, v: Int) =
+        prefs(context).edit().putInt(KEY_INTENSITY, v).apply()
+
+    fun intensity(context: Context): Int =
+        prefs(context).getInt(KEY_INTENSITY, 10).coerceIn(3, 20)
 
     fun setOnboarded(context: Context) =
         prefs(context).edit().putBoolean(KEY_ONBOARDED, true).apply()

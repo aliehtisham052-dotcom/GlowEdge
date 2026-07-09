@@ -21,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.materialswitch.MaterialSwitch
 
 class MainActivity : AppCompatActivity() {
 
@@ -293,5 +294,27 @@ class MainActivity : AppCompatActivity() {
             override fun onStartTrackingTouch(sb: SeekBar?) = Unit
             override fun onStopTrackingTouch(sb: SeekBar?) = Unit
         })
+
+        val intensity = findViewById<SeekBar>(R.id.seekIntensity)
+        intensity.min = 3
+        intensity.max = 20
+        intensity.progress = ProfileManager.intensity(this)
+        intensity.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(sb: SeekBar?, value: Int, fromUser: Boolean) {
+                if (fromUser) {
+                    ProfileManager.setIntensity(this@MainActivity, value)
+                    notifyService()
+                }
+            }
+
+            override fun onStartTrackingTouch(sb: SeekBar?) = Unit
+            override fun onStopTrackingTouch(sb: SeekBar?) = Unit
+        })
+
+        val autostart = findViewById<MaterialSwitch>(R.id.switchAutostart)
+        autostart.isChecked = prefs.getBoolean("autostart", false)
+        autostart.setOnCheckedChangeListener { _, checked ->
+            prefs.edit().putBoolean("autostart", checked).apply()
+        }
     }
 }

@@ -22,6 +22,8 @@ class EdgeVisualizerView(context: Context) : View(context) {
     private var rainbow = false
     private var baseThickness = 16f
     private var speed = 1f
+    private var intensity = 1f
+    private var flamePhase = 0f
 
     private val bandCount = 32
     private var bands = FloatArray(bandCount)
@@ -57,7 +59,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
 
     fun applySettings(
         style: Int, cStart: Int, cEnd: Int,
-        isRainbow: Boolean, thickness: Float, spd: Float
+        isRainbow: Boolean, thickness: Float, spd: Float, inten: Float
     ) {
         styleId = style
         colorStart = cStart
@@ -65,6 +67,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
         rainbow = isRainbow
         baseThickness = thickness
         speed = spd
+        intensity = inten
         shader = null
         postInvalidate()
     }
@@ -136,11 +139,14 @@ class EdgeVisualizerView(context: Context) : View(context) {
         if (rotationDeg > 360f) rotationDeg -= 360f
         hueShift += 0.5f * speed + displayLevel * 1.5f
         if (hueShift > 360f) hueShift -= 360f
+        flamePhase += 0.08f * speed + displayLevel * 0.15f
 
         when (styleId) {
             GlowStyles.SIDE_BARS -> drawSideBars(canvas)
             GlowStyles.BARS_AROUND -> drawBarsAround(canvas)
             GlowStyles.CORNER_GLOW -> drawCornerGlow(canvas)
+            GlowStyles.EMBER -> drawEmber(canvas)
+            GlowStyles.CHASE -> drawChase(canvas)
             else -> drawGlowLine(canvas)
         }
 
@@ -253,4 +259,61 @@ class EdgeVisualizerView(context: Context) : View(context) {
         rect.set(off, height - off - 2 * r, off + 2 * r, height - off)
         canvas.drawArc(rect, 90f, 90f, false, paint)
     }
+
+    private fun drawEmber(canvas: Canvas) {
+        paint.shader = null
+        paint.style = Paint.Style.FILL
+        val n = 26
+        val gap = height / n.toFloat()
+        for (i in 0 until n) {
+            val mag = displayBands[i * bandCount / n]
+            val flick = 0.6f + 0.4f * kotlin.math.sin(flamePhase * 3f + i * 0.7f)
+            val len = (10f + mag * width * 0.30f * intensity) * flick
+            val cy = gap * i + gap / 2f
+            val barH = max(6f, baseThickness * 0.9f)
+            paint.maskFilter = BlurMaskFilter(max(4f, len * 0.35f), BlurMaskFilter.Blur.NORMAL)
+            // Fire gradient: hot yellow core to red-purple tips
+            val t = mag.coerceIn(0f, 1f)
+            paint.color = if (rainbow) colorAt(i / (n - 1f))
+                else lerpColor(Color.parseColor("#FFEA00"), colorEnd, 1f - t)
+            rect.set(0f, cy - barH / 2f, len, cy + barH / 2f)
+            canvas.drawRoundRect(rect, barH, barH, paint)
+            paint.color = if (rainbow) colorAt((i + 4) / (n - 1f))
+                else lerpColor(Color.parseColor("#FF6D00"), colorStart, 1f - t)
+            rect.set(width - len, cy - barH / 2f, width.toFloat(), cy + barH / 2f)
+            canvas.drawRoundRect(rect, barH, barH, paint)
+        }
+    }
+
+    private fun drawChase(canvas: Canvas) {
+        paint.shader = null
+        paint.style = Paint.Style.FILL
+        paint.maskFilter = BlurMaskFilter(max(4f, baseThickness * 0.7f), BlurMaskFilter.Blur.NORMAL)
+
+        val perimeter = 2f * (width + height)
+        val dotCount = 5 + (intensity).toInt()
+        val dotR = max(6f, baseThickness * (0.6f + displayLevel))
+        val travel = (flamePhase * 120f) % perimeter
+
+        for (k in 0 until dotCount) {
+            val d = (travel + k * perimeter / dotCount) % perimeter
+            val p = pointOnPerimeter(d)
+            paint.color = colorAt(k / (dotCount - 1f))
+            canvas.drawCircle(p[0], p[1], dotR * (0.7f + displayLevel * 0.6f), paint)
+        }
+    }
+
+    private val ptOut = FloatArray(2)
+    private fun pointOnPerimeter(dist: Float): FloatArray {
+        val w = width.toFloat(); val h = height.toFloat()
+        var d = dist
+        if (d < w) { ptOut[0] = d; ptOut[1] = 0f; return ptOut }
+        d -= w
+        if (d < h) { ptOut[0] = w; ptOut[1] = d; return ptOut }
+        d -= h
+        if (d < w) { ptOut[0] = w - d; ptOut[1] = h; return ptOut }
+        d -= w
+        ptOut[0] = 0f; ptOut[1] = h - d; return ptOut
+    }
+
 }
