@@ -25,6 +25,10 @@ class EdgeVisualizerView(context: Context) : View(context) {
     private var intensity = 1f
     private var flamePhase = 0f
     private var batterySaver = false
+    private val cometTrail = ArrayList<Float>()
+    private val ripples = ArrayList<FloatArray>()  // each: [progress, startLevel]
+    private var lastBeatLevel = 0f
+    private var beatBloom = 0f
 
     private val bandCount = 32
     private var bands = FloatArray(bandCount)
@@ -168,6 +172,15 @@ class EdgeVisualizerView(context: Context) : View(context) {
             }
         }
         displayLevel += (level - displayLevel) * 0.30f
+        // Beat detection: a sharp rise in level triggers a bloom + a new ripple
+        if (displayLevel - lastBeatLevel > 0.16f) {
+            beatBloom = 1f
+            if (styleId == GlowStyles.RIPPLE && ripples.size < 6) {
+                ripples.add(floatArrayOf(0f, displayLevel))
+            }
+        }
+        lastBeatLevel = displayLevel
+        beatBloom *= 0.90f
         rotationDeg += 0.6f * speed + displayLevel * 4f
         if (rotationDeg > 360f) rotationDeg -= 360f
         hueShift += 0.5f * speed + displayLevel * 1.5f
@@ -182,6 +195,9 @@ class EdgeVisualizerView(context: Context) : View(context) {
             GlowStyles.CHASE -> drawChase(canvas)
             GlowStyles.PULSE -> drawPulse(canvas)
             GlowStyles.DOTS -> drawDots(canvas)
+            GlowStyles.AURORA -> drawAurora(canvas)
+            GlowStyles.COMET -> drawComet(canvas)
+            GlowStyles.RIPPLE -> drawRipple(canvas)
             else -> drawGlowLine(canvas)
         }
 
@@ -224,6 +240,88 @@ class EdgeVisualizerView(context: Context) : View(context) {
             paint.color = colorAt(k / (dotCount - 1f))
             canvas.drawCircle(p[0], p[1], r, paint)
         }
+    }
+
+    private fun drawAurora(canvas: Canvas) {
+        paint.style = Paint.Style.STROKE
+        paint.strokeCap = Paint.Cap.ROUND
+        val layers = if (batterySaver) 3 else 5
+        val corner = screenCornerRadius()
+        for (layer in 0 until layers) {
+            val lf = layer / (layers - 1f)
+            val wobble = kotlin.math.sin(flamePhase * 1.3f + layer * 1.1f) * 0.5f + 0.5f
+            val t = (hueShift / 360f + lf * 0.3f) % 1f
+            paint.color = if (rainbow) colorAt(t) else lerpColor(colorStart, colorEnd, (lf + wobble) * 0.5f)
+            paint.alpha = (90 + 60 * wobble).toInt().coerceIn(40, 180)
+            val base = baseThickness * (0.8f + displayLevel * 1.5f + beatBloom * 0.6f)
+            paint.strokeWidth = max(3f, base * (1f - lf * 0.5f))
+            paint.maskFilter = BlurMaskFilter(max(6f, base * (1.5f + lf)), BlurMaskFilter.Blur.NORMAL)
+            val inset = 6f + layer * 10f + wobble * 12f
+            rect.set(inset, inset, width - inset, height - inset)
+            canvas.drawRoundRect(rect, corner, corner, paint)
+        }
+        paint.alpha = 255
+    }
+
+    private fun drawComet(canvas: Canvas) {
+        paint.shader = null
+        paint.style = Paint.Style.FILL
+        val perimeter = 2f * (width + height)
+        val head = (flamePhase * 200f) % perimeter
+        cometTrail.add(0, head)
+        val maxTrail = if (batterySaver) 14 else 26
+        while (cometTrail.size > maxTrail) cometTrail.removeAt(cometTrail.size - 1)
+
+        val comets = 2
+        for (c in 0 until comets) {
+            val offset = c * perimeter / comets
+            for (i in cometTrail.indices) {
+                val fade = 1f - i / cometTrail.size.toFloat()
+                val d = (cometTrail[i] + offset) % perimeter
+                val p = pointOnPerimeter(d)
+                val r = max(2f, baseThickness * (0.7f + displayLevel) * fade)
+                paint.color = colorAt((c * 0.5f + fade) % 1f)
+                paint.alpha = (fade * 230).toInt().coerceIn(0, 255)
+                paint.maskFilter = BlurMaskFilter(max(3f, r * 1.2f), BlurMaskFilter.Blur.NORMAL)
+                canvas.drawCircle(p[0], p[1], r, paint)
+            }
+        }
+        paint.alpha = 255
+    }
+
+    private fun drawRipple(canvas: Canvas) {
+        paint.shader = null
+        paint.style = Paint.Style.STROKE
+        paint.strokeCap = Paint.Cap.ROUND
+        val corner = screenCornerRadius()
+        val it = ripples.iterator()
+        while (it.hasNext()) {
+            val rp = it.next()
+            rp[0] += 0.02f * (1f + speed)
+            if (rp[0] >= 1f) { it.remove(); continue }
+            val prog = rp[0]
+            val alpha = ((1f - prog) * 200f * (0.4f + rp[1])).toInt().coerceIn(0, 220)
+            paint.color = colorAt(prog)
+            paint.alpha = alpha
+            val thickness = max(3f, baseThickness * (1f - prog) * 1.4f)
+            paint.strokeWidth = thickness
+            paint.maskFilter = BlurMaskFilter(max(3f, thickness), BlurMaskFilter.Blur.NORMAL)
+            // ripple grows inward from the edge
+            val inset = prog * (width.coerceAtMost(height) * 0.35f)
+            rect.set(inset, inset, width - inset, height - inset)
+            canvas.drawRoundRect(rect, corner, corner, paint)
+        }
+        paint.alpha = 255
+        // Always keep a subtle base frame so it is not empty between beats
+        paint.color = colorAt(0f)
+        paint.alpha = (60 + beatBloom * 120).toInt().coerceIn(40, 200)
+        val base = max(3f, baseThickness * (0.5f + beatBloom))
+        paint.strokeWidth = base
+        paint.maskFilter = BlurMaskFilter(max(3f, base), BlurMaskFilter.Blur.NORMAL)
+        val inset = base * 0.5f
+        rect.set(inset, inset, width - inset, height - inset)
+        canvas.drawRoundRect(rect, corner, corner, paint)
+        paint.alpha = 255
     }
 
     private fun drawNotificationFlash(canvas: Canvas, now: Long) {

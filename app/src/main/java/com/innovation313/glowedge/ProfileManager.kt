@@ -26,6 +26,9 @@ object GlowStyles {
     const val CHASE = 5
     const val PULSE = 6
     const val DOTS = 7
+    const val AURORA = 8
+    const val COMET = 9
+    const val RIPPLE = 10
 
     val all = listOf(
         GlowStyle(GLOW_LINE, "Glow Line", "Smooth glowing frame", false),
@@ -35,7 +38,10 @@ object GlowStyles {
         GlowStyle(EMBER, "Ember Flame", "Fiery edge flames", false),
         GlowStyle(CHASE, "Chase", "Lights racing around the screen", false),
         GlowStyle(PULSE, "Pulse", "Whole edge breathes with the beat", false),
-        GlowStyle(DOTS, "Dots", "Glowing dots bouncing to the music", false)
+        GlowStyle(DOTS, "Dots", "Glowing dots bouncing to the music", false),
+        GlowStyle(AURORA, "Aurora", "Flowing northern-lights waves", false),
+        GlowStyle(COMET, "Comet", "Shooting lights with glowing tails", false),
+        GlowStyle(RIPPLE, "Ripple", "Rings that ripple out on every beat", false)
     )
 }
 
