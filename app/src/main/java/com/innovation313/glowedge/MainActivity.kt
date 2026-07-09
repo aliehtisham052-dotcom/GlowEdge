@@ -292,6 +292,7 @@ class MainActivity : AppCompatActivity() {
                 ProfileManager.setTheme(this, index)
                 notifyService()
                 refreshThemeHighlights()
+                findViewById<PreviewView?>(R.id.previewView)?.refresh()
             }
             themeChips.add(chip)
             container.addView(chip)
