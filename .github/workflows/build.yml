@@ -34,30 +34,28 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v3.7.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v3.7.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v3.8.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v3.8.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v3.7.apk
-            GlowEdge-v3.7.aab
+            GlowEdge-v3.8.apk
+            GlowEdge-v3.8.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v3.7
-          name: GlowEdge v3.7
+          tag_name: v3.8
+          name: GlowEdge v3.8
           body: |
-            🎵 GlowEdge v3.7 — Feature-packed update!
-            ✦ NEW: Live Preview — see the style animate before you apply it
-            ✦ NEW: Charging Glow — green flash on plug-in, orange on unplug
-            ✦ NEW: Battery Saver — lighter effects, less power
-            ✦ NEW styles: Pulse & Dots (now 8 styles total)
-            ✦ Consistent polished color scheme
+            🎵 GlowEdge v3.8
+            ✦ Refined equalizer pattern — balanced bar sizes (never too long, never too small)
+            ✦ Smoother magnitude curve so quiet sounds still show and loud beats stay elegant
+            ✦ 8 styles, 7 themes, notification & charging glow, live preview
             Developed by Innovation-313
           files: |
-            GlowEdge-v3.7.apk
-            GlowEdge-v3.7.aab
+            GlowEdge-v3.8.apk
+            GlowEdge-v3.8.aab

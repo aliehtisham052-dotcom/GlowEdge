@@ -279,6 +279,14 @@ class EdgeVisualizerView(context: Context) : View(context) {
         return 1f - (1f - t) * (1f - t)
     }
 
+    /** Shapes a raw band into a pleasing bar magnitude: gentle floor, smooth mid, soft ceiling. */
+    private fun shapeMag(raw: Float): Float {
+        val t = raw.coerceIn(0f, 1f)
+        // slight gamma so small sounds still show, loud ones don't max out too flat
+        val g = Math.pow(t.toDouble(), 0.75).toFloat()
+        return g.coerceIn(0f, 1f)
+    }
+
     /** Mid gradient color that warms up as the music gets louder. */
     private fun blendByLoudness(): Int {
         val loud = easeOut(displayLevel)
@@ -292,14 +300,16 @@ class EdgeVisualizerView(context: Context) : View(context) {
         paint.style = Paint.Style.FILL
         paint.maskFilter = BlurMaskFilter(max(2f, baseThickness * 0.4f), BlurMaskFilter.Blur.NORMAL)
 
-        val n = 24
+        val n = 26
         val gap = height / n.toFloat()
-        val barH = max(4f, baseThickness * 0.6f)
+        val barH = max(5f, baseThickness * 0.55f)
+        val minLen = width * 0.03f          // always visible
+        val maxLen = width * 0.20f          // never overwhelming
         for (i in 0 until n) {
             // Bass at the bottom, treble at the top - like a real equalizer
             val band = (n - 1 - i) * bandCount / n
-            val mag = displayBands[band]
-            val len = 8f + mag * width * 0.32f
+            val mag = shapeMag(displayBands[band])
+            val len = minLen + mag * (maxLen - minLen) * intensity
             val cy = gap * i + gap / 2f
             paint.color = colorAt(i / (n - 1f))
             rect.set(0f, cy - barH / 2f, len, cy + barH / 2f)
@@ -316,12 +326,14 @@ class EdgeVisualizerView(context: Context) : View(context) {
 
         val barH = max(4f, baseThickness * 0.55f)
 
-        val nSide = 20
+        val nSide = 22
         val gapV = height / nSide.toFloat()
+        val minV = width * 0.025f
+        val maxV = width * 0.16f
         for (i in 0 until nSide) {
             val band = (nSide - 1 - i) * bandCount / nSide
-            val mag = displayBands[band]
-            val len = 6f + mag * width * 0.24f
+            val mag = shapeMag(displayBands[band])
+            val len = minV + mag * (maxV - minV) * intensity
             val cy = gapV * i + gapV / 2f
             paint.color = colorAt(i / (nSide - 1f))
             rect.set(0f, cy - barH / 2f, len, cy + barH / 2f)
@@ -330,11 +342,13 @@ class EdgeVisualizerView(context: Context) : View(context) {
             canvas.drawRoundRect(rect, barH, barH, paint)
         }
 
-        val nTop = 14
+        val nTop = 16
         val gapH = width / nTop.toFloat()
+        val minH = height * 0.02f
+        val maxH = height * 0.10f
         for (i in 0 until nTop) {
-            val mag = displayBands[(i * 2 + 4) % bandCount]
-            val len = 6f + mag * height * 0.13f
+            val mag = shapeMag(displayBands[(i * 2 + 4) % bandCount])
+            val len = minH + mag * (maxH - minH) * intensity
             val cx = gapH * i + gapH / 2f
             paint.color = colorAt(1f - i / (nTop - 1f))
             rect.set(cx - barH / 2f, 0f, cx + barH / 2f, len)
@@ -376,12 +390,14 @@ class EdgeVisualizerView(context: Context) : View(context) {
     private fun drawEmber(canvas: Canvas) {
         paint.shader = null
         paint.style = Paint.Style.FILL
-        val n = 26
+        val n = 28
         val gap = height / n.toFloat()
+        val minE = width * 0.03f
+        val maxE = width * 0.19f
         for (i in 0 until n) {
-            val mag = displayBands[i * bandCount / n]
-            val flick = 0.6f + 0.4f * kotlin.math.sin(flamePhase * 3f + i * 0.7f)
-            val len = (10f + mag * width * 0.30f * intensity) * flick
+            val mag = shapeMag(displayBands[i * bandCount / n])
+            val flick = 0.7f + 0.3f * kotlin.math.sin(flamePhase * 3f + i * 0.7f)
+            val len = (minE + mag * (maxE - minE) * intensity) * flick
             val cy = gap * i + gap / 2f
             val barH = max(6f, baseThickness * 0.9f)
             paint.maskFilter = BlurMaskFilter(max(4f, len * 0.35f), BlurMaskFilter.Blur.NORMAL)
