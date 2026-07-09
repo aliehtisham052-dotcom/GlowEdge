@@ -34,28 +34,27 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v4.7.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v4.7.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v4.8.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v4.8.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v4.7.apk
-            GlowEdge-v4.7.aab
+            GlowEdge-v4.8.apk
+            GlowEdge-v4.8.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v4.7
-          name: GlowEdge v4.7
+          tag_name: v4.8
+          name: GlowEdge v4.8
           body: |
-            GlowEdge v4.7
-            - NEW Startup Animation: when the glow turns on, lines sweep in from the four corners and settle into your chosen style
-            - Toggle it on/off in Settings
-            - 11 styles, 7 themes, music/naat detection, privacy-first
+            GlowEdge v4.8
+            - Ripple style now stays at the screen edges instead of moving toward the middle
+            - 11 styles, 7 themes, startup animation, music/naat detection
             Developed by Innovation-313
           files: |
-            GlowEdge-v4.7.apk
-            GlowEdge-v4.7.aab
+            GlowEdge-v4.8.apk
+            GlowEdge-v4.8.aab

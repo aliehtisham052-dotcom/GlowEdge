@@ -325,11 +325,11 @@ class EdgeVisualizerView(context: Context) : View(context) {
             val alpha = ((1f - prog) * 200f * (0.4f + rp[1])).toInt().coerceIn(0, 220)
             paint.color = colorAt(prog)
             paint.alpha = alpha
-            val thickness = max(3f, baseThickness * (1f - prog) * 1.4f)
+            val thickness = max(3f, baseThickness * (1f - prog) * 1.8f)
             paint.strokeWidth = thickness
-            paint.maskFilter = BlurMaskFilter(max(3f, thickness), BlurMaskFilter.Blur.NORMAL)
-            // ripple grows inward from the edge
-            val inset = prog * (width.coerceAtMost(height) * 0.35f)
+            paint.maskFilter = BlurMaskFilter(max(4f, thickness * 1.2f), BlurMaskFilter.Blur.NORMAL)
+            // Ripple stays at the edge: only a small inward travel so it never reaches the middle
+            val inset = thickness * 0.5f + prog * (baseThickness * 2.2f)
             rect.set(inset, inset, width - inset, height - inset)
             canvas.drawRoundRect(rect, corner, corner, paint)
         }
