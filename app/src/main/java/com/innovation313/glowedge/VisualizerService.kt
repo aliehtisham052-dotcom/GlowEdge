@@ -21,9 +21,7 @@ class VisualizerService : Service() {
     companion object {
         const val CHANNEL_ID = "glowedge_channel"
         const val ACTION_STOP = "com.innovation313.glowedge.STOP"
-        const val ACTION_CHARGING_FLASH = "com.innovation313.glowedge.CHARGING_FLASH"
         const val ACTION_TEST = "com.innovation313.glowedge.TEST"
-        const val EXTRA_FLASH_COLOR = "flash_color"
         @Volatile
         var isRunning = false
     }
@@ -53,18 +51,6 @@ class VisualizerService : Service() {
                         else edgeView?.triggerNotificationFlash(color)
                     }
                 }
-                Intent.ACTION_POWER_CONNECTED -> {
-                    val prefs = getSharedPreferences("glowedge_prefs", MODE_PRIVATE)
-                    if (prefs.getBoolean("charging_glow", true)) {
-                        edgeView?.triggerNotificationFlash(android.graphics.Color.parseColor("#00E676"))
-                    }
-                }
-                Intent.ACTION_POWER_DISCONNECTED -> {
-                    val prefs = getSharedPreferences("glowedge_prefs", MODE_PRIVATE)
-                    if (prefs.getBoolean("charging_glow", true)) {
-                        edgeView?.triggerNotificationFlash(android.graphics.Color.parseColor("#FF9100"))
-                    }
-                }
                 Intent.ACTION_HEADSET_PLUG,
                 "android.bluetooth.a2dp.profile.action.CONNECTION_STATE_CHANGED",
                 android.media.AudioManager.ACTION_AUDIO_BECOMING_NOISY -> {
@@ -89,8 +75,6 @@ class VisualizerService : Service() {
         startVisualizer()
         registerAudioRouteCallback()
         val filter = android.content.IntentFilter(GlowNotificationService.ACTION_NOTIFICATION_GLOW)
-        filter.addAction(Intent.ACTION_POWER_CONNECTED)
-        filter.addAction(Intent.ACTION_POWER_DISCONNECTED)
         filter.addAction(Intent.ACTION_HEADSET_PLUG)
         filter.addAction(android.media.AudioManager.ACTION_AUDIO_BECOMING_NOISY)
         filter.addAction("android.bluetooth.a2dp.profile.action.CONNECTION_STATE_CHANGED")
@@ -110,15 +94,6 @@ class VisualizerService : Service() {
         if (intent?.action == ACTION_TEST) {
             wasStartedByUser = true
             edgeView?.forceTestGlow()
-            return START_STICKY
-        }
-        if (intent?.action == ACTION_CHARGING_FLASH) {
-            val color = intent.getIntExtra(EXTRA_FLASH_COLOR, 0)
-            if (color != 0) edgeView?.triggerNotificationFlash(color)
-            // If the user had the glow off, auto-stop shortly after the charging flash
-            if (!wasStartedByUser) {
-                edgeView?.postDelayed({ if (!wasStartedByUser) stopSelf() }, 3200)
-            }
             return START_STICKY
         }
         wasStartedByUser = true

@@ -398,12 +398,6 @@ class MainActivity : AppCompatActivity() {
             openNotificationAccess()
         }
 
-        val charging = findViewById<MaterialSwitch>(R.id.switchCharging)
-        charging.isChecked = prefs.getBoolean("charging_glow", true)
-        charging.setOnCheckedChangeListener { _, checked ->
-            prefs.edit().putBoolean("charging_glow", checked).apply()
-        }
-
         val saver = findViewById<MaterialSwitch>(R.id.switchSaver)
         saver.isChecked = ProfileManager.batterySaver(this)
         saver.setOnCheckedChangeListener { _, checked ->
