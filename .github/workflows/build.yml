@@ -34,28 +34,27 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v3.8.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v3.8.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v3.9.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v3.9.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v3.8.apk
-            GlowEdge-v3.8.aab
+            GlowEdge-v3.9.apk
+            GlowEdge-v3.9.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v3.8
-          name: GlowEdge v3.8
+          tag_name: v3.9
+          name: GlowEdge v3.9
           body: |
-            🎵 GlowEdge v3.8
-            ✦ Refined equalizer pattern — balanced bar sizes (never too long, never too small)
-            ✦ Smoother magnitude curve so quiet sounds still show and loud beats stay elegant
-            ✦ 8 styles, 7 themes, notification & charging glow, live preview
+            🎵 GlowEdge v3.9
+            ✦ Spectrum now stays alive with headphones, earbuds & Bluetooth — the visualizer re-attaches automatically when the audio route changes
+            ✦ Balanced bar pattern, 8 styles, notification & charging glow
             Developed by Innovation-313
           files: |
-            GlowEdge-v3.8.apk
-            GlowEdge-v3.8.aab
+            GlowEdge-v3.9.apk
+            GlowEdge-v3.9.aab

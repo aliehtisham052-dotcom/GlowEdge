@@ -47,6 +47,12 @@ class VisualizerService : Service() {
                         edgeView?.triggerNotificationFlash(android.graphics.Color.parseColor("#FF9100"))
                     }
                 }
+                Intent.ACTION_HEADSET_PLUG,
+                "android.bluetooth.a2dp.profile.action.CONNECTION_STATE_CHANGED",
+                android.media.AudioManager.ACTION_AUDIO_BECOMING_NOISY -> {
+                    // Audio route changed (wired/earbuds/Bluetooth) - reattach the visualizer
+                    restartVisualizer()
+                }
             }
         }
     }
@@ -62,9 +68,13 @@ class VisualizerService : Service() {
         addOverlay()
         applyCurrentSettings()
         startVisualizer()
+        registerAudioRouteCallback()
         val filter = android.content.IntentFilter(GlowNotificationService.ACTION_NOTIFICATION_GLOW)
         filter.addAction(Intent.ACTION_POWER_CONNECTED)
         filter.addAction(Intent.ACTION_POWER_DISCONNECTED)
+        filter.addAction(Intent.ACTION_HEADSET_PLUG)
+        filter.addAction(android.media.AudioManager.ACTION_AUDIO_BECOMING_NOISY)
+        filter.addAction("android.bluetooth.a2dp.profile.action.CONNECTION_STATE_CHANGED")
         if (Build.VERSION.SDK_INT >= 33) {
             registerReceiver(notifReceiver, filter, android.content.Context.RECEIVER_NOT_EXPORTED)
         } else {
@@ -173,6 +183,17 @@ class VisualizerService : Service() {
         }
     }
 
+    private fun restartVisualizer() {
+        try {
+            visualizer?.enabled = false
+            visualizer?.release()
+        } catch (_: Exception) {
+        }
+        visualizer = null
+        // Small delay so the new audio route is fully established before re-attaching
+        edgeView?.postDelayed({ startVisualizer() }, 700)
+    }
+
     private fun startVisualizer() {
         try {
             visualizer = Visualizer(0).apply {
@@ -254,9 +275,32 @@ class VisualizerService : Service() {
         }
     }
 
+    private var audioDeviceCallback: android.media.AudioDeviceCallback? = null
+
+    private fun registerAudioRouteCallback() {
+        try {
+            val am = getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
+            val cb = object : android.media.AudioDeviceCallback() {
+                override fun onAudioDevicesAdded(added: Array<out android.media.AudioDeviceInfo>?) {
+                    restartVisualizer()
+                }
+                override fun onAudioDevicesRemoved(removed: Array<out android.media.AudioDeviceInfo>?) {
+                    restartVisualizer()
+                }
+            }
+            am.registerAudioDeviceCallback(cb, null)
+            audioDeviceCallback = cb
+        } catch (_: Exception) {
+        }
+    }
+
     override fun onDestroy() {
         isRunning = false
         try { unregisterReceiver(notifReceiver) } catch (_: Exception) {}
+        try {
+            val am = getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
+            audioDeviceCallback?.let { am.unregisterAudioDeviceCallback(it) }
+        } catch (_: Exception) {}
         try {
             visualizer?.enabled = false
             visualizer?.release()
