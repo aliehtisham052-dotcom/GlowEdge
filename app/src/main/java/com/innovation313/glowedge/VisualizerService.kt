@@ -350,7 +350,15 @@ class VisualizerService : Service() {
                 enabled = true
             }
         } catch (_: Exception) {
-            // Restricted device: the view falls back to its idle animation
+            // Device blocks audio capture -> show a self-animating demo glow so it is never dead
+            edgeView?.setDemoMode(true)
+        }
+
+        // If we have no RECORD_AUDIO permission at all, run demo mode too
+        if (androidx.core.content.ContextCompat.checkSelfPermission(
+                this, android.Manifest.permission.RECORD_AUDIO
+            ) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            edgeView?.setDemoMode(true)
         }
     }
 

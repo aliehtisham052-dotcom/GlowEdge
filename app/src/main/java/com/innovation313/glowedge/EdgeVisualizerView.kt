@@ -96,8 +96,16 @@ class EdgeVisualizerView(context: Context) : View(context) {
         if (newBands.size == bandCount) bands = newBands
         if (level > SOUND_THRESHOLD) {
             lastActiveTime = SystemClock.elapsedRealtime()
+            lastRealData = SystemClock.elapsedRealtime()
         }
     }
+
+    private var lastRealData = 0L
+    private var demoMode = false
+    private var demoPhase = 0f
+
+    /** Force a self-animating demo glow (used when the device blocks audio capture). */
+    fun setDemoMode(on: Boolean) { demoMode = on }
 
     /** Flash a colored glow around the edges for a couple of seconds (call/notification). */
     fun triggerNotificationFlash(color: Int) {
@@ -163,6 +171,19 @@ class EdgeVisualizerView(context: Context) : View(context) {
         }
 
         val flashing = now < flashUntil
+
+        // If the device never delivers audio (some phones block it), keep a gentle self-animation
+        val audioDead = now - lastRealData > 2500L
+        if (demoMode || audioDead) {
+            demoPhase += 0.06f
+            var sum = 0f
+            for (i in 0 until bandCount) {
+                val v = 0.35f + 0.35f * kotlin.math.sin(demoPhase * 2f + i * 0.5f)
+                bands[i] = v.coerceIn(0f, 1f); sum += v
+            }
+            level = (sum / bandCount)
+            lastActiveTime = now
+        }
 
         val soundActive = now - lastActiveTime < HOLD_MS
         val target = if (soundActive || flashing) 1f else 0f
