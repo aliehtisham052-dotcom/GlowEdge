@@ -26,3 +26,14 @@ Kotlin • Android Visualizer API • GitHub Actions CI
 
 ---
 Made with ❤️ by **Ehtisham Ali** — [Innovation-313](https://www.youtube.com/@Innovation-313)
+
+## © License & Ownership
+
+Copyright © 2026 **Ehtisham Ali (Innovation-313)**. All rights reserved.
+
+GlowEdge is the intellectual property of Innovation-313. You may view and study
+this code for personal and educational purposes, but commercial use, republishing,
+or claiming authorship is **not permitted** without written permission.
+See the [LICENSE](LICENSE) file for full terms.
+
+Contact: aliehtisham052@gmail.com
