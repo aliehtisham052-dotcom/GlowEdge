@@ -49,7 +49,7 @@
     <string name="developer_label">Developer</string>
     <string name="developer_name">Innovation-313</string>
     <string name="developer_email">aliehtisham052@gmail.com</string>
-    <string name="app_version">Version 4.6</string>
+    <string name="app_version">Version 4.7</string>
     <string name="notif_glow">Call &amp; Notification Glow</string>
     <string name="notif_glow_desc">Flash the edges in an app\'s color when a call or message arrives — even when no music is playing.</string>
     <string name="notif_glow_need_access">Please allow notification access for GlowEdge to detect calls and messages.</string>
@@ -75,5 +75,7 @@
     <string name="privacy_text">GlowEdge is built to be trusted:\n\n✓ No internet permission, so your data physically cannot leave your phone.\n✓ Nothing is recorded, collected, or shared. Ever.\n✓ Microphone is used only to read music rhythm for the glow, never to record.\n✓ Call and message glow only detects that something arrived; it never reads who called or what was said.\n✓ Every extra permission is optional and stays off until you turn it on.\n\nOur purpose is to add beauty, not to take anything from you.</string>
     <string name="copyright_header">COPYRIGHT</string>
     <string name="copyright_text">© 2026 Ehtisham Ali (Innovation-313). All rights reserved.\n\nGlowEdge, its design and its source code are the intellectual property of Innovation-313. Commercial use, republishing, or claiming authorship without written permission is not allowed.\n\nContact: aliehtisham052@gmail.com</string>
+    <string name="intro_anim">Startup Animation</string>
+    <string name="intro_anim_desc">When the glow turns on, lines sweep in from the corners before settling into your style.</string>
     <string name="footer">Developed by Innovation-313</string>
 </resources>

@@ -400,6 +400,12 @@ class MainActivity : AppCompatActivity() {
             notifyService()
         }
 
+        val intro = findViewById<MaterialSwitch>(R.id.switchIntro)
+        intro.isChecked = ProfileManager.intro(this)
+        intro.setOnCheckedChangeListener { _, checked ->
+            ProfileManager.setIntro(this, checked)
+        }
+
         val musicOnly = findViewById<MaterialSwitch>(R.id.switchMusicOnly)
         musicOnly.isChecked = ProfileManager.musicOnly(this)
         musicOnly.setOnCheckedChangeListener { _, checked ->

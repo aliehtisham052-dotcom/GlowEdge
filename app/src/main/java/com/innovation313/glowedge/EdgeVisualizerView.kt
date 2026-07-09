@@ -29,6 +29,8 @@ class EdgeVisualizerView(context: Context) : View(context) {
     private val ripples = ArrayList<FloatArray>()  // each: [progress, startLevel]
     private var lastBeatLevel = 0f
     private var beatBloom = 0f
+    private var introStart = 0L
+    private var introActive = false
 
     private val bandCount = 32
     private var bands = FloatArray(bandCount)
@@ -63,6 +65,14 @@ class EdgeVisualizerView(context: Context) : View(context) {
 
     init {
         setLayerType(LAYER_TYPE_SOFTWARE, null)
+    }
+
+    /** Play the corner-sweep intro pattern when the glow activates. */
+    fun startIntro() {
+        introStart = SystemClock.elapsedRealtime()
+        introActive = true
+        lastActiveTime = SystemClock.elapsedRealtime()
+        postInvalidate()
     }
 
     fun applySettings(
@@ -140,6 +150,18 @@ class EdgeVisualizerView(context: Context) : View(context) {
         if (width == 0 || height == 0) return
 
         val now = SystemClock.elapsedRealtime()
+
+        // ---- Intro animation: corner sweep lines -> settle into style ----
+        if (introActive) {
+            val dur = 1500f
+            val t = ((now - introStart) / dur).coerceIn(0f, 1f)
+            alpha = 1f
+            drawIntro(canvas, t)
+            if (t >= 1f) introActive = false
+            postInvalidateOnAnimation()
+            return
+        }
+
         val flashing = now < flashUntil
 
         val soundActive = now - lastActiveTime < HOLD_MS
@@ -322,6 +344,51 @@ class EdgeVisualizerView(context: Context) : View(context) {
         rect.set(inset, inset, width - inset, height - inset)
         canvas.drawRoundRect(rect, corner, corner, paint)
         paint.alpha = 255
+    }
+
+    private fun drawIntro(canvas: Canvas, t: Float) {
+        paint.shader = null
+        paint.style = Paint.Style.STROKE
+        paint.strokeCap = Paint.Cap.ROUND
+        val corner = screenCornerRadius()
+        // Ease: lines grow from the 4 corners along the edges, meeting in the middle
+        val ease = 1f - (1f - t) * (1f - t)
+        val w = width.toFloat(); val h = height.toFloat()
+        val thickness = baseThickness * (1.2f + (1f - t) * 1.5f)
+        paint.strokeWidth = max(4f, thickness)
+        paint.maskFilter = BlurMaskFilter(max(4f, thickness), BlurMaskFilter.Blur.NORMAL)
+
+        // fraction of each edge covered, growing from both corners toward center
+        val hCover = (w / 2f) * ease
+        val vCover = (h / 2f) * ease
+        val inset = thickness * 0.5f
+
+        // Top edge (from both corners inward)
+        paint.color = colorAt(0f)
+        canvas.drawLine(inset, inset, inset + hCover, inset, paint)
+        canvas.drawLine(w - inset, inset, w - inset - hCover, inset, paint)
+        // Bottom edge
+        paint.color = colorAt(0.5f)
+        canvas.drawLine(inset, h - inset, inset + hCover, h - inset, paint)
+        canvas.drawLine(w - inset, h - inset, w - inset - hCover, h - inset, paint)
+        // Left edge
+        paint.color = colorAt(0.25f)
+        canvas.drawLine(inset, inset, inset, inset + vCover, paint)
+        canvas.drawLine(inset, h - inset, inset, h - inset - vCover, paint)
+        // Right edge
+        paint.color = colorAt(0.75f)
+        canvas.drawLine(w - inset, inset, w - inset, inset + vCover, paint)
+        canvas.drawLine(w - inset, h - inset, w - inset, h - inset - vCover, paint)
+
+        // Near the end, fade a full rounded frame in so it settles smoothly into the style
+        if (t > 0.7f) {
+            val ff = (t - 0.7f) / 0.3f
+            paint.alpha = (ff * 255).toInt().coerceIn(0, 255)
+            paint.color = colorAt(0f)
+            rect.set(inset, inset, w - inset, h - inset)
+            canvas.drawRoundRect(rect, corner, corner, paint)
+            paint.alpha = 255
+        }
     }
 
     private fun drawNotificationFlash(canvas: Canvas, now: Long) {

@@ -81,6 +81,7 @@ class VisualizerService : Service() {
         startForegroundWithNotification()
         addOverlay()
         applyCurrentSettings()
+        if (ProfileManager.intro(this)) edgeView?.startIntro()
         startVisualizer()
         registerAudioRouteCallback()
         val filter = android.content.IntentFilter(GlowNotificationService.ACTION_NOTIFICATION_GLOW)
