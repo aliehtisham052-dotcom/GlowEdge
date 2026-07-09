@@ -384,6 +384,28 @@ class MainActivity : AppCompatActivity() {
             ProfileManager.setBatterySaver(this, checked)
             notifyService()
         }
+
+        val musicOnly = findViewById<MaterialSwitch>(R.id.switchMusicOnly)
+        musicOnly.isChecked = ProfileManager.musicOnly(this)
+        musicOnly.setOnCheckedChangeListener { _, checked ->
+            ProfileManager.setMusicOnly(this, checked)
+            notifyService()
+        }
+
+        val sens = findViewById<SeekBar>(R.id.seekSensitivity)
+        sens.min = 1
+        sens.max = 10
+        sens.progress = ProfileManager.sensitivity(this)
+        sens.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(sb: SeekBar?, value: Int, fromUser: Boolean) {
+                if (fromUser) {
+                    ProfileManager.setSensitivity(this@MainActivity, value)
+                    notifyService()
+                }
+            }
+            override fun onStartTrackingTouch(sb: SeekBar?) = Unit
+            override fun onStopTrackingTouch(sb: SeekBar?) = Unit
+        })
     }
 
     private fun hasNotificationAccess(): Boolean {

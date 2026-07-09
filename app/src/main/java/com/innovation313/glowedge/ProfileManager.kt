@@ -47,6 +47,8 @@ object ProfileManager {
     private const val KEY_SPEED = "speed"
     private const val KEY_INTENSITY = "intensity"
     private const val KEY_SAVER = "battery_saver"
+    private const val KEY_MUSIC_ONLY = "music_only"
+    private const val KEY_SENSITIVITY = "music_sensitivity"
     private const val KEY_ONBOARDED = "onboarded"
 
     val themes = listOf(
@@ -102,6 +104,19 @@ object ProfileManager {
 
     fun batterySaver(context: Context): Boolean =
         prefs(context).getBoolean(KEY_SAVER, false)
+
+    fun setMusicOnly(context: Context, on: Boolean) =
+        prefs(context).edit().putBoolean(KEY_MUSIC_ONLY, on).apply()
+
+    fun musicOnly(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_MUSIC_ONLY, true)
+
+    fun setSensitivity(context: Context, v: Int) =
+        prefs(context).edit().putInt(KEY_SENSITIVITY, v).apply()
+
+    /** 1 (strict: only clear music) .. 10 (loose: almost any sound). Default 5. */
+    fun sensitivity(context: Context): Int =
+        prefs(context).getInt(KEY_SENSITIVITY, 5).coerceIn(1, 10)
 
     fun setOnboarded(context: Context) =
         prefs(context).edit().putBoolean(KEY_ONBOARDED, true).apply()

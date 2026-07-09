@@ -44,7 +44,7 @@
     <string name="developer_label">Developer</string>
     <string name="developer_name">Innovation-313</string>
     <string name="developer_email">aliehtisham052@gmail.com</string>
-    <string name="app_version">Version 3.9</string>
+    <string name="app_version">Version 4.0</string>
     <string name="notif_glow">Call &amp; Notification Glow</string>
     <string name="notif_glow_desc">Flash the edges in an app\'s color when a call or message arrives — even when no music is playing.</string>
     <string name="notif_glow_need_access">Please allow notification access for GlowEdge to detect calls and messages.</string>
@@ -54,5 +54,9 @@
     <string name="charging_glow_desc">Flash green when you plug in the charger, orange when you unplug.</string>
     <string name="battery_saver">Battery Saver</string>
     <string name="battery_saver_desc">Lighter glow effects that use less power.</string>
+    <string name="music_only">Music-Only Mode</string>
+    <string name="music_only_desc">Glow reacts only to music, naat &amp; melodic audio — not to normal talking or notification sounds.</string>
+    <string name="music_sensitivity">Detection Sensitivity</string>
+    <string name="music_sensitivity_desc">Left = strict (only clear music) · Right = relaxed (more sounds)</string>
     <string name="footer">Developed by Innovation-313</string>
 </resources>

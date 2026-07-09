@@ -28,6 +28,13 @@ class VisualizerService : Service() {
     private var windowManager: WindowManager? = null
     private val bandMax = FloatArray(32) { 0.05f }
 
+    // ---- Music / melody detection state ----
+    private var musicScore = 0f          // 0 = speech/noise, 1 = clearly musical
+    private var prevLevel = 0f
+    private var sustainFrames = 0
+    private var musicOnly = true
+    private var sensitivity = 5
+
     private val notifReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: android.content.Context?, intent: Intent?) {
             when (intent?.action) {
@@ -93,6 +100,8 @@ class VisualizerService : Service() {
     }
 
     private fun applyCurrentSettings() {
+        musicOnly = ProfileManager.musicOnly(this)
+        sensitivity = ProfileManager.sensitivity(this)
         val theme = ProfileManager.theme(this)
         edgeView?.applySettings(
             ProfileManager.style(this),
@@ -183,6 +192,51 @@ class VisualizerService : Service() {
         }
     }
 
+    /**
+     * Heuristic music/naat/melody detector. Returns true when the audio looks
+     * musical (energy spread across bands, bass+treble present, sustained),
+     * false for plain speech / notification blips / random noise.
+     */
+    private fun isMusical(bands: FloatArray, level: Float): Boolean {
+        val n = bands.size
+        // 1) Spectral spread: how many bands carry real energy
+        var active = 0
+        for (b in bands) if (b > 0.10f) active++
+        val spread = active / n.toFloat()
+
+        // 2) Band balance: music has bass + treble; speech is mid-dominant
+        var bass = 0f; var mid = 0f; var treble = 0f
+        for (i in 0 until n) {
+            when {
+                i < n / 3 -> bass += bands[i]
+                i < 2 * n / 3 -> mid += bands[i]
+                else -> treble += bands[i]
+            }
+        }
+        val balance = (bass + treble) / (mid + 0.001f)
+
+        // 3) Sustain: musical audio keeps energy going; speech has micro-gaps
+        if (level > 0.05f) sustainFrames++ else sustainFrames = 0
+        val sustained = sustainFrames > 6
+        prevLevel = level
+
+        // Thresholds eased by the sensitivity setting (1 strict .. 10 loose)
+        val s = sensitivity / 10f
+        val spreadNeed = 0.42f - s * 0.22f      // 0.20 (loose) .. 0.40 (strict)
+        val balanceNeed = 0.55f - s * 0.35f     // low bar when loose
+
+        val looksMusical =
+            level > 0.06f && spread >= spreadNeed && balance >= balanceNeed && sustained
+
+        // Smooth so the glow does not flicker on/off between words
+        val target = if (looksMusical) 1f else 0f
+        val rise = 0.08f + s * 0.05f
+        val fall = 0.03f
+        musicScore += (target - musicScore) * (if (target > musicScore) rise else fall)
+
+        return musicScore > 0.35f
+    }
+
     private fun restartVisualizer() {
         try {
             visualizer?.enabled = false
@@ -233,10 +287,14 @@ class VisualizerService : Service() {
                             sum += bands[i]
                         }
                         // Overall pulse driven mostly by bass (first third of bands)
-                        var bass = 0f
-                        for (i in 0 until 10) bass += bands[i]
-                        val level = ((bass / 10f) * 0.7f + (sum / bandCount) * 0.5f).coerceIn(0f, 1f)
-                        edgeView?.setAudioData(level, bands)
+                        var bassSum = 0f
+                        for (i in 0 until 10) bassSum += bands[i]
+                        val rawLevel = ((bassSum / 10f) * 0.7f + (sum / bandCount) * 0.5f).coerceIn(0f, 1f)
+
+                        // ---- Music vs speech detection ----
+                        val musical = isMusical(bands, rawLevel)
+                        val gatedLevel = if (!musicOnly || musical) rawLevel else 0f
+                        edgeView?.setAudioData(gatedLevel, bands)
                     }
                 }, Visualizer.getMaxCaptureRate() / 2, false, true)
                 enabled = true
