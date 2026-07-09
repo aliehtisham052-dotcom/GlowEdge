@@ -48,11 +48,11 @@ class MainActivity : AppCompatActivity() {
         mainFlipper = findViewById(R.id.mainFlipper)
 
         // Onboarding
-        findViewById<Button>(R.id.btnStart).setOnClickListener {
+        findViewById<TextView>(R.id.btnStart).setOnClickListener {
             ProfileManager.setOnboarded(this)
             goToNextNeededPage()
         }
-        findViewById<Button>(R.id.btnGrantOverlay).setOnClickListener {
+        findViewById<TextView>(R.id.btnGrantOverlay).setOnClickListener {
             startActivity(
                 Intent(
                     Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
@@ -60,10 +60,10 @@ class MainActivity : AppCompatActivity() {
                 )
             )
         }
-        findViewById<Button>(R.id.btnGrantAudio).setOnClickListener {
+        findViewById<TextView>(R.id.btnGrantAudio).setOnClickListener {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.RECORD_AUDIO), 10)
         }
-        findViewById<Button>(R.id.btnGrantNotif).setOnClickListener {
+        findViewById<TextView>(R.id.btnGrantNotif).setOnClickListener {
             if (Build.VERSION.SDK_INT >= 33) {
                 ActivityCompat.requestPermissions(
                     this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 11
@@ -72,7 +72,7 @@ class MainActivity : AppCompatActivity() {
                 goToNextNeededPage()
             }
         }
-        findViewById<Button>(R.id.btnSkipNotif).setOnClickListener {
+        findViewById<TextView>(R.id.btnSkipNotif).setOnClickListener {
             prefs.edit().putBoolean("notif_skipped", true).apply()
             goToNextNeededPage()
         }
