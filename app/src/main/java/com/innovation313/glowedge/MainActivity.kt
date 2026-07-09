@@ -356,5 +356,33 @@ class MainActivity : AppCompatActivity() {
         autostart.setOnCheckedChangeListener { _, checked ->
             prefs.edit().putBoolean("autostart", checked).apply()
         }
+
+        val notifGlow = findViewById<MaterialSwitch>(R.id.switchNotifGlow)
+        notifGlow.isChecked = prefs.getBoolean("notif_glow", false)
+        notifGlow.setOnCheckedChangeListener { _, checked ->
+            prefs.edit().putBoolean("notif_glow", checked).apply()
+            if (checked && !hasNotificationAccess()) {
+                Toast.makeText(this, R.string.notif_glow_need_access, Toast.LENGTH_LONG).show()
+                openNotificationAccess()
+            }
+        }
+        findViewById<TextView>(R.id.btnNotifAccess).setOnClickListener {
+            openNotificationAccess()
+        }
+    }
+
+    private fun hasNotificationAccess(): Boolean {
+        val enabled = Settings.Secure.getString(
+            contentResolver, "enabled_notification_listeners"
+        ) ?: return false
+        return enabled.contains(packageName)
+    }
+
+    private fun openNotificationAccess() {
+        try {
+            startActivity(Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"))
+        } catch (_: Exception) {
+            startActivity(Intent(Settings.ACTION_SETTINGS))
+        }
     }
 }

@@ -36,6 +36,9 @@ class EdgeVisualizerView(context: Context) : View(context) {
     private var hueShift = 0f
     private var lastActiveTime = 0L
     private var visibility01 = 0f
+    private var flashColor = 0
+    private var flashUntil = 0L
+    private var flashStart = 0L
 
     private var shader: SweepGradient? = null
     private val shaderMatrix = Matrix()
@@ -80,6 +83,15 @@ class EdgeVisualizerView(context: Context) : View(context) {
         }
     }
 
+    /** Flash a colored glow around the edges for a couple of seconds (call/notification). */
+    fun triggerNotificationFlash(color: Int) {
+        flashColor = color
+        flashStart = SystemClock.elapsedRealtime()
+        flashUntil = flashStart + 2600L
+        lastActiveTime = SystemClock.elapsedRealtime() // wake the view up
+        postInvalidate()
+    }
+
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
         shader = null
@@ -112,18 +124,28 @@ class EdgeVisualizerView(context: Context) : View(context) {
         super.onDraw(canvas)
         if (width == 0 || height == 0) return
 
-        val soundActive =
-            SystemClock.elapsedRealtime() - lastActiveTime < HOLD_MS
-        val target = if (soundActive) 1f else 0f
-        visibility01 += (target - visibility01) * (if (soundActive) 0.25f else 0.10f)
+        val now = SystemClock.elapsedRealtime()
+        val flashing = now < flashUntil
 
-        if (visibility01 < 0.02f) {
+        val soundActive = now - lastActiveTime < HOLD_MS
+        val target = if (soundActive || flashing) 1f else 0f
+        visibility01 += (target - visibility01) * (if (target > 0f) 0.25f else 0.10f)
+
+        if (visibility01 < 0.02f && !flashing) {
             visibility01 = 0f
             alpha = 0f
             postDelayed({ invalidate() }, 200)
             return
         }
-        alpha = visibility01
+
+        // Draw notification flash on its own (works without music)
+        if (flashing) {
+            drawNotificationFlash(canvas, now)
+            alpha = 1f
+            postInvalidateOnAnimation()
+            if (!soundActive) return
+        }
+        alpha = if (flashing) 1f else visibility01
 
         // Punchy equalizer motion: fast attack, slower musical decay
         for (i in 0 until bandCount) {
@@ -151,6 +173,25 @@ class EdgeVisualizerView(context: Context) : View(context) {
         }
 
         postInvalidateOnAnimation()
+    }
+
+    private fun drawNotificationFlash(canvas: Canvas, now: Long) {
+        val total = 2600f
+        val t = ((now - flashStart) / total).coerceIn(0f, 1f)
+        // Breathing envelope: rises quickly, gently falls; two soft pulses
+        val env = kotlin.math.sin(t * Math.PI.toFloat() * 2f).let { if (it < 0f) 0f else it }
+        val breathe = (0.4f + 0.6f * env) * (1f - t)
+        paint.shader = null
+        paint.style = Paint.Style.STROKE
+        paint.strokeCap = Paint.Cap.ROUND
+        val thickness = baseThickness * (1.2f + breathe * 2.2f)
+        paint.strokeWidth = max(6f, thickness)
+        paint.color = flashColor
+        paint.maskFilter = BlurMaskFilter(max(6f, thickness * 1.1f), BlurMaskFilter.Blur.NORMAL)
+        val inset = paint.strokeWidth * 0.3f
+        rect.set(inset, inset, width - inset, height - inset)
+        val corner = screenCornerRadius()
+        canvas.drawRoundRect(rect, corner, corner, paint)
     }
 
     private fun drawGlowLine(canvas: Canvas) {

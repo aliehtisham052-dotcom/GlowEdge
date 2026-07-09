@@ -27,6 +27,15 @@ class VisualizerService : Service() {
 
     private var windowManager: WindowManager? = null
     private val bandMax = FloatArray(32) { 0.05f }
+
+    private val notifReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(context: android.content.Context?, intent: Intent?) {
+            if (intent?.action == GlowNotificationService.ACTION_NOTIFICATION_GLOW) {
+                val color = intent.getIntExtra(GlowNotificationService.EXTRA_COLOR, 0)
+                if (color != 0) edgeView?.triggerNotificationFlash(color)
+            }
+        }
+    }
     private var edgeView: EdgeVisualizerView? = null
     private var visualizer: Visualizer? = null
 
@@ -39,6 +48,13 @@ class VisualizerService : Service() {
         addOverlay()
         applyCurrentSettings()
         startVisualizer()
+        val filter = android.content.IntentFilter(GlowNotificationService.ACTION_NOTIFICATION_GLOW)
+        if (Build.VERSION.SDK_INT >= 33) {
+            registerReceiver(notifReceiver, filter, android.content.Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            @Suppress("UnspecifiedRegisterReceiverFlag")
+            registerReceiver(notifReceiver, filter)
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -223,6 +239,7 @@ class VisualizerService : Service() {
 
     override fun onDestroy() {
         isRunning = false
+        try { unregisterReceiver(notifReceiver) } catch (_: Exception) {}
         try {
             visualizer?.enabled = false
             visualizer?.release()
