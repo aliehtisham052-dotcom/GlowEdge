@@ -202,6 +202,18 @@
             android:textStyle="bold"
             android:clickable="true"
             android:focusable="true" />
+
+        <TextView
+            android:id="@+id/btnSkipAudio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:padding="10dp"
+            android:text="@string/skip"
+            android:textColor="@color/text_muted"
+            android:textSize="14sp"
+            android:clickable="true"
+            android:focusable="true" />
     </LinearLayout>
 
     <!-- Page 3: Notification permission -->
@@ -800,6 +812,25 @@
                         android:text="@string/premium_features"
                         android:textColor="@color/white"
                         android:textSize="14sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="26dp"
+                        android:text="@string/privacy_header"
+                        android:textColor="@color/gold"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.05" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:lineSpacingExtra="6dp"
+                        android:text="@string/privacy_text"
+                        android:textColor="@color/white"
+                        android:textSize="13sp" />
 
                     <TextView
                         android:layout_width="wrap_content"

@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!--
+        PRIVACY NOTE (GlowEdge by Innovation-313):
+        This app collects NO personal data and has NO internet permission.
+        Nothing can ever leave your device.
+        - RECORD_AUDIO: required ONLY by Android's Visualizer to read the music
+          waveform for the on-screen glow. No audio is recorded, saved, or sent.
+        - READ_PHONE_STATE: optional, only to glow the edges when a call rings.
+        - Notification access: optional, only to glow on messages. Content is never read.
+    -->
+
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />

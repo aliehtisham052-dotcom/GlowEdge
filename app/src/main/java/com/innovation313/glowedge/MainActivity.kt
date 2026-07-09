@@ -63,6 +63,10 @@ class MainActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.btnGrantAudio).setOnClickListener {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.RECORD_AUDIO), 10)
         }
+        findViewById<TextView>(R.id.btnSkipAudio).setOnClickListener {
+            prefs.edit().putBoolean("audio_skipped", true).apply()
+            goToNextNeededPage()
+        }
         findViewById<TextView>(R.id.btnGrantNotif).setOnClickListener {
             if (Build.VERSION.SDK_INT >= 33) {
                 ActivityCompat.requestPermissions(
@@ -117,6 +121,8 @@ class MainActivity : AppCompatActivity() {
         this, Manifest.permission.RECORD_AUDIO
     ) == PackageManager.PERMISSION_GRANTED
 
+    private fun audioHandled() = hasAudio() || prefs.getBoolean("audio_skipped", false)
+
     private fun hasNotif() = Build.VERSION.SDK_INT < 33 ||
         ContextCompat.checkSelfPermission(
             this, Manifest.permission.POST_NOTIFICATIONS
@@ -127,7 +133,7 @@ class MainActivity : AppCompatActivity() {
     private fun goToNextNeededPage() {
         val page = when {
             !hasOverlay() -> PAGE_OVERLAY
-            !hasAudio() -> PAGE_AUDIO
+            !audioHandled() -> PAGE_AUDIO
             !notifHandled() -> PAGE_NOTIF
             else -> PAGE_MAIN
         }
