@@ -48,13 +48,14 @@ jobs:
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v5.4
-          name: GlowEdge v5.4
+          tag_name: v6.0
+          name: GlowEdge v6.0 — Clean rewrite
           body: |
-            GlowEdge v5.4
-            - Glow now stays OFF (dark screen) during silence and normal talking
-            - It activates only for music, naat and melodic audio, with stronger speech rejection
-            - 11 styles, 7 themes, notification glow, privacy-first
+            GlowEdge v6.0 - Complete clean rewrite
+            - Rebuilt from scratch with cleaner, faster code
+            - Glow strictly reacts to music & naat only; stays dark on silence and normal talking
+            - 11 styles, 7 color themes, Live Preview, Notification Glow, Battery Saver, Auto-Start
+            - Privacy-first: no internet, nothing recorded or shared
             Developed by Innovation-313
           files: |
             GlowEdge-v5.4.apk

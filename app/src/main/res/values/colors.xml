@@ -1,5 +1,4 @@
 <resources>
-    <!-- Core brand palette (consistent across the whole app) -->
     <color name="navy">#0A1128</color>
     <color name="navy2">#0E1631</color>
     <color name="surface">#111938</color>
@@ -8,5 +7,4 @@
     <color name="accent">#7C4DFF</color>
     <color name="white">#FFFFFF</color>
     <color name="text_muted">#8A93B5</color>
-    <color name="icon_bg">#1A0B2E</color>
 </resources>

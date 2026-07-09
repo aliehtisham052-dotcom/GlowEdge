@@ -6,15 +6,13 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.graphics.Typeface
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
+import android.provider.Settings as AndroidSettings
 import android.view.Gravity
 import android.view.View
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.TextView as TV
 import android.widget.LinearLayout
 import android.widget.SeekBar
 import android.widget.TextView
@@ -29,415 +27,217 @@ import com.google.android.material.materialswitch.MaterialSwitch
 class MainActivity : AppCompatActivity() {
 
     private lateinit var flipper: ViewFlipper
-    private lateinit var mainFlipper: ViewFlipper
+    private lateinit var tabs: ViewFlipper
     private lateinit var prefs: SharedPreferences
-    private val styleNameViews = HashMap<Int, TextView>()
 
-    companion object {
-        private const val PAGE_OVERLAY = 1
-        private const val PAGE_AUDIO = 2
-        private const val PAGE_NOTIF = 3
-        private const val PAGE_MAIN = 4
-    }
+    private val styleCards = HashMap<Int, LinearLayout>()
+    private val styleNames = HashMap<Int, TextView>()
+    private val styleChips = HashMap<Int, TextView>()
+    private val themeChips = ArrayList<TextView>()
+
+    private val PAGE_OVERLAY = 1; private val PAGE_AUDIO = 2
+    private val PAGE_NOTIF = 3; private val PAGE_MAIN = 4
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         prefs = getSharedPreferences("glowedge_prefs", Context.MODE_PRIVATE)
         flipper = findViewById(R.id.flipper)
-        mainFlipper = findViewById(R.id.mainFlipper)
+        tabs = findViewById(R.id.tabs)
 
-        // Onboarding
-        findViewById<TextView>(R.id.btnStart).setOnClickListener {
-            ProfileManager.setOnboarded(this)
-            goToNextNeededPage()
-        }
+        findViewById<TextView>(R.id.btnStart).setOnClickListener { Settings.setOnboarded(this); nextPage() }
         findViewById<TextView>(R.id.btnGrantOverlay).setOnClickListener {
-            startActivity(
-                Intent(
-                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                    Uri.parse("package:$packageName")
-                )
-            )
+            startActivity(Intent(AndroidSettings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))
         }
         findViewById<TextView>(R.id.btnGrantAudio).setOnClickListener {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.RECORD_AUDIO), 10)
         }
         findViewById<TextView>(R.id.btnSkipAudio).setOnClickListener {
-            prefs.edit().putBoolean("audio_skipped", true).apply()
-            goToNextNeededPage()
+            prefs.edit().putBoolean("audio_skipped", true).apply(); nextPage()
         }
         findViewById<TextView>(R.id.btnGrantNotif).setOnClickListener {
-            if (Build.VERSION.SDK_INT >= 33) {
-                ActivityCompat.requestPermissions(
-                    this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 11
-                )
-            } else {
-                goToNextNeededPage()
-            }
+            if (Build.VERSION.SDK_INT >= 33)
+                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 11)
+            else nextPage()
         }
         findViewById<TextView>(R.id.btnSkipNotif).setOnClickListener {
-            prefs.edit().putBoolean("notif_skipped", true).apply()
-            goToNextNeededPage()
+            prefs.edit().putBoolean("notif_skipped", true).apply(); nextPage()
         }
 
-        // Main UI
-        findViewById<TextView>(R.id.btnToggle).setOnClickListener { toggleService() }
+        findViewById<TextView>(R.id.btnToggle).setOnClickListener { toggle() }
         findViewById<TextView>(R.id.btnTest).setOnClickListener {
-            if (!Settings.canDrawOverlays(this)) {
-                Toast.makeText(this, R.string.overlay_title, Toast.LENGTH_LONG).show()
-                startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                    Uri.parse("package:$packageName")))
+            if (!AndroidSettings.canDrawOverlays(this)) {
+                startActivity(Intent(AndroidSettings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))
                 return@setOnClickListener
             }
-            startForegroundService(Intent(this, VisualizerService::class.java)
-                .setAction(VisualizerService.ACTION_TEST))
-            Toast.makeText(this, "Test glow running for 5 seconds...", Toast.LENGTH_SHORT).show()
+            startForegroundService(Intent(this, VisualizerService::class.java).setAction(VisualizerService.ACTION_TEST))
+            Toast.makeText(this, "Test glow...", Toast.LENGTH_SHORT).show()
         }
-        findViewById<BottomNavigationView>(R.id.bottomNav).setOnItemSelectedListener { item ->
-            mainFlipper.displayedChild = when (item.itemId) {
-                R.id.nav_settings -> 1
-                R.id.nav_premium -> 2
-                else -> 0
-            }
-            true
+        findViewById<BottomNavigationView>(R.id.bottomNav).setOnItemSelectedListener {
+            tabs.displayedChild = when (it.itemId) {
+                R.id.nav_settings -> 1; R.id.nav_about -> 2; else -> 0
+            }; true
         }
 
-        buildStyleCards()
-        buildThemeButtons()
-        setupSliders()
+        buildStyles(); buildThemes(); wireSliders(); wireToggles()
     }
 
     override fun onResume() {
         super.onResume()
-        if (ProfileManager.isOnboarded(this)) {
-            goToNextNeededPage()
-        }
-        updateMainUi()
-        findViewById<PreviewView?>(R.id.previewView)?.refresh()
+        if (Settings.onboarded(this)) nextPage()
+        updateUi()
+        findViewById<PreviewView?>(R.id.preview)?.refresh()
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        goToNextNeededPage()
+    override fun onRequestPermissionsResult(rc: Int, p: Array<out String>, r: IntArray) {
+        super.onRequestPermissionsResult(rc, p, r); nextPage()
     }
 
-    private fun hasOverlay() = Settings.canDrawOverlays(this)
+    private fun hasOverlay() = AndroidSettings.canDrawOverlays(this)
+    private fun hasAudio() = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
+    private fun audioDone() = hasAudio() || prefs.getBoolean("audio_skipped", false)
+    private fun hasNotif() = Build.VERSION.SDK_INT < 33 || ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+    private fun notifDone() = hasNotif() || prefs.getBoolean("notif_skipped", false)
 
-    private fun hasAudio() = ContextCompat.checkSelfPermission(
-        this, Manifest.permission.RECORD_AUDIO
-    ) == PackageManager.PERMISSION_GRANTED
-
-    private fun audioHandled() = hasAudio() || prefs.getBoolean("audio_skipped", false)
-
-    private fun hasNotif() = Build.VERSION.SDK_INT < 33 ||
-        ContextCompat.checkSelfPermission(
-            this, Manifest.permission.POST_NOTIFICATIONS
-        ) == PackageManager.PERMISSION_GRANTED
-
-    private fun notifHandled() = hasNotif() || prefs.getBoolean("notif_skipped", false)
-
-    private fun goToNextNeededPage() {
-        val page = when {
+    private fun nextPage() {
+        flipper.displayedChild = when {
             !hasOverlay() -> PAGE_OVERLAY
-            !audioHandled() -> PAGE_AUDIO
-            !notifHandled() -> PAGE_NOTIF
+            !audioDone() -> PAGE_AUDIO
+            !notifDone() -> PAGE_NOTIF
             else -> PAGE_MAIN
         }
-        flipper.displayedChild = page
-        if (page == PAGE_MAIN) updateMainUi()
+        if (flipper.displayedChild == PAGE_MAIN) updateUi()
     }
 
-    private fun updateMainUi() {
-        val running = VisualizerService.isRunning
-        findViewById<TextView>(R.id.btnToggle).text =
-            getString(if (running) R.string.stop_glow else R.string.start_glow)
-        findViewById<TextView>(R.id.tvStatus).text =
-            getString(if (running) R.string.status_running else R.string.status_stopped)
-        refreshStyleHighlights()
-        refreshThemeHighlights()
+    private fun updateUi() {
+        val run = VisualizerService.isRunning
+        findViewById<TextView>(R.id.btnToggle).text = getString(if (run) R.string.stop_glow else R.string.start_glow)
+        findViewById<TextView>(R.id.tvStatus).text = getString(if (run) R.string.status_running else R.string.status_stopped)
+        highlightStyles(); highlightThemes()
     }
 
-    private fun toggleService() {
-        if (VisualizerService.isRunning) {
-            startService(
-                Intent(this, VisualizerService::class.java)
-                    .setAction(VisualizerService.ACTION_STOP)
-            )
-        } else {
-            startForegroundService(Intent(this, VisualizerService::class.java))
-        }
-        flipper.postDelayed({ updateMainUi() }, 500)
+    private fun toggle() {
+        if (VisualizerService.isRunning)
+            startService(Intent(this, VisualizerService::class.java).setAction(VisualizerService.ACTION_STOP))
+        else startForegroundService(Intent(this, VisualizerService::class.java))
+        flipper.postDelayed({ updateUi() }, 500)
     }
 
-    private fun notifyService() {
-        if (VisualizerService.isRunning) {
-            startService(Intent(this, VisualizerService::class.java))
-        }
-    }
+    private fun notifyService() { if (VisualizerService.isRunning) startService(Intent(this, VisualizerService::class.java)) }
+    private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
 
-    // ---------- Styles page ----------
-
-    private val styleCards = HashMap<Int, LinearLayout>()
-
-    private fun dp(v: Int): Int = (v * resources.displayMetrics.density).toInt()
-
-    private fun buildStyleCards() {
-        val container = findViewById<LinearLayout>(R.id.stylesContainer)
-        container.removeAllViews()
-        styleNameViews.clear()
-        styleCards.clear()
-
-        GlowStyles.all.forEach { st ->
-            val card = LinearLayout(this)
-            card.orientation = LinearLayout.HORIZONTAL
-            card.gravity = Gravity.CENTER_VERTICAL
-            card.setBackgroundResource(R.drawable.bg_card)
-            card.setPadding(dp(18), dp(16), dp(16), dp(16))
-            val lp = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            )
-            lp.bottomMargin = dp(12)
-            card.layoutParams = lp
+    private fun buildStyles() {
+        val box = findViewById<LinearLayout>(R.id.stylesBox); box.removeAllViews()
+        styleCards.clear(); styleNames.clear(); styleChips.clear()
+        Styles.all.forEach { st ->
+            val card = LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL
+                setBackgroundResource(R.drawable.bg_card); setPadding(dp(18), dp(16), dp(16), dp(16))
+                layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { bottomMargin = dp(12) }
+            }
             styleCards[st.id] = card
-
-            // Accent dot
-            val dot = TextView(this)
-            dot.text = "●"
-            dot.textSize = 16f
-            dot.setTextColor(Color.parseColor("#FFD54F"))
-            dot.setPadding(0, 0, dp(14), 0)
-            card.addView(dot)
-
-            val textCol = LinearLayout(this)
-            textCol.orientation = LinearLayout.VERTICAL
-            textCol.layoutParams = LinearLayout.LayoutParams(
-                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f
-            )
-
-            val name = TextView(this)
-            name.text = st.name
-            name.textSize = 17f
-            name.setTextColor(Color.WHITE)
-            name.setTypeface(name.typeface, android.graphics.Typeface.BOLD)
-            styleNameViews[st.id] = name
-
-            val tagline = TextView(this)
-            tagline.text = st.tagline
-            tagline.textSize = 13f
-            tagline.setTextColor(Color.parseColor("#8A93B5"))
-            tagline.setPadding(0, dp(2), 0, 0)
-
-            textCol.addView(name)
-            textCol.addView(tagline)
-            card.addView(textCol)
-
-            val apply = TextView(this)
-            apply.text = getString(R.string.apply)
-            apply.textSize = 13f
-            apply.setTextColor(Color.WHITE)
-            apply.setTypeface(apply.typeface, android.graphics.Typeface.BOLD)
-            apply.setBackgroundResource(R.drawable.chip_apply)
-            apply.setPadding(dp(18), dp(9), dp(18), dp(9))
-            styleChips[st.id] = apply
-            card.addView(apply)
-
+            card.addView(TextView(this).apply {
+                text = "\u25CF"; textSize = 18f; setTextColor(Styles.accent(st.id)); setPadding(0, 0, dp(14), 0)
+            })
+            val col = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            }
+            val name = TextView(this).apply { text = st.name; textSize = 17f; setTextColor(Color.WHITE); setTypeface(typeface, Typeface.BOLD) }
+            styleNames[st.id] = name
+            col.addView(name)
+            col.addView(TextView(this).apply { text = st.tagline; textSize = 13f; setTextColor(Color.parseColor("#8A93B5")); setPadding(0, dp(2), 0, 0) })
+            card.addView(col)
+            val chip = TextView(this).apply {
+                text = getString(R.string.apply); textSize = 13f; setTextColor(Color.WHITE); setTypeface(typeface, Typeface.BOLD)
+                setBackgroundResource(R.drawable.chip_apply); setPadding(dp(18), dp(9), dp(18), dp(9))
+            }
+            styleChips[st.id] = chip; card.addView(chip)
             val pick = View.OnClickListener {
-                ProfileManager.setStyle(this, st.id)
-                notifyService()
-                refreshStyleHighlights()
+                Settings.setStyleId(this, st.id); notifyService(); highlightStyles()
+                findViewById<PreviewView?>(R.id.preview)?.refresh()
             }
-            apply.setOnClickListener(pick)
-            card.setOnClickListener(pick)
-
-            container.addView(card)
+            chip.setOnClickListener(pick); card.setOnClickListener(pick)
+            box.addView(card)
         }
-        refreshStyleHighlights()
+        highlightStyles()
     }
 
-    private val styleChips = HashMap<Int, TextView>()
-
-    private fun refreshStyleHighlights() {
-        findViewById<PreviewView?>(R.id.previewView)?.refresh()
-        val selected = ProfileManager.style(this)
-        styleCards.forEach { (id, card) ->
-            card.setBackgroundResource(
-                if (id == selected) R.drawable.bg_card_active else R.drawable.bg_card
-            )
-        }
-        styleNameViews.forEach { (id, tv) ->
-            tv.setTextColor(if (id == selected) ContextCompat.getColor(this, R.color.gold) else Color.WHITE)
-        }
-        styleChips.forEach { (id, chip) ->
-            chip.text = getString(if (id == selected) R.string.applied else R.string.apply)
-            chip.alpha = if (id == selected) 1f else 0.85f
-        }
+    private fun highlightStyles() {
+        val sel = Settings.styleId(this); val gold = ContextCompat.getColor(this, R.color.gold)
+        styleCards.forEach { (id, c) -> c.setBackgroundResource(if (id == sel) R.drawable.bg_card_active else R.drawable.bg_card) }
+        styleNames.forEach { (id, tv) -> tv.setTextColor(if (id == sel) gold else Color.WHITE) }
+        styleChips.forEach { (id, ch) -> ch.text = getString(if (id == sel) R.string.applied else R.string.apply); ch.alpha = if (id == sel) 1f else 0.85f }
     }
 
-    // ---------- Settings page ----------
-
-    private fun buildThemeButtons() {
-        val container = findViewById<LinearLayout>(R.id.themeContainer)
-        container.removeAllViews()
-        themeChips.clear()
-        ProfileManager.themes.forEachIndexed { index, theme ->
-            val chip = TextView(this)
-            chip.text = theme.name
-            chip.tag = index
-            chip.textSize = 14f
-            chip.setTextColor(Color.WHITE)
-            chip.setBackgroundResource(R.drawable.bg_card)
-            chip.setPadding(dp(18), dp(14), dp(18), dp(14))
-            val lp = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            )
-            lp.bottomMargin = dp(10)
-            chip.layoutParams = lp
-            chip.setOnClickListener {
-                ProfileManager.setTheme(this, index)
-                notifyService()
-                refreshThemeHighlights()
-                findViewById<PreviewView?>(R.id.previewView)?.refresh()
-            }
-            themeChips.add(chip)
-            container.addView(chip)
-        }
-        refreshThemeHighlights()
-    }
-
-    private val themeChips = ArrayList<TextView>()
-
-    private fun refreshThemeHighlights() {
-        val selected = ProfileManager.themeIndex(this)
-        themeChips.forEach { chip ->
-            val isSel = (chip.tag as? Int) == selected
-            chip.setBackgroundResource(if (isSel) R.drawable.bg_card_active else R.drawable.bg_card)
-            chip.setTextColor(if (isSel) ContextCompat.getColor(this, R.color.gold) else Color.WHITE)
-        }
-    }
-
-    private fun setupSliders() {
-        val thickness = findViewById<SeekBar>(R.id.seekThickness)
-        thickness.min = 6
-        thickness.max = 40
-        thickness.progress = ProfileManager.thickness(this)
-        thickness.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(sb: SeekBar?, value: Int, fromUser: Boolean) {
-                if (fromUser) {
-                    ProfileManager.setThickness(this@MainActivity, value)
-                    notifyService()
+    private fun buildThemes() {
+        val box = findViewById<LinearLayout>(R.id.themesBox); box.removeAllViews(); themeChips.clear()
+        Settings.themes.forEachIndexed { i, th ->
+            val chip = TextView(this).apply {
+                text = th.name; tag = i; textSize = 14f; setTextColor(Color.WHITE)
+                setBackgroundResource(R.drawable.bg_card); setPadding(dp(18), dp(14), dp(18), dp(14))
+                layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { bottomMargin = dp(10) }
+                setOnClickListener {
+                    Settings.setThemeIndex(this@MainActivity, i); notifyService(); highlightThemes()
+                    findViewById<PreviewView?>(R.id.preview)?.refresh()
                 }
             }
-
-            override fun onStartTrackingTouch(sb: SeekBar?) = Unit
-            override fun onStopTrackingTouch(sb: SeekBar?) = Unit
-        })
-
-        val speed = findViewById<SeekBar>(R.id.seekSpeed)
-        speed.min = 2
-        speed.max = 20
-        speed.progress = ProfileManager.speed(this)
-        speed.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(sb: SeekBar?, value: Int, fromUser: Boolean) {
-                if (fromUser) {
-                    ProfileManager.setSpeed(this@MainActivity, value)
-                    notifyService()
-                }
-            }
-
-            override fun onStartTrackingTouch(sb: SeekBar?) = Unit
-            override fun onStopTrackingTouch(sb: SeekBar?) = Unit
-        })
-
-        val intensity = findViewById<SeekBar>(R.id.seekIntensity)
-        intensity.min = 3
-        intensity.max = 20
-        intensity.progress = ProfileManager.intensity(this)
-        intensity.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(sb: SeekBar?, value: Int, fromUser: Boolean) {
-                if (fromUser) {
-                    ProfileManager.setIntensity(this@MainActivity, value)
-                    notifyService()
-                }
-            }
-
-            override fun onStartTrackingTouch(sb: SeekBar?) = Unit
-            override fun onStopTrackingTouch(sb: SeekBar?) = Unit
-        })
-
-        val autostart = findViewById<MaterialSwitch>(R.id.switchAutostart)
-        autostart.isChecked = prefs.getBoolean("autostart", false)
-        autostart.setOnCheckedChangeListener { _, checked ->
-            prefs.edit().putBoolean("autostart", checked).apply()
+            themeChips.add(chip); box.addView(chip)
         }
-
-        val notifGlow = findViewById<MaterialSwitch>(R.id.switchNotifGlow)
-        notifGlow.isChecked = prefs.getBoolean("notif_glow", false)
-        notifGlow.setOnCheckedChangeListener { _, checked ->
-            prefs.edit().putBoolean("notif_glow", checked).apply()
-            if (checked && !hasNotificationAccess()) {
-                Toast.makeText(this, R.string.notif_glow_need_access, Toast.LENGTH_LONG).show()
-                openNotificationAccess()
-            }
-        }
-        findViewById<TextView>(R.id.btnNotifAccess).setOnClickListener {
-            openNotificationAccess()
-        }
-
-        val saver = findViewById<MaterialSwitch>(R.id.switchSaver)
-        saver.isChecked = ProfileManager.batterySaver(this)
-        saver.setOnCheckedChangeListener { _, checked ->
-            ProfileManager.setBatterySaver(this, checked)
-            notifyService()
-        }
-
-        val intro = findViewById<MaterialSwitch>(R.id.switchIntro)
-        intro.isChecked = ProfileManager.intro(this)
-        intro.setOnCheckedChangeListener { _, checked ->
-            ProfileManager.setIntro(this, checked)
-        }
-
-        val musicOnly = findViewById<MaterialSwitch>(R.id.switchMusicOnly)
-        musicOnly.isChecked = ProfileManager.musicOnly(this)
-        musicOnly.setOnCheckedChangeListener { _, checked ->
-            ProfileManager.setMusicOnly(this, checked)
-            notifyService()
-        }
-
-        val sens = findViewById<SeekBar>(R.id.seekSensitivity)
-        sens.min = 1
-        sens.max = 10
-        sens.progress = ProfileManager.sensitivity(this)
-        sens.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(sb: SeekBar?, value: Int, fromUser: Boolean) {
-                if (fromUser) {
-                    ProfileManager.setSensitivity(this@MainActivity, value)
-                    notifyService()
-                }
-            }
-            override fun onStartTrackingTouch(sb: SeekBar?) = Unit
-            override fun onStopTrackingTouch(sb: SeekBar?) = Unit
-        })
+        highlightThemes()
     }
 
-    private fun hasNotificationAccess(): Boolean {
-        val enabled = Settings.Secure.getString(
-            contentResolver, "enabled_notification_listeners"
-        ) ?: return false
-        return enabled.contains(packageName)
+    private fun highlightThemes() {
+        val sel = Settings.themeIndex(this); val gold = ContextCompat.getColor(this, R.color.gold)
+        themeChips.forEach { ch ->
+            val on = (ch.tag as? Int) == sel
+            ch.setBackgroundResource(if (on) R.drawable.bg_card_active else R.drawable.bg_card)
+            ch.setTextColor(if (on) gold else Color.WHITE)
+        }
     }
 
-    private fun openNotificationAccess() {
-        try {
-            startActivity(Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"))
-        } catch (_: Exception) {
-            startActivity(Intent(Settings.ACTION_SETTINGS))
+    private fun slider(id: Int, lo: Int, hi: Int, get: () -> Int, set: (Int) -> Unit) {
+        findViewById<SeekBar>(id).apply {
+            min = lo; max = hi; progress = get()
+            setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(sb: SeekBar?, v: Int, u: Boolean) { if (u) { set(v); notifyService() } }
+                override fun onStartTrackingTouch(sb: SeekBar?) {}
+                override fun onStopTrackingTouch(sb: SeekBar?) {}
+            })
         }
+    }
+
+    private fun wireSliders() {
+        slider(R.id.seekThickness, 6, 40, { Settings.thickness(this) }, { Settings.setThickness(this, it) })
+        slider(R.id.seekSpeed, 2, 20, { Settings.speed(this) }, { Settings.setSpeed(this, it) })
+        slider(R.id.seekIntensity, 3, 20, { Settings.intensity(this) }, { Settings.setIntensity(this, it) })
+        slider(R.id.seekSensitivity, 1, 10, { Settings.sensitivity(this) }, { Settings.setSensitivity(this, it) })
+    }
+
+    private fun sw(id: Int, get: () -> Boolean, set: (Boolean) -> Unit, onCheck: ((Boolean) -> Unit)? = null) {
+        findViewById<MaterialSwitch>(id).apply {
+            isChecked = get()
+            setOnCheckedChangeListener { _, c -> set(c); onCheck?.invoke(c) }
+        }
+    }
+
+    private fun wireToggles() {
+        sw(R.id.switchMusicOnly, { Settings.musicOnly(this) }, { Settings.setMusicOnly(this, it) }, { notifyService() })
+        sw(R.id.switchSaver, { Settings.batterySaver(this) }, { Settings.setBatterySaver(this, it) }, { notifyService() })
+        sw(R.id.switchAutostart, { Settings.autostart(this) }, { Settings.setAutostart(this, it) })
+        sw(R.id.switchNotifGlow, { Settings.notifGlow(this) }, { Settings.setNotifGlow(this, it) }, { checked ->
+            if (checked && !hasNotifAccess()) { Toast.makeText(this, R.string.notif_glow_need_access, Toast.LENGTH_LONG).show(); openNotifAccess() }
+        })
+        findViewById<TextView>(R.id.btnNotifAccess).setOnClickListener { openNotifAccess() }
+    }
+
+    private fun hasNotifAccess(): Boolean {
+        val e = AndroidSettings.Secure.getString(contentResolver, "enabled_notification_listeners") ?: return false
+        return e.contains(packageName)
+    }
+
+    private fun openNotifAccess() {
+        try { startActivity(Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")) }
+        catch (_: Exception) { startActivity(Intent(AndroidSettings.ACTION_SETTINGS)) }
     }
 }
