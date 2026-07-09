@@ -103,10 +103,32 @@ class VisualizerService : Service() {
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
                 WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
-                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
+                WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION or
+                WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS,
             PixelFormat.TRANSLUCENT
         )
         params.gravity = Gravity.TOP or Gravity.START
+        // Use the real display size so the overlay covers the area behind the navigation bar too
+        try {
+            val metrics = resources.displayMetrics
+            val realH = metrics.heightPixels
+            val realW = metrics.widthPixels
+            val wm = windowManager
+            if (Build.VERSION.SDK_INT >= 30 && wm != null) {
+                val b = wm.currentWindowMetrics.bounds
+                params.width = b.width()
+                params.height = b.height()
+            } else {
+                @Suppress("DEPRECATION")
+                val dm = android.util.DisplayMetrics()
+                @Suppress("DEPRECATION")
+                windowManager?.defaultDisplay?.getRealMetrics(dm)
+                params.width = dm.widthPixels
+                params.height = dm.heightPixels
+            }
+        } catch (_: Exception) {
+        }
         if (Build.VERSION.SDK_INT >= 28) {
             params.layoutInDisplayCutoutMode =
                 WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
