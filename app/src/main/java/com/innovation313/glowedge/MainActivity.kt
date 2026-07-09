@@ -75,8 +75,11 @@ class MainActivity : AppCompatActivity() {
         }
         findViewById<BottomNavigationView>(R.id.bottomNav).setOnItemSelectedListener {
             tabs.displayedChild = when (it.itemId) {
-                R.id.nav_settings -> 1; R.id.nav_about -> 2; else -> 0
-            }; true
+                R.id.nav_settings -> 1
+                R.id.nav_about -> 2
+                else -> 0
+            }
+            true
         }
 
         buildStyles(); buildThemes(); wireSliders(); wireToggles()

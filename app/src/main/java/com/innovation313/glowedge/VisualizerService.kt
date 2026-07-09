@@ -191,8 +191,12 @@ class VisualizerService : Service() {
         var active = 0; for (b in bands) if (b > 0.10f) active++
         val spread = active / n.toFloat()
         var bass = 0f; var mid = 0f; var treble = 0f
-        for (i in 0 until n) when {
-            i < n / 3 -> bass += bands[i]; i < 2 * n / 3 -> mid += bands[i]; else -> treble += bands[i]
+        for (i in 0 until n) {
+            when {
+                i < n / 3 -> bass += bands[i]
+                i < 2 * n / 3 -> mid += bands[i]
+                else -> treble += bands[i]
+            }
         }
         val balance = (bass + treble) / (mid + 0.001f)
         var flux = 0f

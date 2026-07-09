@@ -41,7 +41,7 @@ class EdgeView @JvmOverloads constructor(
 
     @Volatile private var level = 0f
     private var dispLevel = 0f
-    private var rotation = 0f
+    private var spin = 0f
     private var hue = 0f
     private var flame = 0f
     private var lastActive = 0L
@@ -178,7 +178,7 @@ class EdgeView @JvmOverloads constructor(
         }
         lastBeat = dispLevel
         bloom *= 0.90f
-        rotation += 0.6f * speed + dispLevel * 4f; if (rotation > 360f) rotation -= 360f
+        spin += 0.6f * speed + dispLevel * 4f; if (spin > 360f) spin -= 360f
         hue += 0.5f * speed + dispLevel * 1.5f; if (hue > 360f) hue -= 360f
         flame += 0.08f * speed + dispLevel * 0.15f
 
@@ -202,7 +202,7 @@ class EdgeView @JvmOverloads constructor(
         if (shader == null)
             shader = SweepGradient(width / 2f, height / 2f,
                 if (rainbow) RAINBOW else intArrayOf(colorStart, colorEnd, colorStart), null)
-        matrix.setRotate(rotation, width / 2f, height / 2f)
+        matrix.setRotate(spin, width / 2f, height / 2f)
         shader?.setLocalMatrix(matrix)
         paint.shader = shader; paint.style = Paint.Style.STROKE; paint.strokeCap = Paint.Cap.ROUND
         val loud = ease(dispLevel)
@@ -304,7 +304,7 @@ class EdgeView @JvmOverloads constructor(
     private fun pulse(c: Canvas) {
         if (shader == null) shader = SweepGradient(width / 2f, height / 2f,
             if (rainbow) RAINBOW else intArrayOf(colorStart, colorEnd, colorStart), null)
-        matrix.setRotate(rotation, width / 2f, height / 2f); shader?.setLocalMatrix(matrix)
+        matrix.setRotate(spin, width / 2f, height / 2f); shader?.setLocalMatrix(matrix)
         paint.shader = shader; paint.style = Paint.Style.STROKE; paint.strokeCap = Paint.Cap.ROUND
         val t = baseThickness * (0.6f + ease(dispLevel) * 3f * intensity)
         paint.strokeWidth = max(4f, t)
