@@ -21,12 +21,15 @@ class VisualizerService : Service() {
     companion object {
         const val CHANNEL_ID = "glowedge_channel"
         const val ACTION_STOP = "com.innovation313.glowedge.STOP"
+        const val ACTION_CHARGING_FLASH = "com.innovation313.glowedge.CHARGING_FLASH"
+        const val EXTRA_FLASH_COLOR = "flash_color"
         @Volatile
         var isRunning = false
     }
 
     private var windowManager: WindowManager? = null
     private val bandMax = FloatArray(32) { 0.05f }
+    private var wasStartedByUser = false
 
     // ---- Music / melody detection state ----
     private var musicScore = 0f          // 0 = speech/noise, 1 = clearly musical
@@ -103,6 +106,16 @@ class VisualizerService : Service() {
             stopSelf()
             return START_NOT_STICKY
         }
+        if (intent?.action == ACTION_CHARGING_FLASH) {
+            val color = intent.getIntExtra(EXTRA_FLASH_COLOR, 0)
+            if (color != 0) edgeView?.triggerNotificationFlash(color)
+            // If the user had the glow off, auto-stop shortly after the charging flash
+            if (!wasStartedByUser) {
+                edgeView?.postDelayed({ if (!wasStartedByUser) stopSelf() }, 3200)
+            }
+            return START_STICKY
+        }
+        wasStartedByUser = true
         applyCurrentSettings()
         return START_STICKY
     }

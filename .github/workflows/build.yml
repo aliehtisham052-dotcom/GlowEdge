@@ -34,27 +34,27 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v4.8.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v4.8.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v4.9.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v4.9.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v4.8.apk
-            GlowEdge-v4.8.aab
+            GlowEdge-v4.9.apk
+            GlowEdge-v4.9.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v4.8
-          name: GlowEdge v4.8
+          tag_name: v4.9
+          name: GlowEdge v4.9
           body: |
-            GlowEdge v4.8
-            - Ripple style now stays at the screen edges instead of moving toward the middle
-            - 11 styles, 7 themes, startup animation, music/naat detection
+            GlowEdge v4.9
+            - Fixed Charging Glow: it now flashes green on plug-in and orange on unplug, even when the glow was off
+            - 11 styles, 7 themes, music/naat detection, privacy-first
             Developed by Innovation-313
           files: |
-            GlowEdge-v4.8.apk
-            GlowEdge-v4.8.aab
+            GlowEdge-v4.9.apk
+            GlowEdge-v4.9.aab
