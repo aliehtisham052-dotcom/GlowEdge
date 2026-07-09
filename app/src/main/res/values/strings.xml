@@ -38,5 +38,9 @@
     <string name="intensity">Glow Intensity</string>
     <string name="autostart">Auto-start on boot</string>
     <string name="autostart_desc">Start the glow automatically when your phone turns on.</string>
+    <string name="developer_label">Developer</string>
+    <string name="developer_name">Innovation-313</string>
+    <string name="developer_email">aliehtisham052@gmail.com</string>
+    <string name="app_version">Version 3.1</string>
     <string name="footer">Developed by Innovation-313</string>
 </resources>

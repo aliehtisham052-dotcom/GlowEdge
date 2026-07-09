@@ -156,8 +156,14 @@ class EdgeVisualizerView(context: Context) : View(context) {
     private fun drawGlowLine(canvas: Canvas) {
         if (shader == null) {
             val colors = if (rainbow) RAINBOW
-            else intArrayOf(colorStart, colorEnd, colorStart)
+            else intArrayOf(colorStart, blendByLoudness(), colorEnd, blendByLoudness(), colorStart)
             shader = SweepGradient(width / 2f, height / 2f, colors, null)
+        } else if (!rainbow) {
+            // Rebuild gradient each frame so the mid color tracks loudness (quiet = cool, loud = hot)
+            shader = SweepGradient(
+                width / 2f, height / 2f,
+                intArrayOf(colorStart, blendByLoudness(), colorEnd, blendByLoudness(), colorStart), null
+            )
         }
         shaderMatrix.setRotate(rotationDeg, width / 2f, height / 2f)
         shader?.setLocalMatrix(shaderMatrix)
@@ -165,13 +171,30 @@ class EdgeVisualizerView(context: Context) : View(context) {
         paint.style = Paint.Style.STROKE
         paint.strokeCap = Paint.Cap.ROUND
 
-        val thickness = baseThickness * (0.5f + displayLevel * 1.6f)
-        paint.strokeWidth = max(4f, thickness)
-        paint.maskFilter = BlurMaskFilter(max(2f, thickness * 0.9f), BlurMaskFilter.Blur.NORMAL)
+        // Thickness follows loudness with an eased curve + intensity control
+        val loud = easeOut(displayLevel)
+        val thickness = baseThickness * (0.35f + loud * 2.0f * intensity)
+        paint.strokeWidth = max(3f, thickness)
+        // Brighter, wider glow when loud
+        paint.maskFilter = BlurMaskFilter(max(2f, thickness * (0.7f + loud)), BlurMaskFilter.Blur.NORMAL)
 
         val half = paint.strokeWidth / 2f
         rect.set(half, half, width - half, height - half)
         canvas.drawRoundRect(rect, 64f, 64f, paint)
+    }
+
+    /** Eased 0..1 curve so quiet stays subtle and loud pops - like a designer's response curve. */
+    private fun easeOut(x: Float): Float {
+        val t = x.coerceIn(0f, 1f)
+        return 1f - (1f - t) * (1f - t)
+    }
+
+    /** Mid gradient color that warms up as the music gets louder. */
+    private fun blendByLoudness(): Int {
+        val loud = easeOut(displayLevel)
+        // quiet -> lean toward colorStart (cool), loud -> push toward a hot accent
+        val hot = lerpColor(colorEnd, Color.parseColor("#FFFFFF"), loud * 0.35f)
+        return lerpColor(colorStart, hot, loud)
     }
 
     private fun drawSideBars(canvas: Canvas) {

@@ -34,31 +34,28 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v3.0.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v3.0.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v3.1.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v3.1.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v3.0.apk
-            GlowEdge-v3.0.aab
+            GlowEdge-v3.1.apk
+            GlowEdge-v3.1.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v3.0
-          name: GlowEdge v3.0
+          tag_name: v3.1
+          name: GlowEdge v3.1
           body: |
-            🎵 GlowEdge v3.0 — Big update!
-            ✦ Brand new app logo
-            ✦ All 6 styles unlocked: Glow Line, Side Bars, Bars Around, Corner Glow, Ember Flame, Chase
-            ✦ 7 color themes incl. full Spectrum
-            ✦ New Glow Intensity control
-            ✦ Auto-start on boot
-            ✦ Play Store AAB included
+            🎵 GlowEdge v3.1
+            ✦ Glow now reacts to loudness like a pro VU meter — color warms up and glow grows as the music gets louder, stays subtle when quiet
+            ✦ Developer info added in About
+            ✦ All 6 styles, 7 themes, intensity & auto-start
             Developed by Innovation-313
           files: |
-            GlowEdge-v3.0.apk
-            GlowEdge-v3.0.aab
+            GlowEdge-v3.1.apk
+            GlowEdge-v3.1.aab
