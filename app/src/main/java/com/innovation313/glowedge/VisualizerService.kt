@@ -35,6 +35,7 @@ class VisualizerService : Service() {
     private var prevLevel = 0f
     private var sustainFrames = 0
     private var musicOnly = true
+    private var lastAppliedStyle = -1
     private var sensitivity = 5
     private val fluxHistory = FloatArray(16)
     private var fluxIndex = 0
@@ -115,6 +116,12 @@ class VisualizerService : Service() {
             ProfileManager.intensity(this) / 10f,
             ProfileManager.batterySaver(this)
         )
+        // Innovation-313 signature sweep: play once whenever the style changes
+        val styleNow = ProfileManager.style(this)
+        if (styleNow != lastAppliedStyle) {
+            lastAppliedStyle = styleNow
+            edgeView?.startSignatureSweep()
+        }
     }
 
     private fun startForegroundWithNotification() {

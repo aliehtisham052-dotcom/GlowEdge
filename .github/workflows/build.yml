@@ -34,29 +34,28 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v5.7.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v5.7.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v5.8.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v5.8.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v5.7.apk
-            GlowEdge-v5.7.aab
+            GlowEdge-v5.8.apk
+            GlowEdge-v5.8.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v5.7
-          name: GlowEdge v5.7 — Soothing colors
+          tag_name: v5.8
+          name: GlowEdge v5.8 — Signature sweep + Segments
           body: |
-            GlowEdge v5.7 - Soothing color update
-            - All 7 themes refined to softer, eye-friendly tones (rich but never harsh)
-            - Spectrum/rainbow softened (balanced saturation & brightness)
-            - 2 NEW calm themes: Rose Calm & Forest Calm (9 themes total)
-            - Includes v5.6 critical hang fix + all performance fixes
+            GlowEdge v5.8
+            - NEW: Innovation-313 Signature Sweep — whenever you change style, the developer tag circles the edge once in a unique color-shifting pattern
+            - NEW style: Segments — the edge splits into dancing segments, each following its own frequency (12 styles total)
+            - 9 soothing themes, hang fix, performance fixes included
             Developed by Innovation-313
           files: |
-            GlowEdge-v5.7.apk
-            GlowEdge-v5.7.aab
+            GlowEdge-v5.8.apk
+            GlowEdge-v5.8.aab

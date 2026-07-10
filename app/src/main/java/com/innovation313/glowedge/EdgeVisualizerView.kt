@@ -6,6 +6,8 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Matrix
 import android.graphics.Paint
+import android.graphics.Path
+import android.graphics.Typeface
 import android.graphics.RectF
 import android.graphics.SweepGradient
 import android.os.SystemClock
@@ -116,6 +118,16 @@ class EdgeVisualizerView(context: Context) : View(context) {
     fun setDemoMode(on: Boolean) { demoMode = on }
 
     private var testUntil = 0L
+    private var sweepStart = 0L
+    private var sweepUntil = 0L
+    private val segPath = Path()
+
+    /** One-time Innovation-313 signature sweep around the edge (plays on style change). */
+    fun startSignatureSweep() {
+        sweepStart = SystemClock.elapsedRealtime()
+        sweepUntil = sweepStart + 2800L
+        postInvalidate()
+    }
     /** Show a guaranteed bright glow for a few seconds to verify the overlay works. */
     fun forceTestGlow() {
         testUntil = SystemClock.elapsedRealtime() + 5000L
@@ -180,6 +192,15 @@ class EdgeVisualizerView(context: Context) : View(context) {
 
         val now = SystemClock.elapsedRealtime()
 
+        // ---- Innovation-313 signature sweep (one-time, on style change) ----
+        if (now < sweepUntil) {
+            visibility01 = 1f
+            alpha = 1f
+            drawSignatureSweep(canvas, now)
+            postInvalidateDelayed(33L)
+            return
+        }
+
         // ---- Test glow: guaranteed bright glow to verify overlay works ----
         if (now < testUntil) {
             visibility01 = 1f
@@ -204,6 +225,8 @@ class EdgeVisualizerView(context: Context) : View(context) {
                 GlowStyles.AURORA -> drawAurora(canvas)
                 GlowStyles.COMET -> drawComet(canvas)
                 GlowStyles.RIPPLE -> drawRipple(canvas)
+            GlowStyles.SEGMENTS -> drawSegments(canvas)
+                GlowStyles.SEGMENTS -> drawSegments(canvas)
                 else -> drawGlowLine(canvas)
             }
             postInvalidateDelayed(33L)
@@ -292,6 +315,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
             GlowStyles.AURORA -> drawAurora(canvas)
             GlowStyles.COMET -> drawComet(canvas)
             GlowStyles.RIPPLE -> drawRipple(canvas)
+            GlowStyles.SEGMENTS -> drawSegments(canvas)
             else -> drawGlowLine(canvas)
         }
 
@@ -679,6 +703,86 @@ class EdgeVisualizerView(context: Context) : View(context) {
     }
 
     private val ptOut = FloatArray(2)
+    /** Edge split into segments; each segment dances to its own frequency band. */
+    private fun drawSegments(canvas: Canvas) {
+        paint.shader = null
+        paint.style = Paint.Style.STROKE
+        paint.strokeCap = Paint.Cap.ROUND
+        val per = 2f * (width + height)
+        val nSeg = 14
+        val segLen = per / nSeg
+        val gap = segLen * 0.22f
+        val step = per / 220f
+        for (i in 0 until nSeg) {
+            val band = displayBands[i * bandCount / nSeg]
+            val t = max(4f, baseThickness * (0.45f + band * 1.6f * intensity))
+            paint.strokeWidth = t
+            paint.maskFilter = BlurMaskFilter(max(3f, t * (if (batterySaver) 0.4f else 0.8f)), BlurMaskFilter.Blur.NORMAL)
+            paint.color = colorAt(i / (nSeg - 1f))
+            paint.alpha = (120 + band * 135).toInt().coerceIn(90, 255)
+            val d0 = i * segLen + gap / 2f
+            val d1 = (i + 1) * segLen - gap / 2f
+            segPath.reset()
+            var d = d0
+            var first = true
+            while (d <= d1) {
+                val pnt = pointOnPerimeter(d % per)
+                if (first) { segPath.moveTo(pnt[0], pnt[1]); first = false }
+                else segPath.lineTo(pnt[0], pnt[1])
+                d += step
+            }
+            val pEnd = pointOnPerimeter(d1 % per)
+            segPath.lineTo(pEnd[0], pEnd[1])
+            canvas.drawPath(segPath, paint)
+        }
+        paint.alpha = 255
+    }
+
+    /** One-time branded sweep: a glowing head + trail carries "Innovation-313" around
+     *  the edge once, shifting color as it passes from one side to the other. */
+    private fun drawSignatureSweep(canvas: Canvas, now: Long) {
+        val per = 2f * (width + height)
+        val t = ((now - sweepStart) / 2800f).coerceIn(0f, 1f)
+        // ease in-out so it glides
+        val e = t * t * (3f - 2f * t)
+        val d = e * per
+        // color shifts by position (side to side)
+        val hue = (d / per) * 360f
+        val col = Color.HSVToColor(floatArrayOf(hue % 360f, 0.72f, 0.95f))
+
+        paint.shader = null
+        paint.style = Paint.Style.FILL
+        // trail
+        val trail = if (batterySaver) 10 else 18
+        for (i in 0 until trail) {
+            val dd = d - i * 30f
+            if (dd < 0f) break
+            val fade = 1f - i / trail.toFloat()
+            val pnt = pointOnPerimeter(dd % per)
+            val r = max(4f, baseThickness * 0.8f * fade)
+            paint.color = Color.HSVToColor(floatArrayOf(((dd / per) * 360f) % 360f, 0.72f, 0.95f))
+            paint.alpha = (fade * 220).toInt().coerceIn(0, 255)
+            paint.maskFilter = BlurMaskFilter(max(3f, r), BlurMaskFilter.Blur.NORMAL)
+            canvas.drawCircle(pnt[0], pnt[1], r, paint)
+        }
+        paint.alpha = 255
+
+        // the developer tag, kept just inside the screen so it is always readable
+        val head = pointOnPerimeter(d % per)
+        paint.maskFilter = null
+        paint.typeface = Typeface.DEFAULT_BOLD
+        paint.textSize = 42f
+        paint.textAlign = Paint.Align.CENTER
+        val tx = head[0].coerceIn(150f, width - 150f)
+        val ty = head[1].coerceIn(110f, height - 60f)
+        paint.color = Color.argb(160, 10, 17, 40)
+        canvas.drawText("Innovation-313", tx + 2f, ty + 2f, paint)  // soft shadow
+        paint.color = col
+        canvas.drawText("Innovation-313", tx, ty, paint)
+        paint.textAlign = Paint.Align.LEFT
+        paint.typeface = Typeface.DEFAULT
+    }
+
     private fun pointOnPerimeter(dist: Float): FloatArray {
         val w = width.toFloat(); val h = height.toFloat()
         var d = dist
