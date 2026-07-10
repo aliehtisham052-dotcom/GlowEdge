@@ -46,6 +46,9 @@ class MainActivity : AppCompatActivity() {
         prefs = getSharedPreferences("glowedge_prefs", Context.MODE_PRIVATE)
         flipper = findViewById(R.id.flipper)
         mainFlipper = findViewById(R.id.mainFlipper)
+        // Premium feel: soft cross-fade when switching tabs
+        mainFlipper.inAnimation = android.view.animation.AlphaAnimation(0f, 1f).apply { duration = 180 }
+        mainFlipper.outAnimation = android.view.animation.AlphaAnimation(1f, 0f).apply { duration = 140 }
 
         // Onboarding
         findViewById<TextView>(R.id.btnStart).setOnClickListener {
@@ -248,6 +251,7 @@ class MainActivity : AppCompatActivity() {
             card.addView(apply)
 
             val pick = View.OnClickListener {
+                it.performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP)
                 ProfileManager.setStyle(this, st.id)
                 notifyService()
                 refreshStyleHighlights()

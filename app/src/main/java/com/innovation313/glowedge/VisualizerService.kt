@@ -259,10 +259,15 @@ class VisualizerService : Service() {
 
         // Speech rejection: normal talking is strongly mid-band dominant with low spread.
         // If it looks like speech, do not treat it as music regardless of other cues.
-        val looksLikeSpeech = balance < 0.35f && spread < 0.34f
+        // STRICT speech rejection: this app is for music/naat/kalam, not local chatting.
+        // Speech = mid-band dominant + narrow spread + short choppy phrases (no long sustain).
+        // A cappella naat sustains notes (long sustain) so it passes even without bass.
+        val longVocalSustain = sustainFrames > 14
+        val looksLikeSpeech = balance < 0.45f && spread < 0.40f && !longVocalSustain
         if (looksLikeSpeech) {
-            musicScore += (0f - musicScore) * 0.05f
-            return musicScore > 0.35f
+            // fall quickly so the glow dies fast when someone talks
+            musicScore += (0f - musicScore) * 0.10f
+            return musicScore > 0.45f
         }
 
         // Score each cue. Music/naat needs at least 3 of 4 strong signals.
@@ -279,7 +284,7 @@ class VisualizerService : Service() {
         val target = if (looksMusical) 1f else 0f
         musicScore += (target - musicScore) * (if (target > musicScore) rise else fall)
 
-        return musicScore > 0.40f
+        return musicScore > 0.45f
     }
 
     private fun restartVisualizer() {

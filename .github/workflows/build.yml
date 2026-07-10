@@ -34,27 +34,28 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.0.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.0.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.1.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.1.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.0.apk
-            GlowEdge-v6.0.aab
+            GlowEdge-v6.1.apk
+            GlowEdge-v6.1.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.0
-          name: GlowEdge v6.0 — Custom Colors (millions)
+          tag_name: v6.1
+          name: GlowEdge v6.1 — Strict music-only + polish
           body: |
-            GlowEdge v6.0 - Custom Colors
-            - NEW: Custom Color Picker — make your own theme from millions of color combinations (Hue / Saturation / Brightness for two colors, built-in, no internet needed)
-            - Beat & rhythm sync, loudness glow, signature sweep, Segments style, 9 themes + Custom
+            GlowEdge v6.1 - Phase 1 complete
+            - STRICTER conversation rejection: made for music/naat/kalam, not local chatting — talking kills the glow fast, while a cappella naat (sustained vocals) still passes
+            - Premium UI feel: smooth cross-fade between tabs, haptic tick on style apply
+            - Custom Colors (millions), beat & rhythm sync, loudness glow, signature sweep, Segments, 9 themes
             Developed by Innovation-313
           files: |
-            GlowEdge-v6.0.apk
-            GlowEdge-v6.0.aab
+            GlowEdge-v6.1.apk
+            GlowEdge-v6.1.aab
