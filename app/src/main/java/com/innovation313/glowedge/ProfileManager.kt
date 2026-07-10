@@ -55,6 +55,8 @@ object ProfileManager {
     private const val KEY_SPEED = "speed"
     private const val KEY_INTENSITY = "intensity"
     private const val KEY_SAVER = "battery_saver"
+    private const val KEY_CUSTOM_START = "custom_start"
+    private const val KEY_CUSTOM_END = "custom_end"
     private const val KEY_INTRO = "intro_anim"
     private const val KEY_MUSIC_ONLY = "music_only"
     private const val KEY_SENSITIVITY = "music_sensitivity"
@@ -80,9 +82,24 @@ object ProfileManager {
         prefs(context).edit().putInt(KEY_THEME, index).apply()
 
     fun themeIndex(context: Context): Int =
-        prefs(context).getInt(KEY_THEME, 0).coerceIn(0, themes.size - 1)
+        prefs(context).getInt(KEY_THEME, 0).coerceIn(0, themes.size)
 
-    fun theme(context: Context): Profile = themes[themeIndex(context)]
+    fun customStart(context: Context): Int =
+        prefs(context).getInt(KEY_CUSTOM_START, Color.parseColor("#4DD9EC"))
+
+    fun customEnd(context: Context): Int =
+        prefs(context).getInt(KEY_CUSTOM_END, Color.parseColor("#E8A0B4"))
+
+    fun setCustomColors(context: Context, start: Int, end: Int) =
+        prefs(context).edit().putInt(KEY_CUSTOM_START, start).putInt(KEY_CUSTOM_END, end).apply()
+
+    /** Index == themes.size is the "Custom" slot (user-made colors). */
+    fun theme(context: Context): Profile {
+        val i = themeIndex(context)
+        return if (i >= themes.size)
+            Profile("Custom", customStart(context), customEnd(context))
+        else themes[i]
+    }
 
     fun setStyle(context: Context, id: Int) =
         prefs(context).edit().putInt(KEY_STYLE, id).apply()

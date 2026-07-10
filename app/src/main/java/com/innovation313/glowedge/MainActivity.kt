@@ -308,7 +308,127 @@ class MainActivity : AppCompatActivity() {
             themeChips.add(chip)
             container.addView(chip)
         }
+
+        // "Custom Colors" chip — millions of combinations via the built-in HSV picker
+        val customIndex = ProfileManager.themes.size
+        val custom = TextView(this)
+        custom.text = "🎨 Custom Colors — apne rang banayen"
+        custom.tag = customIndex
+        custom.textSize = 14f
+        custom.setTextColor(Color.WHITE)
+        custom.setBackgroundResource(R.drawable.bg_card)
+        custom.setPadding(dp(18), dp(14), dp(18), dp(14))
+        val clp = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
+        clp.bottomMargin = dp(10)
+        custom.layoutParams = clp
+        custom.setOnClickListener {
+            ProfileManager.setTheme(this, customIndex)
+            refreshThemeHighlights()
+            showCustomColorPicker()
+        }
+        themeChips.add(custom)
+        container.addView(custom)
         refreshThemeHighlights()
+    }
+
+    /** Built-in HSV picker: two swatches (Color 1 / Color 2) + Hue, Saturation,
+     *  Brightness sliders — millions of combinations, no external library. */
+    private fun showCustomColorPicker() {
+        var c1 = ProfileManager.customStart(this)
+        var c2 = ProfileManager.customEnd(this)
+        var editing = 0 // 0 = color1, 1 = color2
+
+        val root = LinearLayout(this)
+        root.orientation = LinearLayout.VERTICAL
+        root.setPadding(dp(22), dp(18), dp(22), dp(8))
+        root.setBackgroundColor(Color.parseColor("#111938"))
+
+        val title = TextView(this)
+        title.text = "Apne rang chunein"
+        title.textSize = 18f
+        title.setTextColor(ContextCompat.getColor(this, R.color.gold))
+        root.addView(title)
+
+        // swatch row
+        val row = LinearLayout(this)
+        row.orientation = LinearLayout.HORIZONTAL
+        val rowLp = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, dp(56))
+        rowLp.topMargin = dp(14)
+        row.layoutParams = rowLp
+        val sw1 = TextView(this); val sw2 = TextView(this)
+        listOf(sw1, sw2).forEachIndexed { i, sw ->
+            sw.gravity = android.view.Gravity.CENTER
+            sw.textSize = 13f
+            sw.setTextColor(Color.WHITE)
+            val lp = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1f)
+            if (i == 1) lp.marginStart = dp(10)
+            sw.layoutParams = lp
+            row.addView(sw)
+        }
+        root.addView(row)
+
+        // sliders
+        val hsv = FloatArray(3)
+        val seekH = SeekBar(this); val seekS = SeekBar(this); val seekV = SeekBar(this)
+        fun addSlider(label: String, sb: SeekBar, maxV: Int) {
+            val tv = TextView(this); tv.text = label; tv.textSize = 13f
+            tv.setTextColor(Color.parseColor("#8A93B5"))
+            val tlp = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+            tlp.topMargin = dp(12); tv.layoutParams = tlp
+            root.addView(tv); sb.max = maxV; root.addView(sb)
+        }
+        addSlider("Rang (Hue)", seekH, 360)
+        addSlider("Gehrai (Saturation)", seekS, 100)
+        addSlider("Chamak (Brightness)", seekV, 100)
+
+        fun currentColor() = if (editing == 0) c1 else c2
+        fun refreshSwatches() {
+            sw1.setBackgroundColor(c1); sw2.setBackgroundColor(c2)
+            sw1.text = if (editing == 0) "◉ Color 1" else "Color 1"
+            sw2.text = if (editing == 1) "◉ Color 2" else "Color 2"
+        }
+        fun loadSliders() {
+            Color.colorToHSV(currentColor(), hsv)
+            seekH.progress = hsv[0].toInt()
+            seekS.progress = (hsv[1] * 100).toInt()
+            seekV.progress = (hsv[2] * 100).toInt()
+        }
+        val listener = object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(sb: SeekBar?, v: Int, fromUser: Boolean) {
+                if (!fromUser) return
+                val col = Color.HSVToColor(floatArrayOf(
+                    seekH.progress.toFloat(),
+                    seekS.progress / 100f,
+                    seekV.progress / 100f))
+                if (editing == 0) c1 = col else c2 = col
+                refreshSwatches()
+            }
+            override fun onStartTrackingTouch(sb: SeekBar?) {}
+            override fun onStopTrackingTouch(sb: SeekBar?) {}
+        }
+        seekH.setOnSeekBarChangeListener(listener)
+        seekS.setOnSeekBarChangeListener(listener)
+        seekV.setOnSeekBarChangeListener(listener)
+        sw1.setOnClickListener { editing = 0; refreshSwatches(); loadSliders() }
+        sw2.setOnClickListener { editing = 1; refreshSwatches(); loadSliders() }
+        refreshSwatches(); loadSliders()
+
+        android.app.AlertDialog.Builder(this)
+            .setView(root)
+            .setPositiveButton("Save") { _, _ ->
+                ProfileManager.setCustomColors(this, c1, c2)
+                ProfileManager.setTheme(this, ProfileManager.themes.size)
+                notifyService()
+                refreshThemeHighlights()
+                findViewById<PreviewView?>(R.id.previewView)?.refresh()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private val themeChips = ArrayList<TextView>()

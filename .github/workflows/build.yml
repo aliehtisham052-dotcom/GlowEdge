@@ -34,29 +34,27 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v5.9.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v5.9.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.0.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.0.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v5.9.apk
-            GlowEdge-v5.9.aab
+            GlowEdge-v6.0.apk
+            GlowEdge-v6.0.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v5.9
-          name: GlowEdge v5.9 — Beat & rhythm sync
+          tag_name: v6.0
+          name: GlowEdge v6.0 — Custom Colors (millions)
           body: |
-            GlowEdge v5.9 - Rhythm update
-            - Beat sync: real bass-onset detection — every beat gives the whole glow a punch
-            - Rhythm sync: animations learn the track's tempo — fast songs dance faster, slow naats glide gently
-            - Loudness glow: brightness follows the voice — loud hits shine, quiet parts breathe dim
-            - Signature sweep, Segments style, 9 soothing themes, all fixes included
+            GlowEdge v6.0 - Custom Colors
+            - NEW: Custom Color Picker — make your own theme from millions of color combinations (Hue / Saturation / Brightness for two colors, built-in, no internet needed)
+            - Beat & rhythm sync, loudness glow, signature sweep, Segments style, 9 themes + Custom
             Developed by Innovation-313
           files: |
-            GlowEdge-v5.9.apk
-            GlowEdge-v5.9.aab
+            GlowEdge-v6.0.apk
+            GlowEdge-v6.0.aab
