@@ -34,16 +34,16 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v5.4.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v5.4.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v5.5.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v5.5.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v5.4.apk
-            GlowEdge-v5.4.aab
+            GlowEdge-v5.5.apk
+            GlowEdge-v5.5.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
@@ -58,5 +58,5 @@ jobs:
             - Music/naat-only glow, 11 styles, 7 themes, notification glow
             Developed by Innovation-313
           files: |
-            GlowEdge-v5.4.apk
-            GlowEdge-v5.4.aab
+            GlowEdge-v5.5.apk
+            GlowEdge-v5.5.aab
