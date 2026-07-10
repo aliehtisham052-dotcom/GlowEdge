@@ -22,10 +22,9 @@ jobs:
           java-version: '17'
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: '8.7'
-          cache-disabled: true
 
       - name: Build debug APK
         run: gradle assembleDebug --no-daemon
@@ -49,15 +48,13 @@ jobs:
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.1
-          name: GlowEdge v6.1 — Lightweight clean rewrite
+          tag_name: v5.4
+          name: GlowEdge v5.4
           body: |
-            GlowEdge v6.1 - Lightweight clean rewrite
-            - Rebuilt with cleaner code; much lighter on the phone to avoid lag/hang
-            - Battery Saver ON by default, capped frame rate, lower CPU use
-            - Glow reacts to music & naat only; stays dark on silence and normal talking
-            - 11 styles, 7 themes, Live Preview, Notification Glow, Auto-Start
-            - Privacy-first: no internet, nothing recorded or shared
+            GlowEdge v5.4
+            - Glow now stays OFF (dark screen) during silence and normal talking
+            - It activates only for music, naat and melodic audio, with stronger speech rejection
+            - 11 styles, 7 themes, notification glow, privacy-first
             Developed by Innovation-313
           files: |
             GlowEdge-v5.4.apk
