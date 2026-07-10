@@ -25,7 +25,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
     }
 
     private var styleId = GlowStyles.GLOW_LINE
-    private var colorStart = Color.parseColor("#00E5FF")
+    private var colorStart = Color.parseColor("#6BD4E8")
     private var colorEnd = Color.parseColor("#7C4DFF")
     private var rainbow = false
     private var baseThickness = 16f
@@ -64,10 +64,10 @@ class EdgeVisualizerView(context: Context) : View(context) {
         private const val SOUND_THRESHOLD = 0.06f
         private const val HOLD_MS = 1200L
         private val RAINBOW = intArrayOf(
-            Color.parseColor("#FF1744"), Color.parseColor("#FF9100"),
-            Color.parseColor("#FFEA00"), Color.parseColor("#00E676"),
-            Color.parseColor("#00E5FF"), Color.parseColor("#2979FF"),
-            Color.parseColor("#D500F9"), Color.parseColor("#FF1744")
+            Color.parseColor("#EF6E7A"), Color.parseColor("#F2A96B"),
+            Color.parseColor("#EFD97A"), Color.parseColor("#6BD9A0"),
+            Color.parseColor("#6BD4E8"), Color.parseColor("#7BA3E8"),
+            Color.parseColor("#C68BE0"), Color.parseColor("#EF6E7A")
         )
     }
 
@@ -166,8 +166,8 @@ class EdgeVisualizerView(context: Context) : View(context) {
     private fun colorAt(t: Float): Int {
         return if (rainbow) {
             hsv[0] = (hueShift + t * 300f) % 360f
-            hsv[1] = 1f
-            hsv[2] = 1f
+            hsv[1] = 0.78f
+            hsv[2] = 0.95f
             Color.HSVToColor(hsv)
         } else {
             lerpColor(colorStart, colorEnd, t)
@@ -650,7 +650,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
             // Fire gradient: hot yellow core to red-purple tips
             val t = mag.coerceIn(0f, 1f)
             paint.color = if (rainbow) colorAt(i / (n - 1f))
-                else lerpColor(Color.parseColor("#FFEA00"), colorEnd, 1f - t)
+                else lerpColor(Color.parseColor("#EFD97A"), colorEnd, 1f - t)
             rect.set(0f, cy - barH / 2f, len, cy + barH / 2f)
             canvas.drawRoundRect(rect, barH, barH, paint)
             paint.color = if (rainbow) colorAt((i + 4) / (n - 1f))

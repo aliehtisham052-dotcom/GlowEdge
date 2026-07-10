@@ -59,13 +59,16 @@ object ProfileManager {
     private const val KEY_ONBOARDED = "onboarded"
 
     val themes = listOf(
-        Profile("Spectrum (All Colors)", Color.parseColor("#FF0000"), Color.parseColor("#AA00FF"), rainbow = true),
-        Profile("Neon", Color.parseColor("#00E5FF"), Color.parseColor("#7C4DFF")),
-        Profile("Sunset", Color.parseColor("#FF6D00"), Color.parseColor("#D500F9")),
-        Profile("Ocean", Color.parseColor("#00B0FF"), Color.parseColor("#00E676")),
-        Profile("Royal Gold", Color.parseColor("#FFD54F"), Color.parseColor("#3949AB")),
-        Profile("Fire", Color.parseColor("#FF1744"), Color.parseColor("#FFD600")),
-        Profile("Ice", Color.parseColor("#00E5FF"), Color.parseColor("#E1F5FE"))
+        // Softened, eye-soothing palette: rich but not harsh (balanced saturation/brightness)
+        Profile("Spectrum (All Colors)", Color.parseColor("#F06060"), Color.parseColor("#B07CE8"), rainbow = true),
+        Profile("Neon", Color.parseColor("#4DD9EC"), Color.parseColor("#9B7DE8")),
+        Profile("Sunset", Color.parseColor("#F49B6A"), Color.parseColor("#D98BC9")),
+        Profile("Ocean", Color.parseColor("#5AB8E8"), Color.parseColor("#5FD6A7")),
+        Profile("Royal Gold", Color.parseColor("#EFCB74"), Color.parseColor("#7B8BC9")),
+        Profile("Fire", Color.parseColor("#EF6E7A"), Color.parseColor("#F2CE6B")),
+        Profile("Ice", Color.parseColor("#7FDDEB"), Color.parseColor("#DCEFF7")),
+        Profile("Rose Calm", Color.parseColor("#E8A0B4"), Color.parseColor("#B8A9E0")),
+        Profile("Forest Calm", Color.parseColor("#7FC98F"), Color.parseColor("#5BA8A0"))
     )
 
     private fun prefs(context: Context) =

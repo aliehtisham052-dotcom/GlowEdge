@@ -34,28 +34,29 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v5.6.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v5.6.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v5.7.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v5.7.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v5.6.apk
-            GlowEdge-v5.6.aab
+            GlowEdge-v5.7.apk
+            GlowEdge-v5.7.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v5.6
-          name: GlowEdge v5.6 — Critical hang fix
+          tag_name: v5.7
+          name: GlowEdge v5.7 — Soothing colors
           body: |
-            GlowEdge v5.6 - Critical fix
-            - FIXED: pressing Test Glow made the glow animate forever in the background, draining CPU and hanging low-end phones. It now stops cleanly after 5 seconds.
-            - All v5.5 performance fixes included: 30fps cap, lighter effects, Battery Saver default ON, low CPU audio processing
-            - Security audit clean: no internet permission, no tracking, nothing leaves your phone
+            GlowEdge v5.7 - Soothing color update
+            - All 7 themes refined to softer, eye-friendly tones (rich but never harsh)
+            - Spectrum/rainbow softened (balanced saturation & brightness)
+            - 2 NEW calm themes: Rose Calm & Forest Calm (9 themes total)
+            - Includes v5.6 critical hang fix + all performance fixes
             Developed by Innovation-313
           files: |
-            GlowEdge-v5.6.apk
-            GlowEdge-v5.6.aab
+            GlowEdge-v5.7.apk
+            GlowEdge-v5.7.aab
