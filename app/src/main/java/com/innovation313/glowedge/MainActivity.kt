@@ -111,6 +111,32 @@ class MainActivity : AppCompatActivity() {
         buildThemeButtons()
         setupSliders()
         setupPersonalText()
+        setupHeroHeader()
+    }
+
+    /** One-time premium entrance for the hero header (halo + logo + name fade/scale in),
+     *  plus a static gold shimmer on the app name. Deliberately NOT a looping animation —
+     *  this app is built battery-conscious (Battery Saver default ON, capped frame rate),
+     *  so the home screen should never animate forever in the background. */
+    private fun setupHeroHeader() {
+        val halo = findViewById<View>(R.id.heroHalo)
+        val logo = findViewById<ImageView>(R.id.heroLogo)
+        val heroName = findViewById<TextView>(R.id.heroAppName)
+
+        val text = heroName.text.toString()
+        val w = heroName.paint.measureText(text).coerceAtLeast(1f)
+        heroName.paint.shader = android.graphics.LinearGradient(
+            0f, 0f, w, 0f,
+            intArrayOf(Color.parseColor("#FFD54F"), Color.parseColor("#FFF6D8"), Color.parseColor("#FFD54F")),
+            floatArrayOf(0f, 0.5f, 1f),
+            android.graphics.Shader.TileMode.CLAMP
+        )
+
+        listOf(halo, logo, heroName).forEach { it.alpha = 0f }
+        halo.scaleX = 0.7f; halo.scaleY = 0.7f
+        halo.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(700).setStartDelay(80).start()
+        logo.animate().alpha(1f).setDuration(600).setStartDelay(160).start()
+        heroName.animate().alpha(1f).setDuration(600).setStartDelay(260).start()
     }
 
     override fun onResume() {

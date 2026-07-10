@@ -34,27 +34,27 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.2.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.2.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.3.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.3.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.2.apk
-            GlowEdge-v6.2.aab
+            GlowEdge-v6.3.apk
+            GlowEdge-v6.3.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.2
-          name: GlowEdge v6.2 — Personal Glow Text
+          tag_name: v6.3
+          name: GlowEdge v6.3 — Language fix + Hero home
           body: |
-            GlowEdge v6.2 - Personal Glow Text
+            GlowEdge v6.3 - Personal Glow Text
             - NEW: "Meri Glow Text" — write your own name/word in any language/script; it drifts gently around the edge, on top of whichever style is active. Fully optional (off by default), your own custom color, does not change the glow effect itself.
             - Live Preview and Test Glow both show it instantly so you can try before enabling.
             Developed by Innovation-313
           files: |
-            GlowEdge-v6.2.apk
-            GlowEdge-v6.2.aab
+            GlowEdge-v6.3.apk
+            GlowEdge-v6.3.aab

@@ -72,17 +72,11 @@ class EdgeVisualizerView(context: Context) : View(context) {
     private var personalText = ""
     private var personalTextOn = false
     private var personalTextColor = Color.WHITE
-    private val textPath = Path()
-    private val textPathMeasure = android.graphics.PathMeasure()
-    private var textPathLen = 0f
-    private var textUnitWidth = 0f
-    private var repeatedPersonalText = ""
-    private var lastTextCacheKey = ""
     private var textPathOffset = 0f
     private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
         typeface = Typeface.DEFAULT_BOLD
-        textAlign = Paint.Align.LEFT
+        textAlign = Paint.Align.CENTER
     }
 
     companion object {
@@ -596,37 +590,45 @@ class EdgeVisualizerView(context: Context) : View(context) {
 
     /** Optional overlay: the user's own name/text travels around the edge, on top of
      *  whichever style is active. Never changes the underlying glow — it only adds
-     *  on top, and only when the user has explicitly turned it on. */
+     *  on top, and only when the user has explicitly turned it on.
+     *
+     *  Uses plain canvas.drawText (same call the "Innovation-313" signature tag uses)
+     *  rather than drawTextOnPath, because drawTextOnPath does not apply Android's
+     *  bidi/shaping engine — Urdu, Arabic and other RTL scripts would shape correctly
+     *  letter-by-letter but read in the wrong order along the curve. drawText goes
+     *  through the full Minikin text layout, so every language reads correctly, and
+     *  the text stays upright (never sideways/upside-down on the side edges).
+     */
     private fun drawPersonalText(canvas: Canvas) {
         if (!personalTextOn || personalText.isBlank() || width == 0 || height == 0) return
+        val per = 2f * (width + height)
+        if (per < 10f) return
 
-        val inset = max(22f, baseThickness * 0.95f)
-        textPath.reset()
-        rect.set(inset, inset, width - inset, height - inset)
-        textPath.addRoundRect(rect, screenCornerRadius(), screenCornerRadius(), Path.Direction.CW)
-        textPathMeasure.setPath(textPath, false)
-        textPathLen = textPathMeasure.length
-        if (textPathLen < 10f) return
+        textPaint.textSize = (width.coerceAtMost(height) * 0.048f).coerceIn(26f, 52f)
+        textPaint.color = personalTextColor
+        textPaint.alpha = 255
+        textPaint.maskFilter = blur(max(3f, textPaint.textSize * 0.10f))
 
-        val cacheKey = "$personalText|$width|$height"
-        if (cacheKey != lastTextCacheKey) {
-            textPaint.textSize = (width.coerceAtMost(height) * 0.052f).coerceIn(30f, 60f)
-            val unit = "$personalText   \u2726   "   // ✦ spacer between repeats
-            textUnitWidth = textPaint.measureText(unit).coerceAtLeast(1f)
-            val repeats = (textPathLen / textUnitWidth).toInt() + 3
-            repeatedPersonalText = buildString { repeat(repeats) { append(unit) } }
-            lastTextCacheKey = cacheKey
-        }
+        // Repeats around the loop with a fixed gap; gap includes the text's own
+        // measured width so different languages/lengths space out evenly.
+        val gap = textPaint.measureText(personalText) + textPaint.textSize * 2.4f
+        if (gap < 10f) return
 
         // Gentle, constant drift around the border — independent of style, so it never
         // fights with the glow's own motion.
         textPathOffset += 0.55f * speed
-        if (textPathOffset > textUnitWidth) textPathOffset -= textUnitWidth
+        if (textPathOffset > gap) textPathOffset -= gap
 
-        textPaint.color = personalTextColor
-        textPaint.alpha = 255
-        textPaint.maskFilter = blur(max(3f, textPaint.textSize * 0.10f))
-        canvas.drawTextOnPath(repeatedPersonalText, textPath, -textPathOffset, textPaint.textSize * 0.34f, textPaint)
+        var d = -textPathOffset
+        while (d < per) {
+            if (d >= 0f) {
+                val pnt = pointOnPerimeter(d % per)
+                val tx = pnt[0].coerceIn(100f, width - 100f)
+                val ty = pnt[1].coerceIn(60f, height - 30f)
+                canvas.drawText(personalText, tx, ty, textPaint)
+            }
+            d += gap
+        }
     }
 
     /** Eased 0..1 curve so quiet stays subtle and loud pops - like a designer's response curve. */
