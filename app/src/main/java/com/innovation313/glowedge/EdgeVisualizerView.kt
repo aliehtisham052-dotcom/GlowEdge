@@ -624,7 +624,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
         if (textPathOffset > textUnitWidth) textPathOffset -= textUnitWidth
 
         textPaint.color = personalTextColor
-        textPaint.alpha = (255 * alpha).toInt().coerceIn(0, 255)
+        textPaint.alpha = 255
         textPaint.maskFilter = blur(max(3f, textPaint.textSize * 0.10f))
         canvas.drawTextOnPath(repeatedPersonalText, textPath, -textPathOffset, textPaint.textSize * 0.34f, textPaint)
     }
