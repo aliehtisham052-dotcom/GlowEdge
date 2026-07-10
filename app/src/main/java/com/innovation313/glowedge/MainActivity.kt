@@ -47,6 +47,17 @@ class MainActivity : AppCompatActivity() {
         prefs = getSharedPreferences("glowedge_prefs", Context.MODE_PRIVATE)
         flipper = findViewById(R.id.flipper)
         mainFlipper = findViewById(R.id.mainFlipper)
+
+        // Edge-to-edge is mandatory from targetSdk 35+ (no per-app opt-out anymore).
+        // Pad content below the status bar and the bottom nav above the gesture bar
+        // so nothing sits underneath the system bars.
+        androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, false)
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(flipper) { v, insets ->
+            val bars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+            v.setPadding(0, bars.top, 0, 0)
+            insets
+        }
+
         // Premium feel: soft cross-fade when switching tabs
         mainFlipper.inAnimation = android.view.animation.AlphaAnimation(0f, 1f).apply { duration = 180 }
         mainFlipper.outAnimation = android.view.animation.AlphaAnimation(1f, 0f).apply { duration = 140 }
@@ -98,13 +109,20 @@ class MainActivity : AppCompatActivity() {
                 .setAction(VisualizerService.ACTION_TEST))
             Toast.makeText(this, "Test glow running for 5 seconds...", Toast.LENGTH_SHORT).show()
         }
-        findViewById<BottomNavigationView>(R.id.bottomNav).setOnItemSelectedListener { item ->
-            mainFlipper.displayedChild = when (item.itemId) {
-                R.id.nav_settings -> 1
-                R.id.nav_premium -> 2
-                else -> 0
+        findViewById<BottomNavigationView>(R.id.bottomNav).also { nav ->
+            nav.setOnItemSelectedListener { item ->
+                mainFlipper.displayedChild = when (item.itemId) {
+                    R.id.nav_settings -> 1
+                    R.id.nav_premium -> 2
+                    else -> 0
+                }
+                true
             }
-            true
+            androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(nav) { v, insets ->
+                val bars = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+                v.setPadding(v.paddingLeft, v.paddingTop, v.paddingRight, bars.bottom)
+                insets
+            }
         }
 
         buildStyleCards()

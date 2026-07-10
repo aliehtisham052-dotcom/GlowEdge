@@ -5,14 +5,14 @@ plugins {
 
 android {
     namespace = "com.innovation313.glowedge"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.innovation313.glowedge"
         minSdk = 26
-        targetSdk = 34
-        versionCode = 39
-        versionName = "6.3"
+        targetSdk = 36
+        versionCode = 40
+        versionName = "6.4"
     }
 
     signingConfigs {
@@ -43,7 +43,7 @@ android {
 }
 
 dependencies {
-    implementation("androidx.core:core-ktx:1.13.1")
-    implementation("androidx.appcompat:appcompat:1.7.0")
-    implementation("com.google.android.material:material:1.12.0")
+    implementation("androidx.core:core-ktx:1.18.0")
+    implementation("androidx.appcompat:appcompat:1.7.1")
+    implementation("com.google.android.material:material:1.13.0")
 }

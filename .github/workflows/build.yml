@@ -24,7 +24,7 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
-          gradle-version: '8.7'
+          gradle-version: '8.13'
 
       - name: Build debug APK
         run: gradle assembleDebug --no-daemon
@@ -34,27 +34,29 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.3.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.3.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.4.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.4.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.3.apk
-            GlowEdge-v6.3.aab
+            GlowEdge-v6.4.apk
+            GlowEdge-v6.4.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.3
-          name: GlowEdge v6.3 — Language fix + Hero home
+          tag_name: v6.4
+          name: GlowEdge v6.4 — Toolchain upgrade + Play compliance
           body: |
-            GlowEdge v6.3 - Personal Glow Text
-            - NEW: "Meri Glow Text" — write your own name/word in any language/script; it drifts gently around the edge, on top of whichever style is active. Fully optional (off by default), your own custom color, does not change the glow effect itself.
-            - Live Preview and Test Glow both show it instantly so you can try before enabling.
+            GlowEdge v6.4 - Toolchain upgrade + Play Store compliance
+            - Upgraded Android Gradle Plugin 8.5.2 -> 8.13.0, Kotlin 1.9.24 -> 2.3.20, Gradle 8.7 -> 8.13, core-ktx/appcompat/material to latest stable.
+            - compileSdk/targetSdk raised 34 -> 36 (Android 16) to meet Google Play's Aug 31 2026 target-API requirement for new app submissions.
+            - Added mandatory edge-to-edge inset handling (required by targetSdk 35+) so the header and bottom nav never sit under the status/gesture bars, plus predictive-back support.
+            - Verified every settings control is actually wired into the glow algorithm end to end.
             Developed by Innovation-313
           files: |
-            GlowEdge-v6.3.apk
-            GlowEdge-v6.3.aab
+            GlowEdge-v6.4.apk
+            GlowEdge-v6.4.aab
