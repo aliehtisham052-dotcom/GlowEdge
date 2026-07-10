@@ -39,6 +39,12 @@ class EdgeVisualizerView(context: Context) : View(context) {
     private val ripples = ArrayList<FloatArray>()  // each: [progress, startLevel]
     private var lastBeatLevel = 0f
     private var beatBloom = 0f
+    // Rhythm engine: bass-onset beat detection + tempo tracking + loudness envelope
+    private var bassAvg = 0.06f
+    private var lastBeatTime = 0L
+    private var beatIntervalMs = 500f     // ~120 BPM start
+    private var rhythmMul = 1f            // animation speed follows the track's tempo
+    private var loudEnv = 0f              // fast-attack, slow-release loudness
     private var introStart = 0L
     private var introActive = false
 
@@ -277,7 +283,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
             postInvalidateDelayed(33L)
             if (!soundActive) return
         }
-        alpha = if (flashing) 1f else visibility01
+        alpha = if (flashing) 1f else visibility01 * (0.55f + 0.45f * loudEnv.coerceIn(0f, 1f))
 
         // Punchy equalizer motion: fast attack, slower musical decay
         for (i in 0 until bandCount) {
@@ -289,20 +295,42 @@ class EdgeVisualizerView(context: Context) : View(context) {
             }
         }
         displayLevel += (level - displayLevel) * 0.30f
-        // Beat detection: a sharp rise in level triggers a bloom + a new ripple
-        if (displayLevel - lastBeatLevel > 0.16f) {
+
+        // ---- Rhythm engine ----
+        // Bass onset detection: beat = bass energy jumping clearly above its own average
+        var bassNow = 0f
+        for (i in 0 until 8) bassNow += displayBands[i]
+        bassNow /= 8f
+        bassAvg += (bassNow - bassAvg) * 0.06f            // slow-moving average
+        val sinceBeat = now - lastBeatTime
+        if (bassNow > bassAvg * 1.35f && bassNow > 0.12f && sinceBeat > 240L) {
             beatBloom = 1f
+            if (lastBeatTime != 0L && sinceBeat < 2000L) {
+                // learn the track's tempo (smoothed inter-beat interval)
+                beatIntervalMs += (sinceBeat - beatIntervalMs) * 0.25f
+            }
+            lastBeatTime = now
             if (styleId == GlowStyles.RIPPLE && ripples.size < 6) {
                 ripples.add(floatArrayOf(0f, displayLevel))
             }
         }
+        // Animation speed follows the rhythm: fast songs animate faster, slow naats glide
+        rhythmMul += ((500f / beatIntervalMs.coerceIn(280f, 1200f)).coerceIn(0.6f, 1.8f) - rhythmMul) * 0.05f
+        // Every style gets a beat punch (bloom briefly lifts the whole glow)
+        displayLevel = (displayLevel + beatBloom * 0.22f).coerceAtMost(1f)
         lastBeatLevel = displayLevel
         beatBloom *= 0.90f
-        rotationDeg += 0.6f * speed + displayLevel * 4f
+
+        // Loudness envelope: glow brightness follows the voice's loudness
+        // (fast attack so hits light up instantly, slow release so it breathes out)
+        loudEnv = if (level > loudEnv) loudEnv + (level - loudEnv) * 0.5f
+                  else loudEnv * 0.94f
+
+        rotationDeg += (0.6f * speed + displayLevel * 4f) * rhythmMul
         if (rotationDeg > 360f) rotationDeg -= 360f
-        hueShift += 0.5f * speed + displayLevel * 1.5f
+        hueShift += (0.5f * speed + displayLevel * 1.5f) * rhythmMul
         if (hueShift > 360f) hueShift -= 360f
-        flamePhase += 0.08f * speed + displayLevel * 0.15f
+        flamePhase += (0.08f * speed + displayLevel * 0.15f) * rhythmMul
 
         when (styleId) {
             GlowStyles.SIDE_BARS -> drawSideBars(canvas)
