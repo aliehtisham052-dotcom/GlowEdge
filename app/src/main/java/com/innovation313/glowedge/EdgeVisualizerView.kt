@@ -601,7 +601,9 @@ class EdgeVisualizerView(context: Context) : View(context) {
      */
     private fun drawPersonalText(canvas: Canvas) {
         if (!personalTextOn || personalText.isBlank() || width == 0 || height == 0) return
-        val per = 2f * (width + height)
+        val w = width.toFloat()
+        val h = height.toFloat()
+        val per = 2f * (w + h)
         if (per < 10f) return
 
         textPaint.textSize = (width.coerceAtMost(height) * 0.048f).coerceIn(26f, 52f)
@@ -614,18 +616,50 @@ class EdgeVisualizerView(context: Context) : View(context) {
         val gap = textPaint.measureText(personalText) + textPaint.textSize * 2.4f
         if (gap < 10f) return
 
-        // Gentle, constant drift around the border — independent of style, so it never
-        // fights with the glow's own motion.
-        textPathOffset += 0.55f * speed
+        // Slow, gentle drift — deliberately slower than before and independent of the
+        // glow's own motion, so it never fights with it.
+        textPathOffset += 0.30f * speed
         if (textPathOffset > gap) textPathOffset -= gap
 
+        val pad = textPaint.textSize * 0.75f
         var d = -textPathOffset
         while (d < per) {
             if (d >= 0f) {
-                val pnt = pointOnPerimeter(d % per)
-                val tx = pnt[0].coerceIn(100f, width - 100f)
-                val ty = pnt[1].coerceIn(60f, height - 30f)
-                canvas.drawText(personalText, tx, ty, textPaint)
+                val dd = d % per
+                when {
+                    dd < w -> {
+                        // top edge: horizontal, upright
+                        val pnt = pointOnPerimeter(dd)
+                        val tx = pnt[0].coerceIn(100f, w - 100f)
+                        canvas.drawText(personalText, tx, pad, textPaint)
+                    }
+                    dd < w + h -> {
+                        // right edge: rotated vertical, reads bottom-to-top
+                        val pnt = pointOnPerimeter(dd)
+                        val ty = pnt[1].coerceIn(100f, h - 100f)
+                        val tx = w - pad
+                        canvas.save()
+                        canvas.rotate(-90f, tx, ty)
+                        canvas.drawText(personalText, tx, ty, textPaint)
+                        canvas.restore()
+                    }
+                    dd < 2f * w + h -> {
+                        // bottom edge: horizontal, upright
+                        val pnt = pointOnPerimeter(dd)
+                        val tx = pnt[0].coerceIn(100f, w - 100f)
+                        canvas.drawText(personalText, tx, h - pad * 0.4f, textPaint)
+                    }
+                    else -> {
+                        // left edge: rotated vertical, reads top-to-bottom
+                        val pnt = pointOnPerimeter(dd)
+                        val ty = pnt[1].coerceIn(100f, h - 100f)
+                        val tx = pad
+                        canvas.save()
+                        canvas.rotate(90f, tx, ty)
+                        canvas.drawText(personalText, tx, ty, textPaint)
+                        canvas.restore()
+                    }
+                }
             }
             d += gap
         }

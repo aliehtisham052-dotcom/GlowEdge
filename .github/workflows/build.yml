@@ -71,29 +71,28 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.4.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.4.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.5.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.5.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.4.apk
-            GlowEdge-v6.4.aab
+            GlowEdge-v6.5.apk
+            GlowEdge-v6.5.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.4
-          name: GlowEdge v6.4 — Toolchain upgrade + Play compliance
+          tag_name: v6.5
+          name: GlowEdge v6.5 — Personal Text: vertical sides + slower drift
           body: |
-            GlowEdge v6.4 - Toolchain upgrade + Play Store compliance
-            - Upgraded Android Gradle Plugin 8.5.2 -> 8.13.0, Kotlin 1.9.24 -> 2.3.20, Gradle 8.7 -> 8.13, core-ktx/appcompat/material to latest stable.
-            - compileSdk/targetSdk raised 34 -> 36 (Android 16) to meet Google Play's Aug 31 2026 target-API requirement for new app submissions.
-            - Added mandatory edge-to-edge inset handling (required by targetSdk 35+) so the header and bottom nav never sit under the status/gesture bars, plus predictive-back support.
-            - Verified every settings control is actually wired into the glow algorithm end to end.
+            GlowEdge v6.5 - Personal Glow Text polish
+            - Personal Glow Text now rotates to vertical on the left/right edges (reads along the side) instead of staying horizontal only.
+            - Slower, gentler drift speed around the border.
+            - Includes the full v6.4 toolchain upgrade (AGP 8.13, Kotlin 2.3.20, targetSdk 36) and Android Lint QA pass.
             Developed by Innovation-313
           files: |
-            GlowEdge-v6.4.apk
-            GlowEdge-v6.4.aab
+            GlowEdge-v6.5.apk
+            GlowEdge-v6.5.aab
