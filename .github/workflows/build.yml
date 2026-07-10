@@ -33,7 +33,21 @@ jobs:
           cache-disabled: true
 
       - name: Build debug APK
-        run: gradle assembleDebug --no-daemon
+        run: |
+          set +e
+          gradle assembleDebug --no-daemon --stacktrace 2>&1 | tee /tmp/build.log
+          STATUS=${PIPESTATUS[0]}
+          if [ "$STATUS" -ne 0 ]; then
+            echo "----- CAPTURED ERROR LINES -----"
+            grep -iE "error:|FAILURE|exception|e: file|what went wrong" /tmp/build.log | tail -25 | while IFS= read -r line; do
+              echo "::error::${line}"
+            done
+            echo "----- LAST 30 LINES OF LOG -----"
+            tail -30 /tmp/build.log | while IFS= read -r line; do
+              echo "::error::${line}"
+            done
+            exit 1
+          fi
 
       - name: Build release AAB (for Play Store)
         run: gradle bundleRelease --no-daemon
