@@ -39,6 +39,6 @@ class PreviewView @JvmOverloads constructor(
         if (width == 0 || height == 0) return
         if (Settings.styleId(context) != lastStyle || Settings.themeIndex(context) != lastTheme) applyNow()
         edge.draw(canvas)
-        postInvalidateOnAnimation()
+        postInvalidateDelayed(40)
     }
 }

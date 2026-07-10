@@ -22,9 +22,10 @@ jobs:
           java-version: '17'
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.7'
+          cache-disabled: true
 
       - name: Build debug APK
         run: gradle assembleDebug --no-daemon
@@ -48,13 +49,14 @@ jobs:
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.0
-          name: GlowEdge v6.0 — Clean rewrite
+          tag_name: v6.1
+          name: GlowEdge v6.1 — Lightweight clean rewrite
           body: |
-            GlowEdge v6.0 - Complete clean rewrite
-            - Rebuilt from scratch with cleaner, faster code
-            - Glow strictly reacts to music & naat only; stays dark on silence and normal talking
-            - 11 styles, 7 color themes, Live Preview, Notification Glow, Battery Saver, Auto-Start
+            GlowEdge v6.1 - Lightweight clean rewrite
+            - Rebuilt with cleaner code; much lighter on the phone to avoid lag/hang
+            - Battery Saver ON by default, capped frame rate, lower CPU use
+            - Glow reacts to music & naat only; stays dark on silence and normal talking
+            - 11 styles, 7 themes, Live Preview, Notification Glow, Auto-Start
             - Privacy-first: no internet, nothing recorded or shared
             Developed by Innovation-313
           files: |

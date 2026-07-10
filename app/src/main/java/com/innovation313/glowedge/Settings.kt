@@ -113,7 +113,7 @@ object Settings {
     fun setSensitivity(c: Context, v: Int) = p(c).edit().putInt(K_SENSITIVITY, v).apply()
 
     // Toggles
-    fun batterySaver(c: Context) = p(c).getBoolean(K_SAVER, false)
+    fun batterySaver(c: Context) = p(c).getBoolean(K_SAVER, true)
     fun setBatterySaver(c: Context, on: Boolean) = p(c).edit().putBoolean(K_SAVER, on).apply()
 
     fun autostart(c: Context) = p(c).getBoolean(K_AUTOSTART, false)

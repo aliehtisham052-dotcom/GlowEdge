@@ -177,7 +177,7 @@ class VisualizerService : Service() {
                         val gated = if (!musicOnly || isMusical(out, raw)) raw else 0f
                         view?.feed(gated, out)
                     }
-                }, Visualizer.getMaxCaptureRate() / 2, false, true)
+                }, Visualizer.getMaxCaptureRate() / 4, false, true)
                 enabled = true
             }
         } catch (_: Exception) {

@@ -61,6 +61,7 @@ class EdgeView @JvmOverloads constructor(
     // preview mode drives its own synthetic audio
     private var preview = false
     private var prevPhase = 0f
+    private var lastFrame = 0L
 
     companion object {
         private const val THRESHOLD = 0.05f
@@ -202,7 +203,11 @@ class EdgeView @JvmOverloads constructor(
             Styles.RIPPLE -> ripple(canvas)
             else -> glowLine(canvas)
         }
-        postInvalidateOnAnimation()
+        // Cap redraw to ~30fps to stay light on low-end phones
+        val frameNow = SystemClock.elapsedRealtime()
+        val delay = (33L - (frameNow - lastFrame)).coerceIn(0L, 33L)
+        lastFrame = frameNow
+        postInvalidateDelayed(delay)
     }
 
     private fun glowLine(c: Canvas) {
