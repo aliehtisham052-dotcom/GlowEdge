@@ -13,6 +13,7 @@ import android.provider.Settings
 import android.view.Gravity
 import android.view.View
 import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView as TV
 import android.widget.LinearLayout
@@ -109,6 +110,7 @@ class MainActivity : AppCompatActivity() {
         buildStyleCards()
         buildThemeButtons()
         setupSliders()
+        setupPersonalText()
     }
 
     override fun onResume() {
@@ -429,6 +431,110 @@ class MainActivity : AppCompatActivity() {
                 ProfileManager.setTheme(this, ProfileManager.themes.size)
                 notifyService()
                 refreshThemeHighlights()
+                findViewById<PreviewView?>(R.id.previewView)?.refresh()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    // ---------- Personal Glow Text ----------
+
+    private fun setupPersonalText() {
+        val editText = findViewById<EditText>(R.id.editPersonalText)
+        val switchText = findViewById<MaterialSwitch>(R.id.switchPersonalText)
+        val swatch = findViewById<View>(R.id.swatchTextColor)
+
+        editText.setText(ProfileManager.personalText(this))
+        switchText.isChecked = ProfileManager.personalTextEnabled(this)
+        swatch.setBackgroundColor(ProfileManager.personalTextColor(this))
+
+        editText.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+            override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+            override fun afterTextChanged(s: android.text.Editable?) {
+                ProfileManager.setPersonalText(this@MainActivity, s?.toString() ?: "")
+                notifyService()
+                findViewById<PreviewView?>(R.id.previewView)?.refresh()
+            }
+        })
+
+        switchText.setOnCheckedChangeListener { _, checked ->
+            ProfileManager.setPersonalTextEnabled(this, checked)
+            notifyService()
+            findViewById<PreviewView?>(R.id.previewView)?.refresh()
+        }
+
+        swatch.setOnClickListener { showTextColorPicker(swatch) }
+    }
+
+    /** Same built-in HSV picker as Custom Colors, but for a single color — the personal text. */
+    private fun showTextColorPicker(swatch: View) {
+        var c = ProfileManager.personalTextColor(this)
+
+        val root = LinearLayout(this)
+        root.orientation = LinearLayout.VERTICAL
+        root.setPadding(dp(22), dp(18), dp(22), dp(8))
+        root.setBackgroundColor(Color.parseColor("#111938"))
+
+        val title = TextView(this)
+        title.text = "Text ka rang chunein"
+        title.textSize = 18f
+        title.setTextColor(ContextCompat.getColor(this, R.color.gold))
+        root.addView(title)
+
+        val preview = TextView(this)
+        val plp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(48))
+        plp.topMargin = dp(14)
+        preview.layoutParams = plp
+        preview.gravity = android.view.Gravity.CENTER
+        preview.text = "Ehtisham \u2726 Innovation-313"
+        preview.setTextColor(Color.WHITE)
+        root.addView(preview)
+
+        val hsv = FloatArray(3)
+        val seekH = SeekBar(this); val seekS = SeekBar(this); val seekV = SeekBar(this)
+        fun addSlider(label: String, sb: SeekBar, maxV: Int) {
+            val tv = TextView(this); tv.text = label; tv.textSize = 13f
+            tv.setTextColor(Color.parseColor("#8A93B5"))
+            val tlp = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+            tlp.topMargin = dp(12); tv.layoutParams = tlp
+            root.addView(tv); sb.max = maxV; root.addView(sb)
+        }
+        addSlider("Rang (Hue)", seekH, 360)
+        addSlider("Gehrai (Saturation)", seekS, 100)
+        addSlider("Chamak (Brightness)", seekV, 100)
+
+        fun loadSliders() {
+            Color.colorToHSV(c, hsv)
+            seekH.progress = hsv[0].toInt()
+            seekS.progress = (hsv[1] * 100).toInt()
+            seekV.progress = (hsv[2] * 100).toInt()
+        }
+        val listener = object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(sb: SeekBar?, v: Int, fromUser: Boolean) {
+                if (!fromUser) return
+                c = Color.HSVToColor(floatArrayOf(
+                    seekH.progress.toFloat(),
+                    seekS.progress / 100f,
+                    seekV.progress / 100f))
+                preview.setBackgroundColor(c)
+            }
+            override fun onStartTrackingTouch(sb: SeekBar?) {}
+            override fun onStopTrackingTouch(sb: SeekBar?) {}
+        }
+        seekH.setOnSeekBarChangeListener(listener)
+        seekS.setOnSeekBarChangeListener(listener)
+        seekV.setOnSeekBarChangeListener(listener)
+        loadSliders()
+        preview.setBackgroundColor(c)
+
+        android.app.AlertDialog.Builder(this)
+            .setView(root)
+            .setPositiveButton("Save") { _, _ ->
+                ProfileManager.setPersonalTextColor(this, c)
+                swatch.setBackgroundColor(c)
+                notifyService()
                 findViewById<PreviewView?>(R.id.previewView)?.refresh()
             }
             .setNegativeButton("Cancel", null)

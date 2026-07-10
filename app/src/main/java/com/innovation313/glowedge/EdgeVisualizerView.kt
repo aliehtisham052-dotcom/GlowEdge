@@ -68,6 +68,23 @@ class EdgeVisualizerView(context: Context) : View(context) {
     private val rect = RectF()
     private val hsv = floatArrayOf(0f, 1f, 1f)
 
+    // ---- Personal Glow Text: optional name/keyword travelling around the edge ----
+    private var personalText = ""
+    private var personalTextOn = false
+    private var personalTextColor = Color.WHITE
+    private val textPath = Path()
+    private val textPathMeasure = android.graphics.PathMeasure()
+    private var textPathLen = 0f
+    private var textUnitWidth = 0f
+    private var repeatedPersonalText = ""
+    private var lastTextCacheKey = ""
+    private var textPathOffset = 0f
+    private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.FILL
+        typeface = Typeface.DEFAULT_BOLD
+        textAlign = Paint.Align.LEFT
+    }
+
     companion object {
         private const val SOUND_THRESHOLD = 0.06f
         private const val HOLD_MS = 1200L
@@ -93,7 +110,8 @@ class EdgeVisualizerView(context: Context) : View(context) {
 
     fun applySettings(
         style: Int, cStart: Int, cEnd: Int,
-        isRainbow: Boolean, thickness: Float, spd: Float, inten: Float, saver: Boolean
+        isRainbow: Boolean, thickness: Float, spd: Float, inten: Float, saver: Boolean,
+        personalTextValue: String = "", personalTextEnabled: Boolean = false, personalTextColorValue: Int = Color.WHITE
     ) {
         styleId = style
         colorStart = cStart
@@ -103,6 +121,9 @@ class EdgeVisualizerView(context: Context) : View(context) {
         speed = spd
         intensity = inten
         batterySaver = saver
+        personalText = personalTextValue
+        personalTextOn = personalTextEnabled
+        personalTextColor = personalTextColorValue
         shader = null
         postInvalidate()
     }
@@ -235,6 +256,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
                 GlowStyles.SEGMENTS -> drawSegments(canvas)
                 else -> drawGlowLine(canvas)
             }
+            drawPersonalText(canvas)
             postInvalidateDelayed(33L)
             return
         }
@@ -346,6 +368,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
             GlowStyles.SEGMENTS -> drawSegments(canvas)
             else -> drawGlowLine(canvas)
         }
+        drawPersonalText(canvas)
 
         postInvalidateDelayed(33L)
     }
@@ -569,6 +592,41 @@ class EdgeVisualizerView(context: Context) : View(context) {
     private fun screenCornerRadius(): Float {
         // Approximate modern phone screen corner radius; scales with screen size
         return (width.coerceAtMost(height) * 0.09f).coerceIn(40f, 130f)
+    }
+
+    /** Optional overlay: the user's own name/text travels around the edge, on top of
+     *  whichever style is active. Never changes the underlying glow — it only adds
+     *  on top, and only when the user has explicitly turned it on. */
+    private fun drawPersonalText(canvas: Canvas) {
+        if (!personalTextOn || personalText.isBlank() || width == 0 || height == 0) return
+
+        val inset = max(22f, baseThickness * 0.95f)
+        textPath.reset()
+        rect.set(inset, inset, width - inset, height - inset)
+        textPath.addRoundRect(rect, screenCornerRadius(), screenCornerRadius(), Path.Direction.CW)
+        textPathMeasure.setPath(textPath, false)
+        textPathLen = textPathMeasure.length
+        if (textPathLen < 10f) return
+
+        val cacheKey = "$personalText|$width|$height"
+        if (cacheKey != lastTextCacheKey) {
+            textPaint.textSize = (width.coerceAtMost(height) * 0.052f).coerceIn(30f, 60f)
+            val unit = "$personalText   \u2726   "   // ✦ spacer between repeats
+            textUnitWidth = textPaint.measureText(unit).coerceAtLeast(1f)
+            val repeats = (textPathLen / textUnitWidth).toInt() + 3
+            repeatedPersonalText = buildString { repeat(repeats) { append(unit) } }
+            lastTextCacheKey = cacheKey
+        }
+
+        // Gentle, constant drift around the border — independent of style, so it never
+        // fights with the glow's own motion.
+        textPathOffset += 0.55f * speed
+        if (textPathOffset > textUnitWidth) textPathOffset -= textUnitWidth
+
+        textPaint.color = personalTextColor
+        textPaint.alpha = (255 * alpha).toInt().coerceIn(0, 255)
+        textPaint.maskFilter = blur(max(3f, textPaint.textSize * 0.10f))
+        canvas.drawTextOnPath(repeatedPersonalText, textPath, -textPathOffset, textPaint.textSize * 0.34f, textPaint)
     }
 
     /** Eased 0..1 curve so quiet stays subtle and loud pops - like a designer's response curve. */

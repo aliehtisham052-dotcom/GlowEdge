@@ -114,7 +114,10 @@ class VisualizerService : Service() {
             ProfileManager.thickness(this).toFloat(),
             ProfileManager.speed(this) / 10f,
             ProfileManager.intensity(this) / 10f,
-            ProfileManager.batterySaver(this)
+            ProfileManager.batterySaver(this),
+            ProfileManager.personalText(this),
+            ProfileManager.personalTextEnabled(this),
+            ProfileManager.personalTextColor(this)
         )
         // Innovation-313 signature sweep: play once whenever the style changes
         val styleNow = ProfileManager.style(this)

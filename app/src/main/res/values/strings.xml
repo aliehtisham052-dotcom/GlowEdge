@@ -35,6 +35,11 @@
     <string name="notification_running">Edge glow is running</string>
 
     <string name="color_theme">Color Theme</string>
+    <string name="personal_text_title">Meri Glow Text</string>
+    <string name="personal_text_desc">Apna naam ya koi bhi text likhen, kisi bhi zaban mein — glow ke sath edge par ghoomega.</string>
+    <string name="personal_text_hint">Yahan likhen (jaise: Ehtisham)</string>
+    <string name="personal_text_toggle">Text Dikhayen</string>
+    <string name="personal_text_color">Text ka Rang</string>
     <string name="thickness">Thickness</string>
     <string name="speed">Animation Speed</string>
 
@@ -50,7 +55,7 @@
     <string name="developer_label">Developer</string>
     <string name="developer_name">Innovation-313</string>
     <string name="developer_email">aliehtisham052@gmail.com</string>
-    <string name="app_version">Version 6.1</string>
+    <string name="app_version">Version 6.2</string>
     <string name="notif_glow">Notification Glow</string>
     <string name="notif_glow_desc">Flash the edges in an app color when a message or notification arrives. Works even without music.</string>
     <string name="notif_glow_need_access">Please allow notification access for GlowEdge to detect calls and messages.</string>
