@@ -1,0 +1,10 @@
+<resources>
+    <color name="navy">#0A1128</color>
+    <color name="navy2">#0E1631</color>
+    <color name="surface">#111938</color>
+    <color name="surface_border">#212B4D</color>
+    <color name="gold">#FFD54F</color>
+    <color name="accent">#7C4DFF</color>
+    <color name="white">#FFFFFF</color>
+    <color name="text_muted">#8A93B5</color>
+</resources>
