@@ -334,7 +334,7 @@ class VisualizerService : Service() {
                         val gatedLevel = if (!musicOnly || musical) rawLevel else 0f
                         edgeView?.setAudioData(gatedLevel, bands)
                     }
-                }, Visualizer.getMaxCaptureRate() / 2, false, true)
+                }, Visualizer.getMaxCaptureRate() / 4, false, true)
                 enabled = true
             }
         } catch (_: Exception) {

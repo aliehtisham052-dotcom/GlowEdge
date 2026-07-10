@@ -66,6 +66,6 @@ class PreviewView @JvmOverloads constructor(
         }
         edge.setAudioData((sum / bands.size + 0.25f).coerceIn(0f, 1f), bands)
         edge.draw(canvas)
-        postInvalidateOnAnimation()
+        postInvalidateDelayed(40L)
     }
 }

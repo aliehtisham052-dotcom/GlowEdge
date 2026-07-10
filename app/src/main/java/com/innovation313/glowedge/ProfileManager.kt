@@ -110,7 +110,7 @@ object ProfileManager {
         prefs(context).edit().putBoolean(KEY_SAVER, on).apply()
 
     fun batterySaver(context: Context): Boolean =
-        prefs(context).getBoolean(KEY_SAVER, false)
+        prefs(context).getBoolean(KEY_SAVER, true)
 
     fun setMusicOnly(context: Context, on: Boolean) =
         prefs(context).edit().putBoolean(KEY_MUSIC_ONLY, on).apply()

@@ -16,6 +16,14 @@ class EdgeVisualizerView(context: Context) : View(context) {
 
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
 
+    // Cached blur filters: creating a new BlurMaskFilter every frame causes memory
+    // churn and jank on budget phones; reusing them keeps the glow smooth and light.
+    private val blurCache = HashMap<Int, BlurMaskFilter>()
+    private fun blur(radius: Float): BlurMaskFilter {
+        val key = radius.toInt().coerceAtLeast(1)
+        return blurCache.getOrPut(key) { BlurMaskFilter(key.toFloat(), BlurMaskFilter.Blur.NORMAL) }
+    }
+
     private var styleId = GlowStyles.GLOW_LINE
     private var colorStart = Color.parseColor("#00E5FF")
     private var colorEnd = Color.parseColor("#7C4DFF")
@@ -196,7 +204,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
                 GlowStyles.RIPPLE -> drawRipple(canvas)
                 else -> drawGlowLine(canvas)
             }
-            postInvalidateOnAnimation()
+            postInvalidateDelayed(33L)
             return
         }
 
@@ -207,7 +215,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
             alpha = 1f
             drawIntro(canvas, t)
             if (t >= 1f) introActive = false
-            postInvalidateOnAnimation()
+            postInvalidateDelayed(33L)
             return
         }
 
@@ -241,7 +249,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
         if (flashing) {
             drawNotificationFlash(canvas, now)
             alpha = 1f
-            postInvalidateOnAnimation()
+            postInvalidateDelayed(33L)
             if (!soundActive) return
         }
         alpha = if (flashing) 1f else visibility01
@@ -285,7 +293,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
             else -> drawGlowLine(canvas)
         }
 
-        postInvalidateOnAnimation()
+        postInvalidateDelayed(33L)
     }
 
     private fun drawPulse(canvas: Canvas) {
@@ -302,7 +310,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
         val thickness = baseThickness * (0.6f + loud * 3.0f * intensity)
         paint.strokeWidth = max(4f, thickness)
         val blurMul = if (batterySaver) 0.5f else 1.2f
-        paint.maskFilter = BlurMaskFilter(max(2f, thickness * blurMul), BlurMaskFilter.Blur.NORMAL)
+        paint.maskFilter = blur(max(2f, thickness * blurMul))
         val inset = paint.strokeWidth * 0.3f
         rect.set(inset, inset, width - inset, height - inset)
         val corner = screenCornerRadius()
@@ -313,7 +321,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
         paint.shader = null
         paint.style = Paint.Style.FILL
         val blurMul = if (batterySaver) 0.3f else 0.8f
-        paint.maskFilter = BlurMaskFilter(max(3f, baseThickness * blurMul), BlurMaskFilter.Blur.NORMAL)
+        paint.maskFilter = blur(max(3f, baseThickness * blurMul))
         val perimeter = 2f * (width + height)
         val dotCount = 26
         for (k in 0 until dotCount) {
@@ -339,7 +347,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
             paint.alpha = (90 + 60 * wobble).toInt().coerceIn(40, 180)
             val base = baseThickness * (0.8f + displayLevel * 1.5f + beatBloom * 0.6f)
             paint.strokeWidth = max(3f, base * (1f - lf * 0.5f))
-            paint.maskFilter = BlurMaskFilter(max(6f, base * (1.5f + lf)), BlurMaskFilter.Blur.NORMAL)
+            paint.maskFilter = blur(max(6f, base * (1.5f + lf)))
             val inset = 6f + layer * 10f + wobble * 12f
             rect.set(inset, inset, width - inset, height - inset)
             canvas.drawRoundRect(rect, corner, corner, paint)
@@ -366,7 +374,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
                 val r = max(2f, baseThickness * (0.7f + displayLevel) * fade)
                 paint.color = colorAt((c * 0.5f + fade) % 1f)
                 paint.alpha = (fade * 230).toInt().coerceIn(0, 255)
-                paint.maskFilter = BlurMaskFilter(max(3f, r * 1.2f), BlurMaskFilter.Blur.NORMAL)
+                paint.maskFilter = blur(max(3f, r * 1.2f))
                 canvas.drawCircle(p[0], p[1], r, paint)
             }
         }
@@ -389,7 +397,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
             paint.alpha = alpha
             val thickness = max(3f, baseThickness * (1f - prog) * 1.8f)
             paint.strokeWidth = thickness
-            paint.maskFilter = BlurMaskFilter(max(4f, thickness * 1.2f), BlurMaskFilter.Blur.NORMAL)
+            paint.maskFilter = blur(max(4f, thickness * 1.2f))
             // Ripple stays at the edge: only a small inward travel so it never reaches the middle
             val inset = thickness * 0.5f + prog * (baseThickness * 2.2f)
             rect.set(inset, inset, width - inset, height - inset)
@@ -401,7 +409,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
         paint.alpha = (60 + beatBloom * 120).toInt().coerceIn(40, 200)
         val base = max(3f, baseThickness * (0.5f + beatBloom))
         paint.strokeWidth = base
-        paint.maskFilter = BlurMaskFilter(max(3f, base), BlurMaskFilter.Blur.NORMAL)
+        paint.maskFilter = blur(max(3f, base))
         val inset = base * 0.5f
         rect.set(inset, inset, width - inset, height - inset)
         canvas.drawRoundRect(rect, corner, corner, paint)
@@ -418,7 +426,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
         val w = width.toFloat(); val h = height.toFloat()
         val thickness = baseThickness * (1.2f + (1f - t) * 1.5f)
         paint.strokeWidth = max(4f, thickness)
-        paint.maskFilter = BlurMaskFilter(max(4f, thickness), BlurMaskFilter.Blur.NORMAL)
+        paint.maskFilter = blur(max(4f, thickness))
 
         // fraction of each edge covered, growing from both corners toward center
         val hCover = (w / 2f) * ease
@@ -465,7 +473,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
         val thickness = baseThickness * (1.2f + breathe * 2.2f)
         paint.strokeWidth = max(6f, thickness)
         paint.color = flashColor
-        paint.maskFilter = BlurMaskFilter(max(6f, thickness * 1.1f), BlurMaskFilter.Blur.NORMAL)
+        paint.maskFilter = blur(max(6f, thickness * 1.1f))
         val inset = paint.strokeWidth * 0.3f
         rect.set(inset, inset, width - inset, height - inset)
         val corner = screenCornerRadius()
@@ -495,7 +503,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
         val thickness = baseThickness * (0.35f + loud * 2.0f * intensity)
         paint.strokeWidth = max(3f, thickness)
         // Brighter, wider glow when loud
-        paint.maskFilter = BlurMaskFilter(max(2f, thickness * (0.7f + loud)), BlurMaskFilter.Blur.NORMAL)
+        paint.maskFilter = blur(max(2f, thickness * (0.7f + loud)))
 
         // Sit flush against the true screen edge and match phone's rounded corners
         val inset = paint.strokeWidth * 0.28f
@@ -534,7 +542,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
     private fun drawSideBars(canvas: Canvas) {
         paint.shader = null
         paint.style = Paint.Style.FILL
-        paint.maskFilter = BlurMaskFilter(max(2f, baseThickness * 0.4f), BlurMaskFilter.Blur.NORMAL)
+        paint.maskFilter = blur(max(2f, baseThickness * 0.4f))
 
         val n = 26
         val gap = height / n.toFloat()
@@ -558,7 +566,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
     private fun drawBarsAround(canvas: Canvas) {
         paint.shader = null
         paint.style = Paint.Style.FILL
-        paint.maskFilter = BlurMaskFilter(max(2f, baseThickness * 0.35f), BlurMaskFilter.Blur.NORMAL)
+        paint.maskFilter = blur(max(2f, baseThickness * 0.35f))
 
         val barH = max(4f, baseThickness * 0.55f)
 
@@ -601,7 +609,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
 
         val thickness = max(5f, baseThickness * (0.7f + displayLevel * 1.4f))
         paint.strokeWidth = thickness
-        paint.maskFilter = BlurMaskFilter(max(3f, thickness * 0.8f), BlurMaskFilter.Blur.NORMAL)
+        paint.maskFilter = blur(max(3f, thickness * 0.8f))
 
         val r = 90f + displayLevel * 210f
         val off = thickness * 0.4f
@@ -636,7 +644,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
             val len = (minE + mag * (maxE - minE) * intensity) * flick
             val cy = gap * i + gap / 2f
             val barH = max(6f, baseThickness * 0.9f)
-            paint.maskFilter = BlurMaskFilter(max(4f, len * 0.35f), BlurMaskFilter.Blur.NORMAL)
+            paint.maskFilter = blur(max(4f, len * 0.35f))
             // Fire gradient: hot yellow core to red-purple tips
             val t = mag.coerceIn(0f, 1f)
             paint.color = if (rainbow) colorAt(i / (n - 1f))
@@ -653,7 +661,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
     private fun drawChase(canvas: Canvas) {
         paint.shader = null
         paint.style = Paint.Style.FILL
-        paint.maskFilter = BlurMaskFilter(max(4f, baseThickness * 0.7f), BlurMaskFilter.Blur.NORMAL)
+        paint.maskFilter = blur(max(4f, baseThickness * 0.7f))
 
         val perimeter = 2f * (width + height)
         val dotCount = 5 + (intensity).toInt()
