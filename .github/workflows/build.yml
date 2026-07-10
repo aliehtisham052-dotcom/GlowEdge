@@ -86,7 +86,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v6.5
-          name: GlowEdge v6.5 — Personal Text: vertical sides + slower drift
+          name: GlowEdge v6.5 — Personal Text vertical sides + slower drift
           body: |
             GlowEdge v6.5 - Personal Glow Text polish
             - Personal Glow Text now rotates to vertical on the left/right edges (reads along the side) instead of staying horizontal only.
