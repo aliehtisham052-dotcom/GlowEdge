@@ -119,7 +119,9 @@ class EdgeVisualizerView(context: Context) : View(context) {
     /** Show a guaranteed bright glow for a few seconds to verify the overlay works. */
     fun forceTestGlow() {
         testUntil = SystemClock.elapsedRealtime() + 5000L
-        demoMode = true
+        // NOTE: demoMode is intentionally NOT set here. The test window (testUntil)
+        // drives its own drawing; leaving demoMode on would keep the glow animating
+        // forever after the test, wasting CPU and hanging low-end phones.
         lastActiveTime = SystemClock.elapsedRealtime()
         lastRealData = SystemClock.elapsedRealtime()
         introActive = false
