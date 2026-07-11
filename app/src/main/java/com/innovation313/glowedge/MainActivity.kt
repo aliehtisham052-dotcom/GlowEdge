@@ -800,6 +800,10 @@ class MainActivity : AppCompatActivity() {
             notifyService()
         }
 
+        findViewById<TextView>(R.id.btnMusicNotifAccess).setOnClickListener {
+            openNotificationAccess()
+        }
+
         buildGlowEdgesButtons()
 
         val callGlow = findViewById<MaterialSwitch>(R.id.switchCallGlow)
