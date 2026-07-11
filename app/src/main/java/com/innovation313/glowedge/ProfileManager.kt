@@ -64,6 +64,7 @@ object ProfileManager {
     private const val KEY_SENSITIVITY = "music_sensitivity"
     private const val KEY_ONBOARDED = "onboarded"
     private const val KEY_GLOW_EDGES = "glow_edges"
+    private const val KEY_CALL_GLOW = "call_glow"
 
     val themes = listOf(
         // Vivid, distinct designer palette: each theme is a clearly different hue pair,
@@ -173,4 +174,10 @@ object ProfileManager {
 
     fun glowEdges(context: Context): Int =
         prefs(context).getInt(KEY_GLOW_EDGES, 0).coerceIn(0, 2)
+
+    fun setCallGlow(context: Context, on: Boolean) =
+        prefs(context).edit().putBoolean(KEY_CALL_GLOW, on).apply()
+
+    fun callGlow(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_CALL_GLOW, false)
 }

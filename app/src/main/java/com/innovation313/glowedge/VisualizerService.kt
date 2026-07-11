@@ -62,6 +62,45 @@ class VisualizerService : Service() {
     private var edgeView: EdgeVisualizerView? = null
     private var visualizer: Visualizer? = null
 
+    // ---- Call Glow: flash the edge glow on an incoming call. Uses Android's telephony
+    // call state, which is exact (RINGING/OFFHOOK/IDLE) — not a guess like audio. ----
+    private var telephonyManager: android.telephony.TelephonyManager? = null
+    private var lastCallState = android.telephony.TelephonyManager.CALL_STATE_IDLE
+    private val phoneStateListener = object : android.telephony.PhoneStateListener() {
+        @Deprecated("Deprecated in Java")
+        override fun onCallStateChanged(state: Int, phoneNumber: String?) {
+            if (state == android.telephony.TelephonyManager.CALL_STATE_RINGING &&
+                lastCallState != android.telephony.TelephonyManager.CALL_STATE_RINGING) {
+                if (ProfileManager.callGlow(this@VisualizerService)) {
+                    val theme = ProfileManager.theme(this@VisualizerService)
+                    edgeView?.triggerCallFlash(theme.colorStart)
+                }
+            }
+            lastCallState = state
+        }
+    }
+
+    private fun registerCallListener() {
+        if (!ProfileManager.callGlow(this)) return
+        if (androidx.core.content.ContextCompat.checkSelfPermission(
+                this, android.Manifest.permission.READ_PHONE_STATE
+            ) != android.content.pm.PackageManager.PERMISSION_GRANTED) return
+        try {
+            telephonyManager = getSystemService(TELEPHONY_SERVICE) as android.telephony.TelephonyManager
+            telephonyManager?.listen(
+                phoneStateListener,
+                android.telephony.PhoneStateListener.LISTEN_CALL_STATE
+            )
+        } catch (_: Exception) {}
+    }
+
+    private fun unregisterCallListener() {
+        try {
+            telephonyManager?.listen(phoneStateListener, android.telephony.PhoneStateListener.LISTEN_NONE)
+        } catch (_: Exception) {}
+        telephonyManager = null
+    }
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
@@ -73,6 +112,7 @@ class VisualizerService : Service() {
         if (ProfileManager.intro(this)) edgeView?.startIntro()
         startVisualizer()
         registerAudioRouteCallback()
+        registerCallListener()
         val filter = android.content.IntentFilter(GlowNotificationService.ACTION_NOTIFICATION_GLOW)
         filter.addAction(Intent.ACTION_HEADSET_PLUG)
         filter.addAction(android.media.AudioManager.ACTION_AUDIO_BECOMING_NOISY)
@@ -97,6 +137,9 @@ class VisualizerService : Service() {
         }
         wasStartedByUser = true
         applyCurrentSettings()
+        // Re-sync the call listener in case Call Glow was just toggled or permission granted.
+        unregisterCallListener()
+        registerCallListener()
         updateNotification()
         return START_STICKY
     }
@@ -447,6 +490,7 @@ class VisualizerService : Service() {
     override fun onDestroy() {
         isRunning = false
         try { unregisterReceiver(notifReceiver) } catch (_: Exception) {}
+        unregisterCallListener()
         try {
             val am = getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
             audioDeviceCallback?.let { am.unregisterAudioDeviceCallback(it) }

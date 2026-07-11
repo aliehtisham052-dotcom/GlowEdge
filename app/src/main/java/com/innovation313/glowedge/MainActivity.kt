@@ -49,6 +49,7 @@ class MainActivity : AppCompatActivity() {
         private const val PAGE_AUDIO = 2
         private const val PAGE_NOTIF = 3
         private const val PAGE_MAIN = 4
+        private const val REQ_PHONE_STATE = 20
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -143,6 +144,26 @@ class MainActivity : AppCompatActivity() {
         setupHeroHeader()
 
         findViewById<View>(R.id.btnShare).setOnClickListener { shareGlowCard() }
+        findViewById<View>(R.id.btnFeedback).setOnClickListener { sendFeedback() }
+    }
+
+    /** Opens the user's email app pre-filled to the developer, with a subject and a
+     *  reason template so feedback always arrives with context. */
+    private fun sendFeedback() {
+        val email = getString(R.string.developer_email)
+        val subject = getString(R.string.feedback_subject)
+        val body = getString(R.string.feedback_body)
+        val intent = Intent(Intent.ACTION_SENDTO).apply {
+            data = Uri.parse("mailto:")
+            putExtra(Intent.EXTRA_EMAIL, arrayOf(email))
+            putExtra(Intent.EXTRA_SUBJECT, subject)
+            putExtra(Intent.EXTRA_TEXT, body)
+        }
+        try {
+            startActivity(Intent.createChooser(intent, getString(R.string.feedback_button)))
+        } catch (e: Exception) {
+            Toast.makeText(this, "No email app found", Toast.LENGTH_SHORT).show()
+        }
     }
 
     /** One-time premium entrance for the hero header (halo + logo + name fade/scale in),
@@ -770,6 +791,24 @@ class MainActivity : AppCompatActivity() {
 
         buildGlowTriggerButtons()
         buildGlowEdgesButtons()
+
+        val callGlow = findViewById<MaterialSwitch>(R.id.switchCallGlow)
+        callGlow.isChecked = ProfileManager.callGlow(this)
+        callGlow.setOnCheckedChangeListener { _, checked ->
+            if (checked) {
+                if (ContextCompat.checkSelfPermission(
+                        this, android.Manifest.permission.READ_PHONE_STATE
+                    ) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                    androidx.core.app.ActivityCompat.requestPermissions(
+                        this, arrayOf(android.Manifest.permission.READ_PHONE_STATE), REQ_PHONE_STATE
+                    )
+                }
+                ProfileManager.setCallGlow(this, true)
+            } else {
+                ProfileManager.setCallGlow(this, false)
+            }
+            notifyService()
+        }
 
         val sens = findViewById<SeekBar>(R.id.seekSensitivity)
         sens.min = 1

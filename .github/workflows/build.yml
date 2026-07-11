@@ -71,27 +71,27 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.28.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.28.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.29.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.29.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.28.apk
-            GlowEdge-v6.28.aab
+            GlowEdge-v6.29.apk
+            GlowEdge-v6.29.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.28
-          name: GlowEdge v6.28 — Glow Trigger + Glow Edges
+          tag_name: v6.29
+          name: GlowEdge v6.29 — Call Glow + Feedback
           body: |
-            GlowEdge v6.28 - Glow Trigger selector + Glow Edges
-            - Replaced the Music-Only and Force Glow toggles with one clear Glow Trigger selector: "Every sound" or "Music only". Simpler, no confusing double toggle.
-            - NEW: Glow Edges - choose which screen edges glow: All edges, Sides only, or Top and bottom.
-            - Removed the Force Glow notification button; notification now just shows "Glow is on" with a Stop action.
+            GlowEdge v6.29 - Call Glow + Feedback
+            - NEW: Call Glow - flashes the edge glow on an incoming call. Uses Android telephony call state (READ_PHONE_STATE), which is exact - not a guess like audio. Off by default; asks permission when enabled.
+            - NEW: Send Feedback in the About tab - opens your email app pre-filled to the developer with a subject and a reason template.
+            - Keeps the Glow Trigger selector and Glow Edges from v6.28.
           files: |
-            GlowEdge-v6.28.apk
-            GlowEdge-v6.28.aab
+            GlowEdge-v6.29.apk
+            GlowEdge-v6.29.aab
