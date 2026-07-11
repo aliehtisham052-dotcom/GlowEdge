@@ -795,13 +795,9 @@ class MainActivity : AppCompatActivity() {
             ProfileManager.setMusicOnly(this, checked)
             if (checked && !hasNotificationAccess()) {
                 Toast.makeText(this, getString(R.string.notif_access_needed), Toast.LENGTH_LONG).show()
-                openNotificationAccessSettings()
+                openNotificationAccess()
             }
             notifyService()
-        }
-
-        findViewById<TextView>(R.id.btnNotifAccess).setOnClickListener {
-            openNotificationAccessSettings()
         }
 
         buildGlowEdgesButtons()
@@ -822,21 +818,6 @@ class MainActivity : AppCompatActivity() {
                 ProfileManager.setCallGlow(this, false)
             }
             notifyService()
-        }
-    }
-
-    private fun hasNotificationAccess(): Boolean {
-        val enabled = android.provider.Settings.Secure.getString(
-            contentResolver, "enabled_notification_listeners"
-        ) ?: return false
-        return enabled.contains(packageName)
-    }
-
-    private fun openNotificationAccessSettings() {
-        try {
-            startActivity(Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"))
-        } catch (e: Exception) {
-            Toast.makeText(this, "Open Settings → Notification access", Toast.LENGTH_LONG).show()
         }
     }
 
