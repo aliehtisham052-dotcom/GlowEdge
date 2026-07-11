@@ -8,6 +8,8 @@
         - RECORD_AUDIO: required ONLY by Android's Visualizer to read the music
           waveform for the on-screen glow. No audio is recorded, saved, or sent.
         - Notification access: optional, only to glow on messages. Content is never read.
+        - SET_WALLPAPER: only used when you tap "Set Wallpaper" to apply a generated
+          wallpaper image. Nothing is uploaded; the image never leaves your device.
     -->
 
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
@@ -17,6 +19,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.SET_WALLPAPER" />
 
     <application
         android:allowBackup="true"

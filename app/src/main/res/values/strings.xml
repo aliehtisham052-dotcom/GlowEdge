@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">GlowEdge</string>
-    <string name="welcome_subtitle">Music-reactive edge lighting for your screen\nAap ki music, screen ke kinaron par jagmagati roshni 🎵</string>
     <string name="welcome_tagline">Music-reactive edge lighting</string>
     <string name="welcome_f1">🎵  Reacts to music, naat &amp; poetry</string>
     <string name="welcome_f2">🌈  12 styles · 13 themes + Custom Colors</string>
@@ -47,11 +46,8 @@
     <string name="thickness">Thickness</string>
     <string name="speed">Animation Speed</string>
 
-    <string name="premium_lock">🔒 Premium</string>
-    <string name="premium_toast">This style is part of GlowEdge Premium — coming soon with the Play Store release!</string>
     <string name="premium_desc">GlowEdge turns your music, naat and melodic audio into a living glow around your screen edges. Completely free — every style and feature unlocked.</string>
     <string name="premium_features">✦ 12 visualizer styles\n✦ 13 color themes + unlimited Custom Colors (millions of combinations)\n✦ Glow-themed Wallpapers, generated to match every color theme\n✦ Beat &amp; rhythm sync, loudness-reactive glow\n✦ Music-Only smart detection + Force Glow manual override\n✦ Notification Glow\n✦ Thickness, speed &amp; intensity controls\n✦ Battery Saver &amp; Auto-start\n✦ Works with headphones &amp; earbuds\n✦ No ads · No tracking · No internet access</string>
-    <string name="premium_note">Made with passion. Share GlowEdge with your friends! ⭐</string>
 
     <string name="intensity">Glow Intensity</string>
     <string name="autostart">Auto-start on boot</string>
@@ -61,7 +57,7 @@
     <string name="developer_label">Developer</string>
     <string name="developer_name">Innovation-313</string>
     <string name="developer_email">aliehtisham052@gmail.com</string>
-    <string name="app_version">Version 6.18</string>
+    <string name="app_version">Version 6.19</string>
     <string name="notif_glow">Notification Glow</string>
     <string name="notif_glow_desc">Flash the edges in an app color when a message or notification arrives. Works even without music.</string>
     <string name="notif_glow_need_access">Please allow notification access for GlowEdge to detect calls and messages.</string>
@@ -75,14 +71,14 @@
     <string name="music_sensitivity_desc">Left = strict (only clear music) · Right = relaxed (more sounds)</string>
     <string name="about_title">About &amp; Help</string>
     <string name="how_header">HOW THE MENUS WORK</string>
-    <string name="how_menus">• Styles tab: Pick how the glow looks. Tap a style card or its Apply button to use it. The Live Preview at the top shows the selected style animating.\n\n• Start / Stop Glow: The gradient button turns the edge glow on or off. When on, the glow appears only while sound is playing.\n\n• Settings tab: Music-Only Mode, detection sensitivity, color theme (incl. Custom Colors picker and quick wallpaper), thickness, animation speed, glow intensity, auto-start, Notification Glow, Battery Saver and startup animation.\n\n• Wallpapers tab: Glow-themed wallpapers matching every color theme.\n\n• About tab: How the app works, features, privacy and copyright.\n\n• Bottom bar: Switch between Styles, Settings, Wallpapers and About.</string>
+    <string name="how_menus">• Styles tab: Pick how the glow looks. Tap a style card or its Apply button to use it. The Live Preview at the top shows the selected style animating.\n\n• Start / Stop Glow: The gradient button turns the edge glow on or off. When on, the glow appears only while sound is playing.\n\n• Settings tab: Music-Only Mode, detection sensitivity, Force Glow (manual override), color theme (incl. Custom Colors picker and quick wallpaper), thickness, animation speed, glow intensity, auto-start, Notification Glow, Battery Saver and startup animation.\n\n• Wallpapers tab: Glow-themed wallpapers matching every color theme.\n\n• About tab: How the app works, features, privacy and copyright.\n\n• Bottom bar: Switch between Styles, Settings, Wallpapers and About.</string>
 
     <string name="detect_header">SMART MUSIC DETECTION</string>
     <string name="detect_desc">GlowEdge uses a built-in smart audio algorithm to tell music, naat and melodic/poetry audio apart from normal talking and notification sounds. It listens in real time to how the sound is spread across frequencies, its bass and treble balance, its rhythm steadiness, and how sustained it is — all on your device, with nothing recorded or sent anywhere.\n\nWith Music-Only Mode on, the glow reacts only to musical audio. Use the Sensitivity slider to make detection stricter or more relaxed. No perfect detector exists, so if a naat or song is missed, nudge the sensitivity to the right.</string>
 
     <string name="features_header">FEATURES</string>
     <string name="privacy_header">YOUR PRIVACY</string>
-    <string name="privacy_text">GlowEdge is built to be trusted:\n\n✓ No internet permission, so your data physically cannot leave your phone.\n✓ Nothing is recorded, collected, or shared. Ever.\n✓ Microphone is used only to read music rhythm for the glow, never to record.\n✓ Call and message glow only detects that something arrived; it never reads who called or what was said.\n✓ Every extra permission is optional and stays off until you turn it on.\n\nOur purpose is to add beauty, not to take anything from you.</string>
+    <string name="privacy_text">GlowEdge is built to be trusted:\n\n✓ No internet permission, so your data physically cannot leave your phone.\n✓ Nothing is recorded, collected, or shared. Ever.\n✓ Microphone is used only to read music rhythm for the glow, never to record.\n✓ Call and message glow only detects that something arrived; it never reads who called or what was said.\n✓ Wallpapers are generated entirely on your device and never uploaded anywhere.\n✓ Every extra permission is optional and stays off until you turn it on.\n\nOur purpose is to add beauty, not to take anything from you.</string>
     <string name="copyright_header">COPYRIGHT</string>
     <string name="copyright_text">© 2026 Ehtisham Ali (Innovation-313). All rights reserved.\n\nGlowEdge, its design and its source code are the intellectual property of Innovation-313. Commercial use, republishing, or claiming authorship without written permission is not allowed.\n\nContact: aliehtisham052@gmail.com</string>
     <string name="intro_anim">Startup Animation</string>

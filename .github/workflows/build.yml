@@ -71,28 +71,28 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.18.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.18.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.19.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.19.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.18.apk
-            GlowEdge-v6.18.aab
+            GlowEdge-v6.19.apk
+            GlowEdge-v6.19.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.18
-          name: GlowEdge v6.18 — Personal Glow Text removed
+          tag_name: v6.19
+          name: GlowEdge v6.19 — Critical wallpaper fix
           body: |
-            GlowEdge v6.18 - Personal Glow Text removed
-            - Fully removed the Personal Glow Text feature (text box, toggle, color picker, edge-rendering) per feedback that it was not adding value.
-            - Cleaned up every reference across settings, rendering, About text, Privacy text and the welcome screen.
-            - Also fixed a leftover reference in the Share Your Glow image generator.
+            GlowEdge v6.19 - Critical wallpaper fix + cleanup
+            - FIXED: SET_WALLPAPER permission was missing from the manifest, so every "Set Wallpaper" tap silently failed since v6.16 - the whole feature never actually worked. Now fixed.
+            - Removed 4 dead/unused strings left over from an old premium-lock concept that was never implemented.
+            - Synced About/Settings descriptions to mention Force Glow and the new wallpaper permission.
             Developed by Innovation-313
           files: |
-            GlowEdge-v6.18.apk
-            GlowEdge-v6.18.aab
+            GlowEdge-v6.19.apk
+            GlowEdge-v6.19.aab
