@@ -76,7 +76,7 @@ object ProfileManager {
         Profile("Fire", Color.parseColor("#FF3B3B"), Color.parseColor("#FFC93B")),
         Profile("Ice", Color.parseColor("#4DEEFF"), Color.parseColor("#E8FBFF")),
         Profile("Rose Calm", Color.parseColor("#FF4FA3"), Color.parseColor("#C061FF")),
-        Profile("Forest Calm", Color.parseColor("#2ECC71"), Color.parseColor("#00C9A7"))
+        Profile("Forest Calm", Color.parseColor("#9CE521"), Color.parseColor("#0B8457"))
     )
 
     private fun prefs(context: Context) =
