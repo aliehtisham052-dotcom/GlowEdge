@@ -456,6 +456,22 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+        findViewById<TextView>(R.id.btnRemoveLiveWallpaper).setOnClickListener {
+            Toast.makeText(this, getString(R.string.remove_live_wallpaper_hint), Toast.LENGTH_LONG).show()
+            try {
+                // Android has no direct "remove live wallpaper" API — setting any other
+                // wallpaper replaces it. Open the system wallpaper picker so the user
+                // can choose a normal wallpaper, which removes GlowEdge.
+                val intent = Intent(Intent.ACTION_SET_WALLPAPER)
+                startActivity(Intent.createChooser(intent, getString(R.string.remove_live_wallpaper)))
+            } catch (e: Exception) {
+                try {
+                    startActivity(Intent(android.app.WallpaperManager.ACTION_LIVE_WALLPAPER_CHOOSER))
+                } catch (e2: Exception) {
+                    Toast.makeText(this, "Open Settings → Wallpaper to change it", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
         val container = findViewById<LinearLayout>(R.id.wallpaperContainer)
         container.removeAllViews()
         ProfileManager.themes.forEach { theme ->

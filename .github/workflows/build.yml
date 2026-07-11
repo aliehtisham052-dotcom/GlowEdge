@@ -71,27 +71,26 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.33.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.33.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.34.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.34.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.33.apk
-            GlowEdge-v6.33.aab
+            GlowEdge-v6.34.apk
+            GlowEdge-v6.34.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.33
-          name: GlowEdge v6.33 — Call Glow wakes screen
+          tag_name: v6.34
+          name: GlowEdge v6.34 — Remove Live Wallpaper button
           body: |
-            GlowEdge v6.33 - Call Glow wakes the screen
-            - Call Glow now wakes the screen when a call arrives in rest/screen-off mode, so the glow flash is actually visible (an overlay cannot draw on a dark screen). Uses a brief 3s screen-on wake lock that auto-releases - the incoming-call UI keeps the screen on after that.
-            - Added the normal WAKE_LOCK permission (no user prompt).
-            - Keeps the reliable PHONE_STATE broadcast detection and MediaSession music detection.
+            GlowEdge v6.34 - Remove Live Wallpaper button
+            - Added a "Remove Live Wallpaper" button in the Wallpapers tab. Android has no direct remove API for live wallpapers, so it opens the system wallpaper picker - choosing any other wallpaper removes GlowEdge.
+            - Keeps Call Glow (wakes screen), MediaSession music detection, and all wallpaper features.
           files: |
-            GlowEdge-v6.33.apk
-            GlowEdge-v6.33.aab
+            GlowEdge-v6.34.apk
+            GlowEdge-v6.34.aab

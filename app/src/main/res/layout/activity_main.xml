@@ -879,6 +879,16 @@
                         android:textColor="@color/white"
                         android:textSize="12sp" />
 
+                    <TextView
+                        android:id="@+id/btnRemoveLiveWallpaper"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="@string/remove_live_wallpaper"
+                        android:textColor="#8A93B5"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
                     <LinearLayout
                         android:id="@+id/wallpaperContainer"
                         android:layout_width="match_parent"
