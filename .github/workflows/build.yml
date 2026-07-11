@@ -71,28 +71,28 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.11.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.11.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.12.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.12.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.11.apk
-            GlowEdge-v6.11.aab
+            GlowEdge-v6.12.apk
+            GlowEdge-v6.12.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.11
-          name: GlowEdge v6.11 — Detection reset, strict AND logic
+          tag_name: v6.12
+          name: GlowEdge v6.12 — Detection recalibration
           body: |
-            GlowEdge v6.11 - Detection reset
-            - Full reset of music/naat detection: removed every bypass/escape path from earlier versions. Now requires spectral spread, bass/treble balance, AND flux steadiness to ALL be true at the same time, every frame - not any 3 of 4, no sustain shortcut. Ordinary conversation is structurally narrow-band and cannot satisfy all three together.
-            - Trade-off, stated honestly: pure unaccompanied a cappella naat with zero bass may occasionally be missed. This is the deliberate cost of eliminating false positives on normal conversation.
-            - Falls back to "not music" faster too, so talking kills the glow quickly.
+            GlowEdge v6.12 - Detection recalibration
+            - v6.11 required all 3 cues at once, every single frame - too fragile for real naat, which naturally has quiet verses and expressive pauses that briefly dip one cue.
+            - New: two paths to musical - (A) spread + balance together (the reliable core signal speech structurally lacks), or (B) very high steadiness with some spread (covers sparse a cappella naat/zikr with little bass).
+            - Slower fall-off so brief natural pauses in naat do not kill the glow instantly.
             Developed by Innovation-313
           files: |
-            GlowEdge-v6.11.apk
-            GlowEdge-v6.11.aab
+            GlowEdge-v6.12.apk
+            GlowEdge-v6.12.aab

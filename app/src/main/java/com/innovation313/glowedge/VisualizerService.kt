@@ -251,21 +251,25 @@ class VisualizerService : Service() {
 
         prevLevel = level
 
-        // Sensitivity eases thresholds (1 strict .. 10 loose) — but the floor is much
-        // higher across the board now, at every sensitivity setting.
+        // Sensitivity eases thresholds (1 strict .. 10 loose)
         val s = sensitivity / 10f
-        val spreadNeed = 0.46f - s * 0.16f
-        val balanceNeed = 0.62f - s * 0.28f
-        val steadyNeed = 0.56f - s * 0.22f
+        val spreadNeed = 0.38f - s * 0.14f
+        val balanceNeed = 0.50f - s * 0.22f
 
-        // ALL THREE cues required at once — no OR-scoring, no bypass. This is the
-        // "perfect zone": only audio that is simultaneously wide-spectrum, tonally
-        // balanced, and spectrally steady counts as music/naat.
-        val coreMusical = spread >= spreadNeed && balance >= balanceNeed && steadiness >= steadyNeed
+        // Two paths to "musical" — real audio doesn't hold every cue steady at once:
+        // Path A: real spectral width AND bass+treble balance together. This is the
+        //   most reliable signal, because ordinary speech structurally lacks both at
+        //   once — it's the main gate for typical music/naat with instrumentation.
+        // Path B: very high steadiness (a held/rhythmic vocal or drone) with at least
+        //   some spread, even if balance is weak — covers sparse a cappella naat/zikr
+        //   that has little bass but sustains a steady tone.
+        val pathA = spread >= spreadNeed && balance >= balanceNeed
+        val pathB = steadiness >= 0.62f && spread >= spreadNeed * 0.75f
+        val coreMusical = pathA || pathB
         val looksMusical = level > 0.07f && coreMusical
 
-        val rise = 0.07f + s * 0.04f
-        val fall = 0.09f  // fall faster than before, so talking kills the glow quickly
+        val rise = 0.06f + s * 0.03f
+        val fall = 0.05f  // gentle enough that a brief pause/quiet verse doesn't kill it
         val target = if (looksMusical) 1f else 0f
         musicScore += (target - musicScore) * (if (target > musicScore) rise else fall)
 
