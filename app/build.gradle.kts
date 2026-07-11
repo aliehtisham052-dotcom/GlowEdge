@@ -11,8 +11,8 @@ android {
         applicationId = "com.innovation313.glowedge"
         minSdk = 26
         targetSdk = 36
-        versionCode = 67
-        versionName = "6.31"
+        versionCode = 68
+        versionName = "6.32"
     }
 
     signingConfigs {

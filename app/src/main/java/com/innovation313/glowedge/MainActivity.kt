@@ -206,6 +206,21 @@ class MainActivity : AppCompatActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQ_PHONE_STATE) {
+            // Phone permission just answered — refresh the service so Call Glow's
+            // listener registers now that permission state may have changed.
+            if (grantResults.isNotEmpty() &&
+                grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                notifyService()
+                Toast.makeText(this, getString(R.string.call_glow_ready), Toast.LENGTH_SHORT).show()
+            } else {
+                // Denied — turn the toggle back off so it reflects reality.
+                ProfileManager.setCallGlow(this, false)
+                findViewById<MaterialSwitch>(R.id.switchCallGlow)?.isChecked = false
+                Toast.makeText(this, getString(R.string.call_glow_denied), Toast.LENGTH_LONG).show()
+            }
+            return
+        }
         goToNextNeededPage()
     }
 

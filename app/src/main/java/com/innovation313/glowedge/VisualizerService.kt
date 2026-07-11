@@ -69,15 +69,17 @@ class VisualizerService : Service() {
     private var edgeView: EdgeVisualizerView? = null
     private var visualizer: Visualizer? = null
 
-    // ---- Call Glow: flash the edge glow on an incoming call. Uses Android's telephony
-    // call state, which is exact (RINGING/OFFHOOK/IDLE) — not a guess like audio. ----
-    private var telephonyManager: android.telephony.TelephonyManager? = null
-    private var lastCallState = android.telephony.TelephonyManager.CALL_STATE_IDLE
-    private val phoneStateListener = object : android.telephony.PhoneStateListener() {
-        @Deprecated("Deprecated in Java")
-        override fun onCallStateChanged(state: Int, phoneNumber: String?) {
-            if (state == android.telephony.TelephonyManager.CALL_STATE_RINGING &&
-                lastCallState != android.telephony.TelephonyManager.CALL_STATE_RINGING) {
+    // ---- Call Glow: flash the edge glow on an incoming call. We listen for the
+    // ACTION_PHONE_STATE_CHANGED broadcast, which is reliable across all Android
+    // versions (the old PhoneStateListener.listen() is deprecated and unreliable on
+    // Android 12+). EXTRA_STATE == RINGING means an incoming call. ----
+    private var lastCallState = "IDLE"
+    private val callReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(context: android.content.Context?, intent: Intent?) {
+            if (intent?.action != "android.intent.action.PHONE_STATE") return
+            val state = intent.getStringExtra(android.telephony.TelephonyManager.EXTRA_STATE) ?: return
+            if (state == android.telephony.TelephonyManager.EXTRA_STATE_RINGING &&
+                lastCallState != android.telephony.TelephonyManager.EXTRA_STATE_RINGING) {
                 if (ProfileManager.callGlow(this@VisualizerService)) {
                     val theme = ProfileManager.theme(this@VisualizerService)
                     edgeView?.triggerCallFlash(theme.colorStart)
@@ -86,26 +88,29 @@ class VisualizerService : Service() {
             lastCallState = state
         }
     }
+    private var callReceiverRegistered = false
 
     private fun registerCallListener() {
         if (!ProfileManager.callGlow(this)) return
-        if (androidx.core.content.ContextCompat.checkSelfPermission(
-                this, android.Manifest.permission.READ_PHONE_STATE
-            ) != android.content.pm.PackageManager.PERMISSION_GRANTED) return
+        if (callReceiverRegistered) return
         try {
-            telephonyManager = getSystemService(TELEPHONY_SERVICE) as android.telephony.TelephonyManager
-            telephonyManager?.listen(
-                phoneStateListener,
-                android.telephony.PhoneStateListener.LISTEN_CALL_STATE
-            )
+            val filter = android.content.IntentFilter("android.intent.action.PHONE_STATE")
+            if (Build.VERSION.SDK_INT >= 33) {
+                registerReceiver(callReceiver, filter, android.content.Context.RECEIVER_EXPORTED)
+            } else {
+                @Suppress("UnspecifiedRegisterReceiverFlag")
+                registerReceiver(callReceiver, filter)
+            }
+            callReceiverRegistered = true
         } catch (_: Exception) {}
     }
 
     private fun unregisterCallListener() {
+        if (!callReceiverRegistered) return
         try {
-            telephonyManager?.listen(phoneStateListener, android.telephony.PhoneStateListener.LISTEN_NONE)
+            unregisterReceiver(callReceiver)
         } catch (_: Exception) {}
-        telephonyManager = null
+        callReceiverRegistered = false
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
