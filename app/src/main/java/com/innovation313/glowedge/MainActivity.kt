@@ -789,7 +789,21 @@ class MainActivity : AppCompatActivity() {
             ProfileManager.setIntro(this, checked)
         }
 
-        buildGlowTriggerButtons()
+        val musicOnly = findViewById<MaterialSwitch>(R.id.switchMusicOnly)
+        musicOnly.isChecked = ProfileManager.musicOnly(this)
+        musicOnly.setOnCheckedChangeListener { _, checked ->
+            ProfileManager.setMusicOnly(this, checked)
+            if (checked && !hasNotificationAccess()) {
+                Toast.makeText(this, getString(R.string.notif_access_needed), Toast.LENGTH_LONG).show()
+                openNotificationAccessSettings()
+            }
+            notifyService()
+        }
+
+        findViewById<TextView>(R.id.btnNotifAccess).setOnClickListener {
+            openNotificationAccessSettings()
+        }
+
         buildGlowEdgesButtons()
 
         val callGlow = findViewById<MaterialSwitch>(R.id.switchCallGlow)
@@ -809,52 +823,20 @@ class MainActivity : AppCompatActivity() {
             }
             notifyService()
         }
-
-        val sens = findViewById<SeekBar>(R.id.seekSensitivity)
-        sens.min = 1
-        sens.max = 10
-        sens.progress = ProfileManager.sensitivity(this)
-        sens.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(sb: SeekBar?, value: Int, fromUser: Boolean) {
-                if (fromUser) {
-                    ProfileManager.setSensitivity(this@MainActivity, value)
-                    notifyService()
-                }
-            }
-            override fun onStartTrackingTouch(sb: SeekBar?) = Unit
-            override fun onStopTrackingTouch(sb: SeekBar?) = Unit
-        })
     }
 
-    /** Segmented selector: "Every sound" vs "Music only" — replaces the old
-     *  Music-Only + Force Glow toggles with one clear choice. */
-    private fun buildGlowTriggerButtons() {
-        val container = findViewById<LinearLayout>(R.id.glowTriggerContainer)
-        container.removeAllViews()
-        val labels = listOf(
-            getString(R.string.glow_trigger_every),
-            getString(R.string.glow_trigger_music)
-        )
-        labels.forEachIndexed { index, label ->
-            val chip = TextView(this)
-            chip.text = label
-            chip.textSize = 14f
-            chip.gravity = Gravity.CENTER
-            chip.setPadding(dp(14), dp(12), dp(14), dp(12))
-            val lp = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-            lp.marginEnd = if (index == 0) dp(10) else 0
-            chip.layoutParams = lp
-            // index 1 (music only) == musicOnly true
-            val selected = ProfileManager.musicOnly(this) == (index == 1)
-            chip.setBackgroundResource(R.drawable.bg_card)
-            chip.setTextColor(if (selected) ContextCompat.getColor(this, R.color.gold) else Color.WHITE)
-            chip.alpha = if (selected) 1f else 0.6f
-            chip.setOnClickListener {
-                ProfileManager.setMusicOnly(this, index == 1)
-                notifyService()
-                buildGlowTriggerButtons()
-            }
-            container.addView(chip)
+    private fun hasNotificationAccess(): Boolean {
+        val enabled = android.provider.Settings.Secure.getString(
+            contentResolver, "enabled_notification_listeners"
+        ) ?: return false
+        return enabled.contains(packageName)
+    }
+
+    private fun openNotificationAccessSettings() {
+        try {
+            startActivity(Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"))
+        } catch (e: Exception) {
+            Toast.makeText(this, "Open Settings → Notification access", Toast.LENGTH_LONG).show()
         }
     }
 

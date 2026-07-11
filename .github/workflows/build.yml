@@ -71,26 +71,28 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.30.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.30.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.31.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.31.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.30.apk
-            GlowEdge-v6.30.aab
+            GlowEdge-v6.31.apk
+            GlowEdge-v6.31.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.30
-          name: GlowEdge v6.30 — Support email
+          tag_name: v6.31
+          name: GlowEdge v6.31 — Real music detection (MediaSession)
           body: |
-            GlowEdge v6.30 - Dedicated support email
-            - Feedback now goes to the dedicated support address innovation313.support@gmail.com (shown in the About tab too).
-            - Keeps Call Glow, Send Feedback, Glow Trigger and Glow Edges.
+            GlowEdge v6.31 - Real music detection via MediaSession
+            - MAJOR: Music Only now uses Android MediaSession state (reported by the playing app itself - YouTube, JioSaavn, Spotify, any naat/music player) instead of guessing from the microphone. This is exact: real music/naat lights the glow; talking and notification sounds do not.
+            - Needs Notification Access (a one-tap grant button is in Settings). The mic is still used only to shape the glow to the beat.
+            - Removed the old mic-based music guessing and the sensitivity slider (no longer needed). Replaced the Glow Trigger selector with a clean Music Only toggle.
+            - Also switched all in-app contact to the professional support email.
           files: |
-            GlowEdge-v6.30.apk
-            GlowEdge-v6.30.aab
+            GlowEdge-v6.31.apk
+            GlowEdge-v6.31.aab

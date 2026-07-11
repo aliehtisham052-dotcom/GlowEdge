@@ -59,9 +59,8 @@
     <string name="feedback_subject">GlowEdge Feedback</string>
     <string name="feedback_body">My feedback / reason:\n\n\n\n— Please describe what you liked, what to improve, or the problem you faced.</string>
     <string name="developer_name">Innovation-313</string>
-    <string name="developer_email">aliehtisham052@gmail.com</string>
     <string name="support_email">innovation313.support@gmail.com</string>
-    <string name="app_version">Version 6.30</string>
+    <string name="app_version">Version 6.31</string>
     <string name="notif_glow">Notification Glow</string>
     <string name="notif_glow_desc">Flash the edges in an app color when a message or notification arrives. Works even without music.</string>
     <string name="notif_glow_need_access">Please allow notification access for GlowEdge to detect calls and messages.</string>
@@ -69,19 +68,17 @@
     <string name="live_preview">Live Preview</string>
     <string name="battery_saver">Battery Saver</string>
     <string name="battery_saver_desc">Lighter glow effects that use less power.</string>
-    <string name="glow_trigger_title">Glow Trigger</string>
-    <string name="glow_trigger_desc">Choose when the glow reacts: to every sound, or only to music &amp; naat (not talking or notification sounds).</string>
-    <string name="glow_trigger_every">Every sound</string>
-    <string name="glow_trigger_music">Music only</string>
     <string name="glow_edges_title">Glow Edges</string>
     <string name="glow_edges_desc">Choose which screen edges the glow appears on.</string>
     <string name="glow_edges_all">All edges</string>
     <string name="glow_edges_sides">Sides only</string>
     <string name="glow_edges_topbottom">Top &amp; bottom</string>
+    <string name="music_only_title">Music Only</string>
+    <string name="music_only_desc2">Glow reacts only when real music or naat is playing from a media app — not to talking or notification sounds. Uses Android\'s media info (needs Notification Access), so it\'s exact, not a guess.</string>
+    <string name="grant_notif_access">➜ Grant Notification Access</string>
+    <string name="notif_access_needed">Music Only needs Notification Access to read what\'s playing. Please enable GlowEdge in the list.</string>
     <string name="call_glow_title">Call Glow</string>
     <string name="call_glow_desc">Flash the edge glow when a call comes in. Needs phone-state permission — detection is exact, no guessing.</string>
-    <string name="music_sensitivity">Detection Sensitivity</string>
-    <string name="music_sensitivity_desc">Left = strict (only clear music) · Right = relaxed (more sounds)</string>
     <string name="about_title">About &amp; Help</string>
     <string name="how_header">HOW THE MENUS WORK</string>
     <string name="how_menus">• Styles tab: Pick how the glow looks. Tap a style card or its Apply button to use it. The Live Preview at the top shows the selected style animating.\n\n• Start / Stop Glow: The gradient button turns the edge glow on or off. When on, the glow appears only while sound is playing.\n\n• Settings tab: Glow Trigger (every sound / music only), Glow Edges (all / sides / top &amp; bottom), detection sensitivity, color theme (incl. Custom Colors picker and quick wallpaper), thickness, animation speed, glow intensity, auto-start, Notification Glow, Battery Saver and startup animation.\n\n• Wallpapers tab: Glow-themed wallpapers matching every color theme.\n\n• About tab: How the app works, features, privacy and copyright.\n\n• Bottom bar: Switch between Styles, Settings, Wallpapers and About.</string>
@@ -93,7 +90,7 @@
     <string name="privacy_header">YOUR PRIVACY</string>
     <string name="privacy_text">GlowEdge is built to be trusted:\n\n✓ No internet permission, so your data physically cannot leave your phone.\n✓ Nothing is recorded, collected, or shared. Ever.\n✓ Microphone is used only to read music rhythm for the glow, never to record.\n✓ Call and message glow only detects that something arrived; it never reads who called or what was said.\n✓ Wallpapers are generated entirely on your device and never uploaded anywhere.\n✓ Every extra permission is optional and stays off until you turn it on.\n\nOur purpose is to add beauty, not to take anything from you.</string>
     <string name="copyright_header">COPYRIGHT</string>
-    <string name="copyright_text">© 2026 Ehtisham Ali (Innovation-313). All rights reserved.\n\nGlowEdge, its design and its source code are the intellectual property of Innovation-313. Commercial use, republishing, or claiming authorship without written permission is not allowed.\n\nContact: aliehtisham052@gmail.com</string>
+    <string name="copyright_text">© 2026 Ehtisham Ali (Innovation-313). All rights reserved.\n\nGlowEdge, its design and its source code are the intellectual property of Innovation-313. Commercial use, republishing, or claiming authorship without written permission is not allowed.\n\nContact: innovation313.support@gmail.com</string>
     <string name="intro_anim">Startup Animation</string>
     <string name="intro_anim_desc">When the glow turns on, lines sweep in from the corners before settling into your style.</string>
     <string name="footer">Developed by Innovation-313</string>
