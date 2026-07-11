@@ -138,6 +138,7 @@ class MainActivity : AppCompatActivity() {
 
         buildStyleCards()
         buildThemeButtons()
+        buildTemplateChips()
         buildWallpaperCards()
         setupSliders()
         setupHeroHeader()
@@ -401,9 +402,39 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun buildTemplateChips() {
+        val container = findViewById<LinearLayout>(R.id.templateContainer)
+        container.removeAllViews()
+        WallpaperGenerator.templateNames.forEachIndexed { index, name ->
+            val chip = TextView(this)
+            chip.text = name
+            chip.textSize = 13f
+            chip.setPadding(dp(14), dp(10), dp(14), dp(10))
+            val lp = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            lp.marginEnd = if (index < WallpaperGenerator.templateNames.size - 1) dp(8) else 0
+            chip.layoutParams = lp
+            chip.gravity = Gravity.CENTER
+
+            fun refresh() {
+                val selected = ProfileManager.wallpaperTemplate(this) == index
+                chip.setBackgroundResource(R.drawable.bg_card)
+                chip.setTextColor(if (selected) ContextCompat.getColor(this, R.color.gold) else Color.WHITE)
+                chip.alpha = if (selected) 1f else 0.65f
+            }
+            refresh()
+            chip.setOnClickListener {
+                ProfileManager.setWallpaperTemplate(this, index)
+                buildTemplateChips()
+                buildWallpaperCards()
+            }
+            container.addView(chip)
+        }
+    }
+
     private fun buildWallpaperCards() {
         val container = findViewById<LinearLayout>(R.id.wallpaperContainer)
         container.removeAllViews()
+        val template = ProfileManager.wallpaperTemplate(this)
         ProfileManager.themes.forEach { theme ->
             val card = LinearLayout(this)
             card.orientation = LinearLayout.HORIZONTAL
@@ -419,7 +450,7 @@ class MainActivity : AppCompatActivity() {
             val preview = ImageView(this)
             preview.layoutParams = LinearLayout.LayoutParams(dp(70), dp(124))
             preview.scaleType = ImageView.ScaleType.CENTER_CROP
-            preview.setImageBitmap(WallpaperGenerator.generate(theme, dp(140), dp(248)))
+            preview.setImageBitmap(WallpaperGenerator.generate(theme, dp(140), dp(248), template))
 
             val textCol = LinearLayout(this)
             textCol.orientation = LinearLayout.VERTICAL
@@ -435,7 +466,7 @@ class MainActivity : AppCompatActivity() {
             textCol.addView(title)
 
             val setBtn = TextView(this)
-            setBtn.text = "Set Wallpaper"
+            setBtn.text = "Set as Lock Screen"
             setBtn.textSize = 13f
             setBtn.setTextColor(ContextCompat.getColor(this, R.color.gold))
             val btnLp = LinearLayout.LayoutParams(
@@ -453,15 +484,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun applyWallpaper(theme: Profile) {
-        Toast.makeText(this, "Setting wallpaper\u2026", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "Setting lock screen wallpaper\u2026", Toast.LENGTH_SHORT).show()
         Thread {
             try {
                 val dm = resources.displayMetrics
-                val bmp = WallpaperGenerator.generate(theme, dm.widthPixels, dm.heightPixels)
+                val template = ProfileManager.wallpaperTemplate(this)
+                val bmp = WallpaperGenerator.generate(theme, dm.widthPixels, dm.heightPixels, template)
                 val wm = WallpaperManager.getInstance(this)
-                wm.setBitmap(bmp, null, true, WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK)
+                // Lock screen only, as requested — a static wallpaper can target just the
+                // lock screen (FLAG_LOCK); this is not possible for live/animated wallpapers
+                // on stock Android, which is why these wallpapers are static.
+                wm.setBitmap(bmp, null, true, WallpaperManager.FLAG_LOCK)
                 runOnUiThread {
-                    Toast.makeText(this, "Wallpaper applied \u2014 ${theme.name}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Lock screen wallpaper applied \u2014 ${theme.name}", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 runOnUiThread {

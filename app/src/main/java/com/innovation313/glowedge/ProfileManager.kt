@@ -62,6 +62,7 @@ object ProfileManager {
     private const val KEY_SENSITIVITY = "music_sensitivity"
     private const val KEY_ONBOARDED = "onboarded"
     private const val KEY_FORCE_GLOW = "force_glow"
+    private const val KEY_WALLPAPER_TEMPLATE = "wallpaper_template"
 
     val themes = listOf(
         // Vivid, distinct designer palette: each theme is a clearly different hue pair,
@@ -173,4 +174,11 @@ object ProfileManager {
 
     fun forceGlow(context: Context): Boolean =
         prefs(context).getBoolean(KEY_FORCE_GLOW, false)
+
+    fun setWallpaperTemplate(context: Context, template: Int) =
+        prefs(context).edit().putInt(KEY_WALLPAPER_TEMPLATE, template).apply()
+
+    fun wallpaperTemplate(context: Context): Int =
+        prefs(context).getInt(KEY_WALLPAPER_TEMPLATE, WallpaperGenerator.TEMPLATE_BORDER)
+            .coerceIn(0, WallpaperGenerator.TEMPLATE_COUNT - 1)
 }
