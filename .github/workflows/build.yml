@@ -71,28 +71,27 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.7.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.7.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.8.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.8.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.7.apk
-            GlowEdge-v6.7.aab
+            GlowEdge-v6.8.apk
+            GlowEdge-v6.8.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.7
-          name: GlowEdge v6.7 — Vivid colors, splash screen
+          tag_name: v6.8
+          name: GlowEdge v6.8 — Share Your Glow
           body: |
-            GlowEdge v6.7 - Vivid colors + professional splash screen
-            - Full designer pass on the color palette: every theme is now a clearly distinct, high-saturation hue pair instead of muted pastels.
-            - Removed the Innovation-313 signature sweep that played on every style change (was cluttering the glow).
-            - New splash screen on launch: logo, app name, and Powered by Innovation-313 statement.
+            GlowEdge v6.8 - Share Your Glow
+            - New feature: generate a branded image card of your current style, colors and Personal Glow Text, and share it via WhatsApp/Instagram/any app.
+            - Fully on-device — no internet permission needed or used, consistent with the rest of the app.
             Developed by Innovation-313
           files: |
-            GlowEdge-v6.7.apk
-            GlowEdge-v6.7.aab
+            GlowEdge-v6.8.apk
+            GlowEdge-v6.8.aab

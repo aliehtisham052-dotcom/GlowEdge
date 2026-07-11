@@ -5,7 +5,14 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BlurMaskFilter
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.LinearGradient
+import android.graphics.Paint
+import android.graphics.Shader
+import android.graphics.Typeface
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -24,8 +31,11 @@ import android.widget.ViewFlipper
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.materialswitch.MaterialSwitch
+import java.io.File
+import java.io.FileOutputStream
 
 class MainActivity : AppCompatActivity() {
 
@@ -130,6 +140,8 @@ class MainActivity : AppCompatActivity() {
         setupSliders()
         setupPersonalText()
         setupHeroHeader()
+
+        findViewById<View>(R.id.btnShare).setOnClickListener { shareGlowCard() }
     }
 
     /** One-time premium entrance for the hero header (halo + logo + name fade/scale in),
@@ -481,7 +493,93 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    // ---------- Personal Glow Text ----------
+    /** Generates a branded "share card" image of the user's current glow (style, colors,
+     *  personal text) and opens the system share sheet. Entirely on-device — the share
+     *  Intent hands the file to whichever app the user picks; GlowEdge itself never
+     *  touches the network, so this needs no internet permission. */
+    private fun shareGlowCard() {
+        try {
+            val w = 1080
+            val h = 1350
+            val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(bmp)
+
+            val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+            bgPaint.shader = LinearGradient(
+                0f, 0f, 0f, h.toFloat(),
+                Color.parseColor("#0A1128"), Color.parseColor("#0E1631"),
+                Shader.TileMode.CLAMP
+            )
+            canvas.drawRect(0f, 0f, w.toFloat(), h.toFloat(), bgPaint)
+
+            val theme = ProfileManager.theme(this)
+            val c1 = theme.colorStart
+            val c2 = theme.colorEnd
+            val inset = 44f
+
+            // Glow border: soft blurred pass, then a crisp pass on top
+            val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+            borderPaint.style = Paint.Style.STROKE
+            borderPaint.shader = LinearGradient(0f, 0f, w.toFloat(), h.toFloat(), c1, c2, Shader.TileMode.CLAMP)
+            borderPaint.strokeWidth = 26f
+            borderPaint.maskFilter = BlurMaskFilter(28f, BlurMaskFilter.Blur.NORMAL)
+            canvas.drawRoundRect(inset, inset, w - inset, h - inset, 64f, 64f, borderPaint)
+            borderPaint.maskFilter = null
+            borderPaint.strokeWidth = 7f
+            canvas.drawRoundRect(inset, inset, w - inset, h - inset, 64f, 64f, borderPaint)
+
+            // Center: personal text if set, else the style name
+            val personalText = ProfileManager.personalText(this)
+            val styleName = GlowStyles.all.firstOrNull { it.id == ProfileManager.style(this) }?.name ?: "GlowEdge"
+            val displayText = personalText.ifBlank { styleName }
+
+            val titlePaint = Paint(Paint.ANTI_ALIAS_FLAG)
+            titlePaint.textAlign = Paint.Align.CENTER
+            titlePaint.typeface = Typeface.DEFAULT_BOLD
+            titlePaint.textSize = if (displayText.length > 12) 76f else 100f
+            titlePaint.shader = LinearGradient(w / 2f - 320f, 0f, w / 2f + 320f, 0f, c1, c2, Shader.TileMode.CLAMP)
+            titlePaint.maskFilter = BlurMaskFilter(6f, BlurMaskFilter.Blur.NORMAL)
+            canvas.drawText(displayText, w / 2f, h / 2f - 30f, titlePaint)
+            titlePaint.maskFilter = null
+
+            val stylePaint = Paint(Paint.ANTI_ALIAS_FLAG)
+            stylePaint.textAlign = Paint.Align.CENTER
+            stylePaint.color = Color.parseColor("#8A93B5")
+            stylePaint.textSize = 38f
+            canvas.drawText("$styleName  \u00b7  ${theme.name}", w / 2f, h / 2f + 56f, stylePaint)
+
+            // Footer branding
+            val brandPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+            brandPaint.textAlign = Paint.Align.CENTER
+            brandPaint.color = Color.parseColor("#FFD54F")
+            brandPaint.typeface = Typeface.DEFAULT_BOLD
+            brandPaint.textSize = 46f
+            canvas.drawText("GlowEdge", w / 2f, h - 150f, brandPaint)
+
+            val taglinePaint = Paint(Paint.ANTI_ALIAS_FLAG)
+            taglinePaint.textAlign = Paint.Align.CENTER
+            taglinePaint.color = Color.parseColor("#8A93B5")
+            taglinePaint.textSize = 28f
+            taglinePaint.letterSpacing = 0.08f
+            canvas.drawText("POWERED BY INNOVATION-313", w / 2f, h - 100f, taglinePaint)
+
+            val dir = File(cacheDir, "shared")
+            dir.mkdirs()
+            val file = File(dir, "glowedge_share.png")
+            FileOutputStream(file).use { out -> bmp.compress(Bitmap.CompressFormat.PNG, 100, out) }
+
+            val uri = FileProvider.getUriForFile(this, "$packageName.fileprovider", file)
+            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                type = "image/png"
+                putExtra(Intent.EXTRA_STREAM, uri)
+                putExtra(Intent.EXTRA_TEXT, "My glow on GlowEdge by Innovation-313 \u2728")
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            startActivity(Intent.createChooser(shareIntent, getString(R.string.share_glow)))
+        } catch (e: Exception) {
+            Toast.makeText(this, "Couldn't create the share image", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     private fun setupPersonalText() {
         val editText = findViewById<EditText>(R.id.editPersonalText)
