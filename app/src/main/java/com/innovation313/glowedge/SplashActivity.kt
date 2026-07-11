@@ -1,48 +1,52 @@
 package com.innovation313.glowedge
 
 import android.content.Intent
-import android.graphics.Color
+import android.media.MediaPlayer
+import android.net.Uri
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.view.View
-import android.widget.ImageView
-import android.widget.TextView
+import android.view.WindowManager
+import android.widget.VideoView
 import androidx.appcompat.app.AppCompatActivity
 
 /**
- * First screen the user sees on launch: a brief, professional branded intro
- * ("Powered by Innovation-313") before handing off to MainActivity. Fixed,
- * short duration — no loading work happens here, so it never overstays.
+ * First screen the user sees on launch: the Innovation-313 branded opening
+ * clip (glow_intro.mp4), played once, before handing off to MainActivity.
  */
 class SplashActivity : AppCompatActivity() {
 
     companion object {
-        private const val SPLASH_DURATION_MS = 1300L
+        private const val SPLASH_MAX_MS = 5000L
     }
+
+    private var moved = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         setContentView(R.layout.activity_splash)
 
-        val halo = findViewById<View>(R.id.splashHalo)
-        val logo = findViewById<ImageView>(R.id.splashLogo)
-        val name = findViewById<TextView>(R.id.splashAppName)
-        val poweredBy = findViewById<TextView>(R.id.splashPoweredBy)
+        val videoView = findViewById<VideoView>(R.id.splashVideo)
+        val uri = Uri.parse("android.resource://$packageName/${R.raw.glow_intro}")
+        videoView.setVideoURI(uri)
 
-        listOf(halo, logo, name, poweredBy).forEach { it.alpha = 0f }
-        halo.scaleX = 0.7f; halo.scaleY = 0.7f
-        halo.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(650).setStartDelay(60).start()
-        logo.animate().alpha(1f).setDuration(550).setStartDelay(140).start()
-        name.animate().alpha(1f).setDuration(550).setStartDelay(220).start()
-        poweredBy.animate().alpha(1f).setDuration(500).setStartDelay(420).start()
+        videoView.setOnPreparedListener { mp: MediaPlayer ->
+            mp.isLooping = false
+            // mp.setVolume(0f, 0f)
+        }
 
-        Handler(Looper.getMainLooper()).postDelayed({
-            if (!isFinishing) {
-                startActivity(Intent(this, MainActivity::class.java))
-                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
-                finish()
-            }
-        }, SPLASH_DURATION_MS)
+        videoView.setOnCompletionListener { goToMain() }
+        videoView.setOnErrorListener { _, _, _ -> goToMain(); true }
+
+        videoView.postDelayed({ if (!isFinishing) goToMain() }, SPLASH_MAX_MS)
+
+        videoView.start()
+    }
+
+    private fun goToMain() {
+        if (moved) return
+        moved = true
+        startActivity(Intent(this, MainActivity::class.java))
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+        finish()
     }
 }
