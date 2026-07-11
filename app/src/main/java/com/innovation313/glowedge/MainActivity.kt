@@ -439,6 +439,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun buildWallpaperCards() {
         findViewById<TextView>(R.id.btnLiveWallpaper).setOnClickListener {
+            // Android keeps no copy of the wallpaper you're replacing, so we save the
+            // current one first — that's what lets Remove restore it later.
+            backupCurrentWallpaper()
             try {
                 val intent = Intent(android.app.WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER).apply {
                     putExtra(
@@ -457,20 +460,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
         findViewById<TextView>(R.id.btnRemoveLiveWallpaper).setOnClickListener {
-            Toast.makeText(this, getString(R.string.remove_live_wallpaper_hint), Toast.LENGTH_LONG).show()
-            try {
-                // Android has no direct "remove live wallpaper" API — setting any other
-                // wallpaper replaces it. Open the system wallpaper picker so the user
-                // can choose a normal wallpaper, which removes GlowEdge.
-                val intent = Intent(Intent.ACTION_SET_WALLPAPER)
-                startActivity(Intent.createChooser(intent, getString(R.string.remove_live_wallpaper)))
-            } catch (e: Exception) {
-                try {
-                    startActivity(Intent(android.app.WallpaperManager.ACTION_LIVE_WALLPAPER_CHOOSER))
-                } catch (e2: Exception) {
-                    Toast.makeText(this, "Open Settings → Wallpaper to change it", Toast.LENGTH_LONG).show()
-                }
-            }
+            restoreOrPickWallpaper()
         }
         val container = findViewById<LinearLayout>(R.id.wallpaperContainer)
         container.removeAllViews()
@@ -519,6 +509,89 @@ class MainActivity : AppCompatActivity() {
             card.addView(preview)
             card.addView(textCol)
             container.addView(card)
+        }
+    }
+
+    /**
+     * Saves whatever wallpaper is currently set into app-private storage, so Remove can
+     * put it back later. Android does not keep a copy of the wallpaper you replace, and
+     * apps can't read another app's wallpaper afterwards — so we snapshot it up front.
+     * Only ever runs right before we replace the wallpaper ourselves.
+     */
+    private fun backupCurrentWallpaper() {
+        try {
+            val wm = WallpaperManager.getInstance(this)
+            // If GlowEdge's live wallpaper is already active, there's nothing worth saving.
+            val info = wm.wallpaperInfo
+            if (info != null && info.packageName == packageName) return
+
+            val drawable = wm.drawable ?: return
+            val bmp = when (drawable) {
+                is android.graphics.drawable.BitmapDrawable -> drawable.bitmap
+                else -> {
+                    val w = drawable.intrinsicWidth.coerceAtLeast(1)
+                    val h = drawable.intrinsicHeight.coerceAtLeast(1)
+                    val b = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+                    val c = android.graphics.Canvas(b)
+                    drawable.setBounds(0, 0, w, h)
+                    drawable.draw(c)
+                    b
+                }
+            } ?: return
+
+            val file = java.io.File(filesDir, "previous_wallpaper.png")
+            java.io.FileOutputStream(file).use { out ->
+                bmp.compress(Bitmap.CompressFormat.PNG, 100, out)
+            }
+        } catch (_: SecurityException) {
+            // Some OS versions restrict reading the wallpaper; restore just won't be offered.
+        } catch (_: Exception) {
+        }
+    }
+
+    /**
+     * Restores the wallpaper that was in place before GlowEdge, if we saved one.
+     * If there's no saved wallpaper (e.g. the live wallpaper was set before this feature
+     * existed, or the OS blocked reading it), we fall back to opening the system picker.
+     */
+    private fun restoreOrPickWallpaper() {
+        val file = java.io.File(filesDir, "previous_wallpaper.png")
+        if (file.exists()) {
+            Toast.makeText(this, getString(R.string.restoring_wallpaper), Toast.LENGTH_SHORT).show()
+            Thread {
+                try {
+                    val bmp = android.graphics.BitmapFactory.decodeFile(file.absolutePath)
+                    if (bmp != null) {
+                        WallpaperManager.getInstance(this).setBitmap(bmp)
+                        file.delete()
+                        runOnUiThread {
+                            Toast.makeText(this, getString(R.string.wallpaper_restored), Toast.LENGTH_SHORT).show()
+                        }
+                        return@Thread
+                    }
+                } catch (_: Exception) {
+                }
+                runOnUiThread { openWallpaperPicker() }
+            }.start()
+            return
+        }
+        openWallpaperPicker()
+    }
+
+    /** Fallback: open the system wallpaper picker so the user can choose any wallpaper,
+     *  which replaces (and so removes) the GlowEdge live wallpaper. */
+    private fun openWallpaperPicker() {
+        Toast.makeText(this, getString(R.string.remove_live_wallpaper_hint), Toast.LENGTH_LONG).show()
+        try {
+            startActivity(Intent.createChooser(
+                Intent(Intent.ACTION_SET_WALLPAPER), getString(R.string.remove_live_wallpaper)
+            ))
+        } catch (e: Exception) {
+            try {
+                startActivity(Intent(android.app.WallpaperManager.ACTION_LIVE_WALLPAPER_CHOOSER))
+            } catch (e2: Exception) {
+                Toast.makeText(this, "Open Settings → Wallpaper to change it", Toast.LENGTH_LONG).show()
+            }
         }
     }
 

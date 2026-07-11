@@ -71,26 +71,26 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.34.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.34.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.35.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.35.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.34.apk
-            GlowEdge-v6.34.aab
+            GlowEdge-v6.35.apk
+            GlowEdge-v6.35.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.34
-          name: GlowEdge v6.34 — Remove Live Wallpaper button
+          tag_name: v6.35
+          name: GlowEdge v6.35 — Restore wallpaper + shorter intro
           body: |
-            GlowEdge v6.34 - Remove Live Wallpaper button
-            - Added a "Remove Live Wallpaper" button in the Wallpapers tab. Android has no direct remove API for live wallpapers, so it opens the system wallpaper picker - choosing any other wallpaper removes GlowEdge.
-            - Keeps Call Glow (wakes screen), MediaSession music detection, and all wallpaper features.
+            GlowEdge v6.35 - Restore previous wallpaper + 3s intro
+            - Remove Live Wallpaper now RESTORES your previous wallpaper. Android keeps no copy of the wallpaper it replaces, so GlowEdge now snapshots your current wallpaper right before applying its live wallpaper, and puts it back when you remove it. If no snapshot exists (live wallpaper set before this version), it falls back to the system picker.
+            - Intro video shortened from 4.1s to 3.0s (and its unused audio track stripped, halving the file size).
           files: |
-            GlowEdge-v6.34.apk
-            GlowEdge-v6.34.aab
+            GlowEdge-v6.35.apk
+            GlowEdge-v6.35.aab

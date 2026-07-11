@@ -15,7 +15,7 @@ import androidx.appcompat.app.AppCompatActivity
 class SplashActivity : AppCompatActivity() {
 
     companion object {
-        private const val SPLASH_MAX_MS = 5000L
+        private const val SPLASH_MAX_MS = 4000L
     }
 
     private var moved = false
