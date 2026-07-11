@@ -1091,6 +1091,15 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:autoLink="email"
+                        android:text="@string/support_email"
+                        android:textColor="@color/white"
+                        android:textSize="15sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:text="@string/app_version"
                         android:textColor="#8A93B5"

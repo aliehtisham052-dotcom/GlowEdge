@@ -150,7 +150,7 @@ class MainActivity : AppCompatActivity() {
     /** Opens the user's email app pre-filled to the developer, with a subject and a
      *  reason template so feedback always arrives with context. */
     private fun sendFeedback() {
-        val email = getString(R.string.developer_email)
+        val email = getString(R.string.support_email)
         val subject = getString(R.string.feedback_subject)
         val body = getString(R.string.feedback_body)
         val intent = Intent(Intent.ACTION_SENDTO).apply {
