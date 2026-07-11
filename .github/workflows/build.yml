@@ -71,28 +71,28 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.21.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.21.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.22.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.22.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.21.apk
-            GlowEdge-v6.21.aab
+            GlowEdge-v6.22.apk
+            GlowEdge-v6.22.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.21
-          name: GlowEdge v6.21 — Live wallpaper + refined design
+          tag_name: v6.22
+          name: GlowEdge v6.22 — Harmonic music detection
           body: |
-            GlowEdge v6.21 - Live wallpaper + refined static design
-            - NEW: GlowEdge Live Wallpaper showing the time, date and a LIVE battery reading (with charging state), in your selected glow theme - like the reference AOD look. Redraws once a minute plus on battery/power changes, so it stays battery-friendly.
-            - Redesigned the static wallpaper down to one polished signature design: a soft column of light rising from the base, hairline arc, refined thin frame, theme name + wordmark.
-            - Removed the 3-template picker in favour of the single refined design.
-            Developed by Innovation-313
+            GlowEdge v6.22 - Harmonic music detection
+            - MAJOR: detection now uses a real Harmonic Product Spectrum (HPS) analysis. It looks for a clear fundamental pitch with harmonic overtones - the defining property of sung/played notes - instead of only measuring how the sound is spread.
+            - Speech, bayan and conversation are inharmonic and noisy, so their harmonic score stays low; music and naat have a stable harmonic stack, so they pass. This directly targets the constant false-positives on talking.
+            - Tracks tonality across recent frames so a single vowel does not trigger, but a sustained sung line does.
+            - Includes the v6.21 live wallpaper (time/date/battery) and refined static wallpaper.
           files: |
-            GlowEdge-v6.21.apk
-            GlowEdge-v6.21.aab
+            GlowEdge-v6.22.apk
+            GlowEdge-v6.22.aab

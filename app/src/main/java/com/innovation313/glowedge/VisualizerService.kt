@@ -33,13 +33,13 @@ class VisualizerService : Service() {
 
     // ---- Music / melody detection state ----
     private var musicScore = 0f          // 0 = speech/noise, 1 = clearly musical
-    private var prevLevel = 0f
     private var musicOnly = true
     private var forceGlow = false
     private var sensitivity = 5
-    private val fluxHistory = FloatArray(16)
-    private var fluxIndex = 0
-    private val prevBands = FloatArray(32)
+    // Running history of how tonal/harmonic recent frames were (music sustains tonality;
+    // speech only touches it briefly on vowels).
+    private val tonalHistory = FloatArray(16)
+    private var tonalIndex = 0
 
     private val notifReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: android.content.Context?, intent: Intent?) {
@@ -225,30 +225,30 @@ class VisualizerService : Service() {
     }
 
     /**
-     * Heuristic music/naat/melody detector. Returns true only when the audio
-     * simultaneously looks musical on every measure — wide spectral spread, real
-     * bass+treble balance, AND steady frame-to-frame flux. Returns false for plain
-     * speech, bayan/lecture, notification blips, or random noise.
+     * Music/naat detector with real harmonic analysis.
      *
-     * RESET (this version): earlier attempts patched individual thresholds and added
-     * a "long sustained vocal" bypass so a cappella naat without bass could still pass.
-     * That bypass turned out to be the main leak — ordinary fluent conversation could
-     * trigger it just by talking continuously for under a second. There is no bypass
-     * left now: every cue must be true at the same time, every single frame. Ordinary
-     * speech is inherently narrow-band and mid-dominant, so it structurally cannot
-     * satisfy all three cues together. The trade-off, stated plainly: a pure,
-     * unaccompanied a cappella naat with no bass at all may occasionally be missed.
-     * That is the deliberate cost of eliminating false positives on conversation.
+     * The key discriminator is the Harmonic Product Spectrum (HPS): sung or played
+     * notes have a clear fundamental frequency plus overtones at integer multiples
+     * (2x, 3x, 4x...). Multiplying the spectrum by downsampled copies of itself makes
+     * that harmonic stack reinforce into one sharp peak. Speech — even fluent, loud
+     * speech — is inharmonic and noisy, so its HPS stays flat with no dominant peak.
+     * This is what earlier energy-only versions couldn't see: they measured how the
+     * sound was *spread*, not whether it was actually *tonal*.
+     *
+     * A tonal frame is confirmed when the HPS has a strong, isolated peak (high
+     * peak-to-average ratio) and that peak sits in a plausible musical pitch range.
+     * We track how consistently recent frames are tonal, so a single word landing on
+     * a vowel doesn't trigger, but a held/sung line does. The older spread/balance
+     * cues are kept only as a secondary confirmation, not the main gate.
      */
-    private fun isMusical(bands: FloatArray, level: Float): Boolean {
+    private fun isMusical(bands: FloatArray, level: Float, spectrum: FloatArray): Boolean {
         val n = bands.size
 
-        // 1) Spectral spread: how many bands carry real energy
+        // --- Secondary cues (spectral shape), kept as light support ---
         var active = 0
         for (b in bands) if (b > 0.10f) active++
         val spread = active / n.toFloat()
 
-        // 2) Band balance: music has bass + treble; speech is mid-dominant (300-3400 Hz)
         var bass = 0f; var mid = 0f; var treble = 0f
         for (i in 0 until n) {
             when {
@@ -259,49 +259,74 @@ class VisualizerService : Service() {
         }
         val balance = (bass + treble) / (mid + 0.001f)
 
-        // 3) Spectral flux steadiness: how much the spectrum changes frame to frame.
-        //    Music/naat has steady, rhythmic flux; speech is bursty and irregular.
-        var flux = 0f
-        for (i in 0 until n) {
-            val d = bands[i] - prevBands[i]
-            if (d > 0) flux += d
-            prevBands[i] = bands[i]
-        }
-        fluxHistory[fluxIndex] = flux
-        fluxIndex = (fluxIndex + 1) % fluxHistory.size
-        var mean = 0f
-        for (f in fluxHistory) mean += f
-        mean /= fluxHistory.size
-        var varc = 0f
-        for (f in fluxHistory) varc += (f - mean) * (f - mean)
-        varc /= fluxHistory.size
-        val steadiness = 1f / (1f + varc * 6f)
+        // --- PRIMARY cue: Harmonic Product Spectrum ---
+        val tonal = harmonicScore(spectrum)          // 0..1, how tonal/harmonic this frame is
+        tonalHistory[tonalIndex] = tonal
+        tonalIndex = (tonalIndex + 1) % tonalHistory.size
+        var tonalMean = 0f
+        for (t in tonalHistory) tonalMean += t
+        tonalMean /= tonalHistory.size
 
-        prevLevel = level
-
-        // Sensitivity eases thresholds (1 strict .. 10 loose)
         val s = sensitivity / 10f
-        val spreadNeed = 0.38f - s * 0.14f
-        val balanceNeed = 0.50f - s * 0.22f
+        // Harmonic threshold: stricter at low sensitivity, looser at high.
+        val tonalNeed = 0.55f - s * 0.22f
 
-        // Two paths to "musical" — real audio doesn't hold every cue steady at once:
-        // Path A: real spectral width AND bass+treble balance together. This is the
-        //   most reliable signal, because ordinary speech structurally lacks both at
-        //   once — it's the main gate for typical music/naat with instrumentation.
-        // Path B: very high steadiness (a held/rhythmic vocal or drone) with at least
-        //   some spread, even if balance is weak — covers sparse a cappella naat/zikr
-        //   that has little bass but sustains a steady tone.
-        val pathA = spread >= spreadNeed && balance >= balanceNeed
-        val pathB = steadiness >= 0.62f && spread >= spreadNeed * 0.75f
-        val coreMusical = pathA || pathB
-        val looksMusical = level > 0.07f && coreMusical
+        // Music/naat = a sustained tonal signal (harmonics present across recent frames).
+        // Speech briefly touches tonal on vowels but its running mean stays low.
+        val harmonicallyMusical = tonalMean >= tonalNeed
+        // Secondary confirmation catches busy instrumental music whose fundamental is
+        // muddled but which is clearly wide-band and balanced.
+        val texturallyMusical = spread >= (0.55f - s * 0.15f) && balance >= (0.75f - s * 0.25f)
+
+        val looksMusical = level > 0.07f && (harmonicallyMusical || texturallyMusical)
 
         val rise = 0.06f + s * 0.03f
-        val fall = 0.05f  // gentle enough that a brief pause/quiet verse doesn't kill it
+        val fall = 0.05f
         val target = if (looksMusical) 1f else 0f
         musicScore += (target - musicScore) * (if (target > musicScore) rise else fall)
 
         return musicScore > 0.45f
+    }
+
+    /**
+     * Harmonic Product Spectrum score in [0,1]. Downsamples the magnitude spectrum by
+     * 2x, 3x and 4x and multiplies them together; a true fundamental with overtones
+     * produces one tall spike. We return how strongly that spike stands out from the
+     * average (peak-to-average ratio, squashed to 0..1), gated to a musical pitch band.
+     */
+    private fun harmonicScore(spectrum: FloatArray): Float {
+        val len = spectrum.size
+        if (len < 32) return 0f
+
+        // Only look where musical fundamentals live (skip DC/rumble and the very top).
+        val lo = 2
+        val hi = len / 4          // 4x downsample must stay in-bounds
+        if (hi <= lo + 4) return 0f
+
+        var peak = 0f
+        var peakIdx = lo
+        var total = 0f
+        var count = 0
+        for (i in lo until hi) {
+            val h = spectrum[i] * spectrum[i * 2] * spectrum[i * 3] * spectrum[i * 4]
+            total += h
+            count++
+            if (h > peak) { peak = h; peakIdx = i }
+        }
+        if (peak <= 0f || count == 0) return 0f
+        val avg = total / count
+        if (avg <= 1e-9f) return 0f
+
+        // Peak-to-average: flat (speech/noise) ~ small; sharp (tonal) ~ large.
+        val ratio = peak / avg
+
+        // Require the peak to also be a real local maximum (not a lone spiky bin).
+        val leftOk = peakIdx <= lo || spectrum[peakIdx] >= spectrum[peakIdx - 1] * 0.6f
+        val rightOk = peakIdx >= hi - 1 || spectrum[peakIdx] >= spectrum[peakIdx + 1] * 0.6f
+        if (!leftOk || !rightOk) return 0f
+
+        // Squash ratio into 0..1 (ratios above ~40 are firmly tonal).
+        return (ratio / 40f).coerceIn(0f, 1f)
     }
 
     private fun restartVisualizer() {
@@ -332,6 +357,18 @@ class VisualizerService : Service() {
                         val bands = FloatArray(bandCount)
                         val maxBin = (fft.size / 2 - 1).coerceAtMost(220)
                         var sum = 0f
+
+                        // Raw per-bin magnitude spectrum, kept for harmonic analysis
+                        // (Harmonic Product Spectrum needs the full-resolution spectrum,
+                        // not the coarse 32-band version used for the visuals).
+                        val specLen = (fft.size / 2).coerceAtMost(256)
+                        val spectrum = FloatArray(specLen)
+                        for (bin in 0 until specLen) {
+                            val re = fft[bin * 2].toFloat()
+                            val im = fft[bin * 2 + 1].toFloat()
+                            spectrum[bin] = sqrt(re * re + im * im) / 128f
+                        }
+
                         for (i in 0 until bandCount) {
                             // Logarithmic mapping: low bands = bass, high bands = treble,
                             // matching how the human ear hears music
@@ -341,9 +378,7 @@ class VisualizerService : Service() {
                                 .toInt().coerceIn(start + 1, maxBin + 1)
                             var peak = 0f
                             for (bin in start until end) {
-                                val re = fft[bin * 2].toFloat()
-                                val im = fft[bin * 2 + 1].toFloat()
-                                val m = sqrt(re * re + im * im) / 128f
+                                val m = if (bin < specLen) spectrum[bin] else 0f
                                 if (m > peak) peak = m
                             }
                             // Per-band auto gain: quiet songs and loud songs both dance fully
@@ -358,8 +393,8 @@ class VisualizerService : Service() {
                         for (i in 0 until 10) bassSum += bands[i]
                         val rawLevel = ((bassSum / 10f) * 0.7f + (sum / bandCount) * 0.5f).coerceIn(0f, 1f)
 
-                        // ---- Music vs speech detection ----
-                        val musical = isMusical(bands, rawLevel)
+                        // ---- Music vs speech detection (now harmonic-aware) ----
+                        val musical = isMusical(bands, rawLevel, spectrum)
                         val gatedLevel = if (forceGlow || !musicOnly || musical) rawLevel else 0f
                         edgeView?.setAudioData(gatedLevel, bands)
                     }
