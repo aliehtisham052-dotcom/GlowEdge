@@ -33,7 +33,6 @@ class VisualizerService : Service() {
     // ---- Music / melody detection state ----
     private var musicScore = 0f          // 0 = speech/noise, 1 = clearly musical
     private var prevLevel = 0f
-    private var sustainFrames = 0
     private var musicOnly = true
     private var sensitivity = 5
     private val fluxHistory = FloatArray(16)
@@ -198,9 +197,20 @@ class VisualizerService : Service() {
     }
 
     /**
-     * Heuristic music/naat/melody detector. Returns true when the audio looks
-     * musical (energy spread across bands, bass+treble present, sustained),
-     * false for plain speech / notification blips / random noise.
+     * Heuristic music/naat/melody detector. Returns true only when the audio
+     * simultaneously looks musical on every measure — wide spectral spread, real
+     * bass+treble balance, AND steady frame-to-frame flux. Returns false for plain
+     * speech, bayan/lecture, notification blips, or random noise.
+     *
+     * RESET (this version): earlier attempts patched individual thresholds and added
+     * a "long sustained vocal" bypass so a cappella naat without bass could still pass.
+     * That bypass turned out to be the main leak — ordinary fluent conversation could
+     * trigger it just by talking continuously for under a second. There is no bypass
+     * left now: every cue must be true at the same time, every single frame. Ordinary
+     * speech is inherently narrow-band and mid-dominant, so it structurally cannot
+     * satisfy all three cues together. The trade-off, stated plainly: a pure,
+     * unaccompanied a cappella naat with no bass at all may occasionally be missed.
+     * That is the deliberate cost of eliminating false positives on conversation.
      */
     private fun isMusical(bands: FloatArray, level: Float): Boolean {
         val n = bands.size
@@ -221,7 +231,7 @@ class VisualizerService : Service() {
         }
         val balance = (bass + treble) / (mid + 0.001f)
 
-        // 3) Spectral flux: how much the spectrum changes frame to frame.
+        // 3) Spectral flux steadiness: how much the spectrum changes frame to frame.
         //    Music/naat has steady, rhythmic flux; speech is bursty and irregular.
         var flux = 0f
         for (i in 0 until n) {
@@ -237,50 +247,25 @@ class VisualizerService : Service() {
         var varc = 0f
         for (f in fluxHistory) varc += (f - mean) * (f - mean)
         varc /= fluxHistory.size
-        // Low variance in flux = steady rhythm (musical). High variance = choppy speech.
         val steadiness = 1f / (1f + varc * 6f)
-
-        // 4) Sustain: musical/vocal audio keeps energy going (naat sustains notes);
-        //    speech has frequent micro-gaps between words.
-        if (level > 0.05f) sustainFrames++ else sustainFrames = 0
-        val sustained = sustainFrames > 5
 
         prevLevel = level
 
-        // Sensitivity eases thresholds (1 strict .. 10 loose)
+        // Sensitivity eases thresholds (1 strict .. 10 loose) — but the floor is much
+        // higher across the board now, at every sensitivity setting.
         val s = sensitivity / 10f
-        val spreadNeed = 0.42f - s * 0.18f
-        val balanceNeed = 0.55f - s * 0.30f
-        val steadyNeed = 0.50f - s * 0.26f
+        val spreadNeed = 0.46f - s * 0.16f
+        val balanceNeed = 0.62f - s * 0.28f
+        val steadyNeed = 0.56f - s * 0.22f
 
-        // Speech rejection: normal talking is strongly mid-band dominant with low spread.
-        // If it looks like speech, do not treat it as music regardless of other cues.
-        // STRICT speech rejection: this app is for music/naat/kalam, not local chatting or bayan.
-        // Speech = mid-band dominant + narrow spread + short choppy phrases (no long sustain).
-        // A cappella naat sustains actual held notes (long AND spectrally steady) so it still
-        // passes even without bass. A fluent bayan/lecture can also run on for a long time
-        // without pauses, but its spectrum keeps shifting syllable to syllable — it is NOT
-        // spectrally steady the way a held sung note is — so it must also clear the
-        // steadiness bar to bypass rejection, or it stays correctly classified as speech.
-        val longVocalSustain = sustainFrames > 22 && steadiness >= 0.42f
-        val looksLikeSpeech = balance < 0.45f && spread < 0.40f && !longVocalSustain
-        if (looksLikeSpeech) {
-            // fall quickly so the glow dies fast when someone talks
-            musicScore += (0f - musicScore) * 0.10f
-            return musicScore > 0.45f
-        }
-
-        // Score each cue. Music/naat needs at least 3 of 4 strong signals.
-        var cues = 0
-        if (spread >= spreadNeed) cues++
-        if (balance >= balanceNeed) cues++
-        if (steadiness >= steadyNeed) cues++
-        if (sustained) cues++
-
-        val looksMusical = level > 0.07f && cues >= 3
+        // ALL THREE cues required at once — no OR-scoring, no bypass. This is the
+        // "perfect zone": only audio that is simultaneously wide-spectrum, tonally
+        // balanced, and spectrally steady counts as music/naat.
+        val coreMusical = spread >= spreadNeed && balance >= balanceNeed && steadiness >= steadyNeed
+        val looksMusical = level > 0.07f && coreMusical
 
         val rise = 0.07f + s * 0.04f
-        val fall = 0.04f
+        val fall = 0.09f  // fall faster than before, so talking kills the glow quickly
         val target = if (looksMusical) 1f else 0f
         musicScore += (target - musicScore) * (if (target > musicScore) rise else fall)
 

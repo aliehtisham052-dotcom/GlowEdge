@@ -71,27 +71,28 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.10.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.10.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.11.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.11.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.10.apk
-            GlowEdge-v6.10.aab
+            GlowEdge-v6.11.apk
+            GlowEdge-v6.11.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.10
-          name: GlowEdge v6.10 — Fix bayan false-positive, denser bars
+          tag_name: v6.11
+          name: GlowEdge v6.11 — Detection reset, strict AND logic
           body: |
-            GlowEdge v6.10 - Fix bayan false-positive + denser bars
-            - Fixed a real detection bug: a long, uninterrupted spoken bayan/lecture could trick the sustain check into treating it as music. The sustain bypass now also requires spectral steadiness (held sung notes are steady; fluent speech still varies syllable to syllable), so plain lectures correctly stay speech.
-            - Side Bars and Bars Around styles now render noticeably more bars for a denser, more professional equalizer look.
+            GlowEdge v6.11 - Detection reset
+            - Full reset of music/naat detection: removed every bypass/escape path from earlier versions. Now requires spectral spread, bass/treble balance, AND flux steadiness to ALL be true at the same time, every frame - not any 3 of 4, no sustain shortcut. Ordinary conversation is structurally narrow-band and cannot satisfy all three together.
+            - Trade-off, stated honestly: pure unaccompanied a cappella naat with zero bass may occasionally be missed. This is the deliberate cost of eliminating false positives on normal conversation.
+            - Falls back to "not music" faster too, so talking kills the glow quickly.
             Developed by Innovation-313
           files: |
-            GlowEdge-v6.10.apk
-            GlowEdge-v6.10.aab
+            GlowEdge-v6.11.apk
+            GlowEdge-v6.11.aab
