@@ -71,28 +71,27 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.22.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.22.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.23.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.23.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.22.apk
-            GlowEdge-v6.22.aab
+            GlowEdge-v6.23.apk
+            GlowEdge-v6.23.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.22
-          name: GlowEdge v6.22 — Harmonic music detection
+          tag_name: v6.23
+          name: GlowEdge v6.23 — Clean wallpapers
           body: |
-            GlowEdge v6.22 - Harmonic music detection
-            - MAJOR: detection now uses a real Harmonic Product Spectrum (HPS) analysis. It looks for a clear fundamental pitch with harmonic overtones - the defining property of sung/played notes - instead of only measuring how the sound is spread.
-            - Speech, bayan and conversation are inharmonic and noisy, so their harmonic score stays low; music and naat have a stable harmonic stack, so they pass. This directly targets the constant false-positives on talking.
-            - Tracks tonality across recent frames so a single vowel does not trigger, but a sustained sung line does.
-            - Includes the v6.21 live wallpaper (time/date/battery) and refined static wallpaper.
+            GlowEdge v6.23 - Clean wallpaper redesign
+            - Removed the bottom flame/light-column from both the static and live wallpaper - replaced with a soft glowing shine along the screen edges only.
+            - Removed all text from the wallpapers: no theme/style name, no GLOWEDGE branding. The static wallpaper is now a clean edge-glow backdrop.
+            - The live wallpaper now shows ONLY the live time, date and battery on a clean edge-glow background - nothing else.
           files: |
-            GlowEdge-v6.22.apk
-            GlowEdge-v6.22.aab
+            GlowEdge-v6.23.apk
+            GlowEdge-v6.23.aab

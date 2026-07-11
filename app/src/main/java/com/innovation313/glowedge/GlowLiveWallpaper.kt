@@ -9,9 +9,9 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.LinearGradient
 import android.graphics.Paint
-import android.graphics.Path
 import android.graphics.RectF
 import android.graphics.Shader
+import android.graphics.SweepGradient
 import android.graphics.Typeface
 import android.os.BatteryManager
 import android.os.Handler
@@ -118,10 +118,8 @@ class GlowLiveWallpaper : WallpaperService() {
             val beam = if (theme.rainbow) RAINBOW[3] else c1
 
             drawField(canvas, w, h, c2)
-            drawLightColumn(canvas, w, h, c1, c2, beam)
+            drawEdgeShine(canvas, w, h, c1, c2)
             drawInfo(canvas, w, h, theme, beam)
-            drawFrame(canvas, w, h, c1, c2)
-            drawBrand(canvas, w, h, theme)
         }
 
         private fun drawField(canvas: Canvas, w: Float, h: Float, warm: Int) {
@@ -140,45 +138,33 @@ class GlowLiveWallpaper : WallpaperService() {
             canvas.drawRect(0f, 0f, w, h, paint)
         }
 
-        private fun drawLightColumn(canvas: Canvas, w: Float, h: Float, c1: Int, c2: Int, beam: Int) {
-            val cx = w / 2f
-            val topY = h * 0.40f
-            val baseY = h * 0.88f
-            val halfWideBase = w * 0.20f
-            val halfWideTop = w * 0.015f
+        private fun drawEdgeShine(canvas: Canvas, w: Float, h: Float, c1: Int, c2: Int) {
+            val colors = if (ProfileManager.theme(this@GlowLiveWallpaper).rainbow) RAINBOW
+                         else intArrayOf(c1, c2, c1, c2, c1)
+            val thickness = w * 0.018f
+            val inset = thickness * 1.6f
+            val rect = RectF(inset, inset, w - inset, h - inset)
+            val corner = w * 0.11f
 
-            val outer = Path().apply {
-                moveTo(cx - halfWideBase, baseY)
-                lineTo(cx - halfWideTop, topY)
-                lineTo(cx + halfWideTop, topY)
-                lineTo(cx + halfWideBase, baseY)
-                close()
-            }
-            val outerPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-            outerPaint.shader = LinearGradient(
-                0f, baseY, 0f, topY,
-                intArrayOf(withAlpha(c1, 140), withAlpha(c2, 55), withAlpha(c2, 0)),
-                floatArrayOf(0f, 0.55f, 1f), Shader.TileMode.CLAMP
-            )
-            outerPaint.maskFilter = BlurMaskFilter(w * 0.10f, BlurMaskFilter.Blur.NORMAL)
-            canvas.drawPath(outer, outerPaint)
+            val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+            paint.style = Paint.Style.STROKE
+            paint.strokeCap = Paint.Cap.ROUND
+            paint.shader = SweepGradient(w / 2f, h / 2f, colors, null)
 
-            val innerHalfBase = w * 0.05f
-            val inner = Path().apply {
-                moveTo(cx - innerHalfBase, baseY)
-                lineTo(cx - halfWideTop * 0.6f, topY + (baseY - topY) * 0.10f)
-                lineTo(cx + halfWideTop * 0.6f, topY + (baseY - topY) * 0.10f)
-                lineTo(cx + innerHalfBase, baseY)
-                close()
-            }
-            val innerPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-            innerPaint.shader = LinearGradient(
-                0f, baseY, 0f, topY,
-                intArrayOf(withAlpha(mix(beam, Color.WHITE, 0.35f), 210), withAlpha(beam, 40), withAlpha(beam, 0)),
-                floatArrayOf(0f, 0.6f, 1f), Shader.TileMode.CLAMP
-            )
-            innerPaint.maskFilter = BlurMaskFilter(w * 0.03f, BlurMaskFilter.Blur.NORMAL)
-            canvas.drawPath(inner, innerPaint)
+            paint.strokeWidth = thickness * 2.4f
+            paint.maskFilter = BlurMaskFilter(w * 0.06f, BlurMaskFilter.Blur.NORMAL)
+            paint.alpha = 150
+            canvas.drawRoundRect(rect, corner, corner, paint)
+
+            paint.strokeWidth = thickness
+            paint.maskFilter = BlurMaskFilter(thickness * 1.4f, BlurMaskFilter.Blur.NORMAL)
+            paint.alpha = 235
+            canvas.drawRoundRect(rect, corner, corner, paint)
+
+            paint.maskFilter = null
+            paint.strokeWidth = thickness * 0.28f
+            paint.alpha = 255
+            canvas.drawRoundRect(rect, corner, corner, paint)
         }
 
         /** Time, date + day, and a live battery reading — the glanceable info block. */
@@ -240,30 +226,6 @@ class GlowLiveWallpaper : WallpaperService() {
             canvas.drawText(stateLabel, leftPad + w * 0.045f, h * 0.418f, statePaint)
         }
 
-        private fun drawFrame(canvas: Canvas, w: Float, h: Float, c1: Int, c2: Int) {
-            val inset = w * 0.045f
-            val rect = RectF(inset, inset, w - inset, h - inset)
-            val corner = w * 0.085f
-            val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-            paint.style = Paint.Style.STROKE
-            paint.strokeWidth = w * 0.003f
-            paint.shader = LinearGradient(
-                0f, 0f, 0f, h,
-                intArrayOf(withAlpha(c1, 70), withAlpha(c2, 130), withAlpha(c1, 70)),
-                floatArrayOf(0f, 0.7f, 1f), Shader.TileMode.CLAMP
-            )
-            canvas.drawRoundRect(rect, corner, corner, paint)
-        }
-
-        private fun drawBrand(canvas: Canvas, w: Float, h: Float, theme: Profile) {
-            val brandPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-            brandPaint.textAlign = Paint.Align.CENTER
-            brandPaint.color = Color.parseColor("#7C86A8")
-            brandPaint.textSize = w * 0.023f
-            brandPaint.letterSpacing = 0.34f
-            canvas.drawText("GLOWEDGE", w / 2f, h * 0.955f, brandPaint)
-        }
-
         private fun withAlpha(color: Int, alpha: Int): Int =
             Color.argb(alpha, Color.red(color), Color.green(color), Color.blue(color))
 
@@ -275,6 +237,5 @@ class GlowLiveWallpaper : WallpaperService() {
                 (Color.blue(a) + (Color.blue(b) - Color.blue(a)) * tt).toInt()
             )
         }
-        private fun mix(a: Int, b: Int, t: Float): Int = blend(a, b, t)
     }
 }
