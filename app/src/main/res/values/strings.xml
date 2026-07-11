@@ -32,13 +32,13 @@
     <string name="premium">About</string>
     <string name="wallpapers">Wallpapers</string>
     <string name="wallpapers_desc">Clean edge-glow lock screen wallpapers in every color theme. Tap Set as Lock Screen to apply.</string>
-    <string name="live_wallpaper_description">GlowEdge — edge glow with a live battery ring in your theme</string>
-    <string name="live_wallpaper_button">✨ Live Wallpaper — edge glow + battery ring</string>
+    <string name="live_wallpaper_description">GlowEdge — flowing edge glow, drifting sparkles and a live battery ring</string>
+    <string name="live_wallpaper_button">✨ Live Wallpaper — animated glow + sparkles</string>
     <string name="remove_live_wallpaper">✕ Remove Live Wallpaper</string>
     <string name="remove_live_wallpaper_hint">Pick any other wallpaper to remove GlowEdge</string>
     <string name="restoring_wallpaper">Restoring your previous wallpaper…</string>
     <string name="wallpaper_restored">Previous wallpaper restored</string>
-    <string name="live_wallpaper_desc">A living wallpaper with your theme\'s edge glow and a battery ring. Your phone still shows its own clock on the lock screen, so this stays clean underneath. Applies to home and lock screen.</string>
+    <string name="live_wallpaper_desc">A truly living wallpaper: the edge glow flows and breathes, sparkles drift and twinkle, and the battery ring fills with a travelling highlight — all in your theme. Animation runs only while the wallpaper is on screen, so it stays battery-friendly.</string>
     <string name="set_current_as_wallpaper">🖼️ Set current theme as Wallpaper</string>
     <string name="apply">Apply</string>
     <string name="stop">Stop</string>
@@ -64,7 +64,7 @@
     <string name="feedback_body">My feedback / reason:\n\n\n\n— Please describe what you liked, what to improve, or the problem you faced.</string>
     <string name="developer_name">Innovation-313</string>
     <string name="support_email">innovation313.support@gmail.com</string>
-    <string name="app_version">Version 6.35</string>
+    <string name="app_version">Version 6.36</string>
     <string name="notif_glow">Notification Glow</string>
     <string name="notif_glow_desc">Flash the edges in an app color when a message or notification arrives. Works even without music.</string>
     <string name="notif_glow_need_access">Please allow notification access for GlowEdge to detect calls and messages.</string>

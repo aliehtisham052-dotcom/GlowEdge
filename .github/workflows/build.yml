@@ -71,26 +71,28 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.35.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.35.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.36.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.36.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.35.apk
-            GlowEdge-v6.35.aab
+            GlowEdge-v6.36.apk
+            GlowEdge-v6.36.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.35
-          name: GlowEdge v6.35 — Restore wallpaper + shorter intro
+          tag_name: v6.36
+          name: GlowEdge v6.36 — Animated sparkling wallpaper
           body: |
-            GlowEdge v6.35 - Restore previous wallpaper + 3s intro
-            - Remove Live Wallpaper now RESTORES your previous wallpaper. Android keeps no copy of the wallpaper it replaces, so GlowEdge now snapshots your current wallpaper right before applying its live wallpaper, and puts it back when you remove it. If no snapshot exists (live wallpaper set before this version), it falls back to the system picker.
-            - Intro video shortened from 4.1s to 3.0s (and its unused audio track stripped, halving the file size).
+            GlowEdge v6.36 - Animated sparkling live wallpaper
+            - The live wallpaper is now genuinely ANIMATED: the edge glow flows and breathes, and drifting sparkles rise and twinkle across the screen in your theme colours - a unique pattern, not a still image. Runs at 30fps only while visible and stops completely when hidden, so it stays battery-friendly.
+            - Upgraded battery ring: tick marks around the dial, a glowing progress arc, a travelling bright highlight that orbits the filled arc, a status word, and a pulsing bolt while charging.
+            - The static lock-screen wallpaper now carries the same sparkle field (as a still composition), so both share one design language.
+            - NOTE: a static wallpaper is an image and cannot move - the animation lives in the Live Wallpaper.
           files: |
-            GlowEdge-v6.35.apk
-            GlowEdge-v6.35.aab
+            GlowEdge-v6.36.apk
+            GlowEdge-v6.36.aab
