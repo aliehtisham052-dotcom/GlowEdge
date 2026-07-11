@@ -282,7 +282,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
             postInvalidateDelayed(33L)
             if (!soundActive) return
         }
-        alpha = if (flashing) 1f else visibility01 * (0.55f + 0.45f * loudEnv.coerceIn(0f, 1f))
+        alpha = if (flashing) 1f else visibility01 * (0.80f + 0.20f * loudEnv.coerceIn(0f, 1f))
 
         // Punchy equalizer motion: fast attack, slower musical decay
         for (i in 0 until bandCount) {

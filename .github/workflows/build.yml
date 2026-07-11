@@ -71,27 +71,27 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.8.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.8.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.9.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.9.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.8.apk
-            GlowEdge-v6.8.aab
+            GlowEdge-v6.9.apk
+            GlowEdge-v6.9.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.8
-          name: GlowEdge v6.8 — Share Your Glow
+          tag_name: v6.9
+          name: GlowEdge v6.9 — Brighter sparkling glow
           body: |
-            GlowEdge v6.8 - Share Your Glow
-            - New feature: generate a branded image card of your current style, colors and Personal Glow Text, and share it via WhatsApp/Instagram/any app.
-            - Fully on-device — no internet permission needed or used, consistent with the rest of the app.
+            GlowEdge v6.9 - Brighter, sparkling glow
+            - Found the real cause of the dim look: overall glow opacity was dropping to just 55 percent during quiet parts of music/naat. Raised the floor to 80 percent, so the glow now stays bright and sparkling even in quiet moments, with a smaller boost at loud peaks.
+            - Builds on the v6.8 vivid color palette and halo fixes.
             Developed by Innovation-313
           files: |
-            GlowEdge-v6.8.apk
-            GlowEdge-v6.8.aab
+            GlowEdge-v6.9.apk
+            GlowEdge-v6.9.aab
