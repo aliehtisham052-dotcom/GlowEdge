@@ -71,27 +71,26 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.23.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.23.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.24.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.24.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.23.apk
-            GlowEdge-v6.23.aab
+            GlowEdge-v6.24.apk
+            GlowEdge-v6.24.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.23
-          name: GlowEdge v6.23 — Clean wallpapers
+          tag_name: v6.24
+          name: GlowEdge v6.24 — Battery ring on live wallpaper
           body: |
-            GlowEdge v6.23 - Clean wallpaper redesign
-            - Removed the bottom flame/light-column from both the static and live wallpaper - replaced with a soft glowing shine along the screen edges only.
-            - Removed all text from the wallpapers: no theme/style name, no GLOWEDGE branding. The static wallpaper is now a clean edge-glow backdrop.
-            - The live wallpaper now shows ONLY the live time, date and battery on a clean edge-glow background - nothing else.
+            GlowEdge v6.24 - Battery ring + clean wallpapers
+            - NEW: the live wallpaper now shows an elegant circular battery ring on the right (a faint full track, a bright arc filling to the current level, and the percentage centred inside) - a premium, glanceable read.
+            - Clean wallpaper design: edge-glow shine only, no bottom flame, no theme name, no branding text. The live wallpaper shows only time, date and battery.
           files: |
-            GlowEdge-v6.23.apk
-            GlowEdge-v6.23.aab
+            GlowEdge-v6.24.apk
+            GlowEdge-v6.24.aab

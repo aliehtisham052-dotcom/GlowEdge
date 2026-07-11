@@ -224,6 +224,54 @@ class GlowLiveWallpaper : WallpaperService() {
             statePaint.letterSpacing = 0.08f
             val stateLabel = if (charging) "CHARGING" else if (level <= 15) "LOW" else "IDLE"
             canvas.drawText(stateLabel, leftPad + w * 0.045f, h * 0.418f, statePaint)
+
+            drawBatteryRing(canvas, w, h, level, batteryColor, charging)
+        }
+
+        /**
+         * A refined circular battery ring on the right side: a faint full track with a
+         * bright arc filling to the current level, and the percentage centred inside.
+         * Gives a premium, glanceable read of the battery at a distance.
+         */
+        private fun drawBatteryRing(canvas: Canvas, w: Float, h: Float, level: Int, color: Int, charging: Boolean) {
+            val cx = w * 0.78f
+            val cy = h * 0.325f
+            val r = w * 0.12f
+            val ring = RectF(cx - r, cy - r, cx + r, cy + r)
+
+            // Faint full track.
+            val track = Paint(Paint.ANTI_ALIAS_FLAG)
+            track.style = Paint.Style.STROKE
+            track.strokeCap = Paint.Cap.ROUND
+            track.strokeWidth = w * 0.018f
+            track.color = withAlpha(Color.WHITE, 35)
+            canvas.drawArc(ring, 0f, 360f, false, track)
+
+            // Bright progress arc (starts at top, clockwise).
+            val prog = Paint(Paint.ANTI_ALIAS_FLAG)
+            prog.style = Paint.Style.STROKE
+            prog.strokeCap = Paint.Cap.ROUND
+            prog.strokeWidth = w * 0.018f
+            prog.color = color
+            prog.setShadowLayer(w * 0.02f, 0f, 0f, withAlpha(color, 150))
+            val sweep = 360f * (level / 100f)
+            canvas.drawArc(ring, -90f, sweep, false, prog)
+
+            // Percentage in the centre.
+            val pct = Paint(Paint.ANTI_ALIAS_FLAG)
+            pct.textAlign = Paint.Align.CENTER
+            pct.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
+            pct.textSize = w * 0.07f
+            pct.color = Color.WHITE
+            canvas.drawText("$level", cx, cy + w * 0.01f, pct)
+
+            val pctSign = Paint(Paint.ANTI_ALIAS_FLAG)
+            pctSign.textAlign = Paint.Align.CENTER
+            pctSign.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL)
+            pctSign.textSize = w * 0.032f
+            pctSign.color = withAlpha(color, 200)
+            val innerLabel = if (charging) "\u26A1" else "%"
+            canvas.drawText(innerLabel, cx, cy + w * 0.055f, pctSign)
         }
 
         private fun withAlpha(color: Int, alpha: Int): Int =
