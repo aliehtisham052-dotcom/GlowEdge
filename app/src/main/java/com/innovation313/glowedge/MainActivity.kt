@@ -138,7 +138,6 @@ class MainActivity : AppCompatActivity() {
 
         buildStyleCards()
         buildThemeButtons()
-        buildTemplateChips()
         buildWallpaperCards()
         setupSliders()
         setupHeroHeader()
@@ -402,39 +401,27 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun buildTemplateChips() {
-        val container = findViewById<LinearLayout>(R.id.templateContainer)
-        container.removeAllViews()
-        WallpaperGenerator.templateNames.forEachIndexed { index, name ->
-            val chip = TextView(this)
-            chip.text = name
-            chip.textSize = 13f
-            chip.setPadding(dp(14), dp(10), dp(14), dp(10))
-            val lp = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-            lp.marginEnd = if (index < WallpaperGenerator.templateNames.size - 1) dp(8) else 0
-            chip.layoutParams = lp
-            chip.gravity = Gravity.CENTER
-
-            fun refresh() {
-                val selected = ProfileManager.wallpaperTemplate(this) == index
-                chip.setBackgroundResource(R.drawable.bg_card)
-                chip.setTextColor(if (selected) ContextCompat.getColor(this, R.color.gold) else Color.WHITE)
-                chip.alpha = if (selected) 1f else 0.65f
-            }
-            refresh()
-            chip.setOnClickListener {
-                ProfileManager.setWallpaperTemplate(this, index)
-                buildTemplateChips()
-                buildWallpaperCards()
-            }
-            container.addView(chip)
-        }
-    }
-
     private fun buildWallpaperCards() {
+        findViewById<TextView>(R.id.btnLiveWallpaper).setOnClickListener {
+            try {
+                val intent = Intent(android.app.WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER).apply {
+                    putExtra(
+                        android.app.WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT,
+                        android.content.ComponentName(this@MainActivity, GlowLiveWallpaper::class.java)
+                    )
+                }
+                startActivity(intent)
+            } catch (e: Exception) {
+                try {
+                    startActivity(Intent(android.app.WallpaperManager.ACTION_LIVE_WALLPAPER_CHOOSER))
+                    Toast.makeText(this, "Pick \u201CGlowEdge\u201D from the list", Toast.LENGTH_LONG).show()
+                } catch (e2: Exception) {
+                    Toast.makeText(this, "Live wallpaper not supported on this device", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
         val container = findViewById<LinearLayout>(R.id.wallpaperContainer)
         container.removeAllViews()
-        val template = ProfileManager.wallpaperTemplate(this)
         ProfileManager.themes.forEach { theme ->
             val card = LinearLayout(this)
             card.orientation = LinearLayout.HORIZONTAL
@@ -450,7 +437,7 @@ class MainActivity : AppCompatActivity() {
             val preview = ImageView(this)
             preview.layoutParams = LinearLayout.LayoutParams(dp(70), dp(124))
             preview.scaleType = ImageView.ScaleType.CENTER_CROP
-            preview.setImageBitmap(WallpaperGenerator.generate(theme, dp(140), dp(248), template))
+            preview.setImageBitmap(WallpaperGenerator.generate(theme, dp(140), dp(248)))
 
             val textCol = LinearLayout(this)
             textCol.orientation = LinearLayout.VERTICAL
@@ -488,8 +475,7 @@ class MainActivity : AppCompatActivity() {
         Thread {
             try {
                 val dm = resources.displayMetrics
-                val template = ProfileManager.wallpaperTemplate(this)
-                val bmp = WallpaperGenerator.generate(theme, dm.widthPixels, dm.heightPixels, template)
+                val bmp = WallpaperGenerator.generate(theme, dm.widthPixels, dm.heightPixels)
                 val wm = WallpaperManager.getInstance(this)
                 // Lock screen only, as requested — a static wallpaper can target just the
                 // lock screen (FLAG_LOCK); this is not possible for live/animated wallpapers

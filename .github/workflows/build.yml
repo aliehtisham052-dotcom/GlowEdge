@@ -71,28 +71,28 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.20.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.20.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.21.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.21.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.20.apk
-            GlowEdge-v6.20.aab
+            GlowEdge-v6.21.apk
+            GlowEdge-v6.21.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.20
-          name: GlowEdge v6.20 — Wallpaper templates, lock screen
+          tag_name: v6.21
+          name: GlowEdge v6.21 — Live wallpaper + refined design
           body: |
-            GlowEdge v6.20 - Wallpaper templates + lock screen only
-            - NEW: 3 wallpaper templates (Border Glow, Radial Burst, Diagonal Wave) selectable in the Wallpapers tab, applied across every color theme.
-            - Every wallpaper now shows the theme name and GLOWEDGE branding near the bottom.
-            - Wallpapers now apply to the LOCK SCREEN ONLY (not home screen), as requested - this is fully supported for static wallpapers via Android FLAG_LOCK, unlike live/animated wallpapers which cannot be lock-screen-only on stock Android.
+            GlowEdge v6.21 - Live wallpaper + refined static design
+            - NEW: GlowEdge Live Wallpaper showing the time, date and a LIVE battery reading (with charging state), in your selected glow theme - like the reference AOD look. Redraws once a minute plus on battery/power changes, so it stays battery-friendly.
+            - Redesigned the static wallpaper down to one polished signature design: a soft column of light rising from the base, hairline arc, refined thin frame, theme name + wordmark.
+            - Removed the 3-template picker in favour of the single refined design.
             Developed by Innovation-313
           files: |
-            GlowEdge-v6.20.apk
-            GlowEdge-v6.20.aab
+            GlowEdge-v6.21.apk
+            GlowEdge-v6.21.aab
