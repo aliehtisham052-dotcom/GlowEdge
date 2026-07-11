@@ -397,6 +397,10 @@ class MainActivity : AppCompatActivity() {
         themeChips.add(custom)
         container.addView(custom)
         refreshThemeHighlights()
+
+        findViewById<TextView>(R.id.btnSetCurrentWallpaper).setOnClickListener {
+            applyWallpaper(ProfileManager.theme(this))
+        }
     }
 
     private fun buildWallpaperCards() {

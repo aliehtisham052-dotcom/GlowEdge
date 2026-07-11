@@ -71,28 +71,27 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.16.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.16.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.17.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.17.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.16.apk
-            GlowEdge-v6.16.aab
+            GlowEdge-v6.17.apk
+            GlowEdge-v6.17.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.16
-          name: GlowEdge v6.16 — Wallpapers and new themes
+          tag_name: v6.17
+          name: GlowEdge v6.17 — Quick Set Wallpaper
           body: |
-            GlowEdge v6.16 - Wallpapers + new named themes
-            - NEW: Wallpapers tab - GlowEdge-branded wallpapers generated on-device for every color theme, echoing the app own glow-border look. Tap Set Wallpaper to apply to home + lock screen.
-            - NEW named color presets: Mirror Rain, Velvet Night, Solar Flare, Diamond Dust (13 themes total now).
-            - No new permissions required - wallpapers are generated in-memory, not bundled images.
+            GlowEdge v6.17 - Quick Set Wallpaper
+            - NEW: "Set current theme as Wallpaper" button right under the Color Theme picker in Settings - no need to go to the Wallpapers tab separately.
+            - Uses the same static, non-animated wallpaper generator as before - completely separate from the live glow effect.
             Developed by Innovation-313
           files: |
-            GlowEdge-v6.16.apk
-            GlowEdge-v6.16.aab
+            GlowEdge-v6.17.apk
+            GlowEdge-v6.17.aab
