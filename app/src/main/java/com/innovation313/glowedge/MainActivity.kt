@@ -1,6 +1,7 @@
 package com.innovation313.glowedge
 
 import android.Manifest
+import android.app.WallpaperManager
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -123,7 +124,8 @@ class MainActivity : AppCompatActivity() {
             nav.setOnItemSelectedListener { item ->
                 mainFlipper.displayedChild = when (item.itemId) {
                     R.id.nav_settings -> 1
-                    R.id.nav_premium -> 2
+                    R.id.nav_wallpapers -> 2
+                    R.id.nav_premium -> 3
                     else -> 0
                 }
                 true
@@ -137,6 +139,7 @@ class MainActivity : AppCompatActivity() {
 
         buildStyleCards()
         buildThemeButtons()
+        buildWallpaperCards()
         setupSliders()
         setupPersonalText()
         setupHeroHeader()
@@ -394,6 +397,76 @@ class MainActivity : AppCompatActivity() {
         themeChips.add(custom)
         container.addView(custom)
         refreshThemeHighlights()
+    }
+
+    private fun buildWallpaperCards() {
+        val container = findViewById<LinearLayout>(R.id.wallpaperContainer)
+        container.removeAllViews()
+        ProfileManager.themes.forEach { theme ->
+            val card = LinearLayout(this)
+            card.orientation = LinearLayout.HORIZONTAL
+            card.gravity = Gravity.CENTER_VERTICAL
+            card.setBackgroundResource(R.drawable.bg_card)
+            card.setPadding(dp(12), dp(12), dp(16), dp(12))
+            val cardLp = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            cardLp.bottomMargin = dp(12)
+            card.layoutParams = cardLp
+
+            val preview = ImageView(this)
+            preview.layoutParams = LinearLayout.LayoutParams(dp(70), dp(124))
+            preview.scaleType = ImageView.ScaleType.CENTER_CROP
+            preview.setImageBitmap(WallpaperGenerator.generate(theme, dp(140), dp(248)))
+
+            val textCol = LinearLayout(this)
+            textCol.orientation = LinearLayout.VERTICAL
+            val tclp = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            tclp.marginStart = dp(16)
+            textCol.layoutParams = tclp
+
+            val title = TextView(this)
+            title.text = theme.name
+            title.textSize = 15f
+            title.setTextColor(Color.WHITE)
+            title.setTypeface(null, android.graphics.Typeface.BOLD)
+            textCol.addView(title)
+
+            val setBtn = TextView(this)
+            setBtn.text = "Set Wallpaper"
+            setBtn.textSize = 13f
+            setBtn.setTextColor(ContextCompat.getColor(this, R.color.gold))
+            val btnLp = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            btnLp.topMargin = dp(8)
+            setBtn.layoutParams = btnLp
+            setBtn.setOnClickListener { applyWallpaper(theme) }
+            textCol.addView(setBtn)
+
+            card.addView(preview)
+            card.addView(textCol)
+            container.addView(card)
+        }
+    }
+
+    private fun applyWallpaper(theme: Profile) {
+        Toast.makeText(this, "Setting wallpaper\u2026", Toast.LENGTH_SHORT).show()
+        Thread {
+            try {
+                val dm = resources.displayMetrics
+                val bmp = WallpaperGenerator.generate(theme, dm.widthPixels, dm.heightPixels)
+                val wm = WallpaperManager.getInstance(this)
+                wm.setBitmap(bmp, null, true, WallpaperManager.FLAG_SYSTEM or WallpaperManager.FLAG_LOCK)
+                runOnUiThread {
+                    Toast.makeText(this, "Wallpaper applied \u2014 ${theme.name}", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                runOnUiThread {
+                    Toast.makeText(this, "Couldn't set wallpaper", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }.start()
     }
 
     /** Built-in HSV picker: two swatches (Color 1 / Color 2) + Hue, Saturation,

@@ -9,6 +9,10 @@
         android:icon="@drawable/ic_nav_settings"
         android:title="@string/settings" />
     <item
+        android:id="@+id/nav_wallpapers"
+        android:icon="@drawable/ic_nav_wallpapers"
+        android:title="@string/wallpapers" />
+    <item
         android:id="@+id/nav_premium"
         android:icon="@drawable/ic_nav_premium"
         android:title="@string/premium" />

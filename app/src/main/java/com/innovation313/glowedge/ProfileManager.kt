@@ -77,7 +77,11 @@ object ProfileManager {
         Profile("Fire", Color.parseColor("#FF3B3B"), Color.parseColor("#FFC93B")),
         Profile("Ice", Color.parseColor("#4DEEFF"), Color.parseColor("#E8FBFF")),
         Profile("Rose Calm", Color.parseColor("#FF4FA3"), Color.parseColor("#C061FF")),
-        Profile("Forest Calm", Color.parseColor("#9CE521"), Color.parseColor("#0B8457"))
+        Profile("Forest Calm", Color.parseColor("#9CE521"), Color.parseColor("#0B8457")),
+        Profile("Mirror Rain", Color.parseColor("#B8D8FF"), Color.parseColor("#3B5BA5")),
+        Profile("Velvet Night", Color.parseColor("#9B4DFF"), Color.parseColor("#2D1B69")),
+        Profile("Solar Flare", Color.parseColor("#FF9500"), Color.parseColor("#FF1744")),
+        Profile("Diamond Dust", Color.parseColor("#E0F7FF"), Color.parseColor("#4DA6E0"))
     )
 
     private fun prefs(context: Context) =
