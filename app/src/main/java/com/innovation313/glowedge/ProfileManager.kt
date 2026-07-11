@@ -66,16 +66,17 @@ object ProfileManager {
     private const val KEY_PERSONAL_TEXT_COLOR = "personal_text_color"
 
     val themes = listOf(
-        // Softened, eye-soothing palette: rich but not harsh (balanced saturation/brightness)
-        Profile("Spectrum (All Colors)", Color.parseColor("#F06060"), Color.parseColor("#B07CE8"), rainbow = true),
-        Profile("Neon", Color.parseColor("#4DD9EC"), Color.parseColor("#9B7DE8")),
-        Profile("Sunset", Color.parseColor("#F49B6A"), Color.parseColor("#D98BC9")),
-        Profile("Ocean", Color.parseColor("#5AB8E8"), Color.parseColor("#5FD6A7")),
-        Profile("Royal Gold", Color.parseColor("#EFCB74"), Color.parseColor("#7B8BC9")),
-        Profile("Fire", Color.parseColor("#EF6E7A"), Color.parseColor("#F2CE6B")),
-        Profile("Ice", Color.parseColor("#7FDDEB"), Color.parseColor("#DCEFF7")),
-        Profile("Rose Calm", Color.parseColor("#E8A0B4"), Color.parseColor("#B8A9E0")),
-        Profile("Forest Calm", Color.parseColor("#7FC98F"), Color.parseColor("#5BA8A0"))
+        // Vivid, distinct designer palette: each theme is a clearly different hue pair,
+        // pushed to high saturation so it reads brightly on screen.
+        Profile("Spectrum (All Colors)", Color.parseColor("#FF4D6D"), Color.parseColor("#7C4DFF"), rainbow = true),
+        Profile("Neon", Color.parseColor("#00E5FF"), Color.parseColor("#D500F9")),
+        Profile("Sunset", Color.parseColor("#FF6B35"), Color.parseColor("#FF2D95")),
+        Profile("Ocean", Color.parseColor("#00B4FF"), Color.parseColor("#00E6A8")),
+        Profile("Royal Gold", Color.parseColor("#FFD54F"), Color.parseColor("#5B2EFF")),
+        Profile("Fire", Color.parseColor("#FF3B3B"), Color.parseColor("#FFC93B")),
+        Profile("Ice", Color.parseColor("#4DEEFF"), Color.parseColor("#E8FBFF")),
+        Profile("Rose Calm", Color.parseColor("#FF4FA3"), Color.parseColor("#C061FF")),
+        Profile("Forest Calm", Color.parseColor("#2ECC71"), Color.parseColor("#00C9A7"))
     )
 
     private fun prefs(context: Context) =
@@ -88,10 +89,10 @@ object ProfileManager {
         prefs(context).getInt(KEY_THEME, 0).coerceIn(0, themes.size)
 
     fun customStart(context: Context): Int =
-        prefs(context).getInt(KEY_CUSTOM_START, Color.parseColor("#4DD9EC"))
+        prefs(context).getInt(KEY_CUSTOM_START, Color.parseColor("#00E5FF"))
 
     fun customEnd(context: Context): Int =
-        prefs(context).getInt(KEY_CUSTOM_END, Color.parseColor("#E8A0B4"))
+        prefs(context).getInt(KEY_CUSTOM_END, Color.parseColor("#D500F9"))
 
     fun setCustomColors(context: Context, start: Int, end: Int) =
         prefs(context).edit().putInt(KEY_CUSTOM_START, start).putInt(KEY_CUSTOM_END, end).apply()

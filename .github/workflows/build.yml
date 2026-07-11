@@ -71,27 +71,28 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.6.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.6.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.7.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.7.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.6.apk
-            GlowEdge-v6.6.aab
+            GlowEdge-v6.7.apk
+            GlowEdge-v6.7.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.6
-          name: GlowEdge v6.6 — About, privacy and copyright refresh
+          tag_name: v6.7
+          name: GlowEdge v6.7 — Vivid colors, splash screen
           body: |
-            GlowEdge v6.6 - About, privacy and copyright refresh
-            - Updated in-app Features list, Settings menu description, and Privacy text to cover Personal Glow Text, Custom Colors, and the current 12 styles / 9 themes.
-            - Includes the v6.5 Personal Glow Text vertical-edge rotation and slower drift.
+            GlowEdge v6.7 - Vivid colors + professional splash screen
+            - Full designer pass on the color palette: every theme is now a clearly distinct, high-saturation hue pair instead of muted pastels.
+            - Removed the Innovation-313 signature sweep that played on every style change (was cluttering the glow).
+            - New splash screen on launch: logo, app name, and Powered by Innovation-313 statement.
             Developed by Innovation-313
           files: |
-            GlowEdge-v6.6.apk
-            GlowEdge-v6.6.aab
+            GlowEdge-v6.7.apk
+            GlowEdge-v6.7.aab

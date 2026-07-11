@@ -83,10 +83,10 @@ class EdgeVisualizerView(context: Context) : View(context) {
         private const val SOUND_THRESHOLD = 0.06f
         private const val HOLD_MS = 1200L
         private val RAINBOW = intArrayOf(
-            Color.parseColor("#EF6E7A"), Color.parseColor("#F2A96B"),
-            Color.parseColor("#EFD97A"), Color.parseColor("#6BD9A0"),
-            Color.parseColor("#6BD4E8"), Color.parseColor("#7BA3E8"),
-            Color.parseColor("#C68BE0"), Color.parseColor("#EF6E7A")
+            Color.parseColor("#FF3B5C"), Color.parseColor("#FF8A3B"),
+            Color.parseColor("#FFD93B"), Color.parseColor("#3BE885"),
+            Color.parseColor("#3BD4FF"), Color.parseColor("#3B7BFF"),
+            Color.parseColor("#B93BFF"), Color.parseColor("#FF3B5C")
         )
     }
 
@@ -139,16 +139,8 @@ class EdgeVisualizerView(context: Context) : View(context) {
     fun setDemoMode(on: Boolean) { demoMode = on }
 
     private var testUntil = 0L
-    private var sweepStart = 0L
-    private var sweepUntil = 0L
     private val segPath = Path()
 
-    /** One-time Innovation-313 signature sweep around the edge (plays on style change). */
-    fun startSignatureSweep() {
-        sweepStart = SystemClock.elapsedRealtime()
-        sweepUntil = sweepStart + 2800L
-        postInvalidate()
-    }
     /** Show a guaranteed bright glow for a few seconds to verify the overlay works. */
     fun forceTestGlow() {
         testUntil = SystemClock.elapsedRealtime() + 5000L
@@ -199,8 +191,8 @@ class EdgeVisualizerView(context: Context) : View(context) {
     private fun colorAt(t: Float): Int {
         return if (rainbow) {
             hsv[0] = (hueShift + t * 300f) % 360f
-            hsv[1] = 0.78f
-            hsv[2] = 0.95f
+            hsv[1] = 0.90f
+            hsv[2] = 0.97f
             Color.HSVToColor(hsv)
         } else {
             lerpColor(colorStart, colorEnd, t)
@@ -212,15 +204,6 @@ class EdgeVisualizerView(context: Context) : View(context) {
         if (width == 0 || height == 0) return
 
         val now = SystemClock.elapsedRealtime()
-
-        // ---- Innovation-313 signature sweep (one-time, on style change) ----
-        if (now < sweepUntil) {
-            visibility01 = 1f
-            alpha = 1f
-            drawSignatureSweep(canvas, now)
-            postInvalidateDelayed(33L)
-            return
-        }
 
         // ---- Test glow: guaranteed bright glow to verify overlay works ----
         if (now < testUntil) {
@@ -858,51 +841,6 @@ class EdgeVisualizerView(context: Context) : View(context) {
             canvas.drawPath(segPath, paint)
         }
         paint.alpha = 255
-    }
-
-    /** One-time branded sweep: a glowing head + trail carries "Innovation-313" around
-     *  the edge once, shifting color as it passes from one side to the other. */
-    private fun drawSignatureSweep(canvas: Canvas, now: Long) {
-        val per = 2f * (width + height)
-        val t = ((now - sweepStart) / 2800f).coerceIn(0f, 1f)
-        // ease in-out so it glides
-        val e = t * t * (3f - 2f * t)
-        val d = e * per
-        // color shifts by position (side to side)
-        val hue = (d / per) * 360f
-        val col = Color.HSVToColor(floatArrayOf(hue % 360f, 0.72f, 0.95f))
-
-        paint.shader = null
-        paint.style = Paint.Style.FILL
-        // trail
-        val trail = if (batterySaver) 10 else 18
-        for (i in 0 until trail) {
-            val dd = d - i * 30f
-            if (dd < 0f) break
-            val fade = 1f - i / trail.toFloat()
-            val pnt = pointOnPerimeter(dd % per)
-            val r = max(4f, baseThickness * 0.8f * fade)
-            paint.color = Color.HSVToColor(floatArrayOf(((dd / per) * 360f) % 360f, 0.72f, 0.95f))
-            paint.alpha = (fade * 220).toInt().coerceIn(0, 255)
-            paint.maskFilter = BlurMaskFilter(max(3f, r), BlurMaskFilter.Blur.NORMAL)
-            canvas.drawCircle(pnt[0], pnt[1], r, paint)
-        }
-        paint.alpha = 255
-
-        // the developer tag, kept just inside the screen so it is always readable
-        val head = pointOnPerimeter(d % per)
-        paint.maskFilter = null
-        paint.typeface = Typeface.DEFAULT_BOLD
-        paint.textSize = 42f
-        paint.textAlign = Paint.Align.CENTER
-        val tx = head[0].coerceIn(150f, width - 150f)
-        val ty = head[1].coerceIn(110f, height - 60f)
-        paint.color = Color.argb(160, 10, 17, 40)
-        canvas.drawText("Innovation-313", tx + 2f, ty + 2f, paint)  // soft shadow
-        paint.color = col
-        canvas.drawText("Innovation-313", tx, ty, paint)
-        paint.textAlign = Paint.Align.LEFT
-        paint.typeface = Typeface.DEFAULT
     }
 
     private fun pointOnPerimeter(dist: Float): FloatArray {

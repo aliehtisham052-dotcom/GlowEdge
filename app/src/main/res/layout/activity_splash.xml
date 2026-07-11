@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/navy">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+        <FrameLayout
+            android:layout_width="128dp"
+            android:layout_height="128dp">
+
+            <View
+                android:id="@+id/splashHalo"
+                android:layout_width="128dp"
+                android:layout_height="128dp"
+                android:background="@drawable/bg_hero_glow" />
+
+            <ImageView
+                android:id="@+id/splashLogo"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_gravity="center"
+                android:src="@drawable/logo_header" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/splashAppName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:text="@string/app_name"
+            android:textColor="@color/white"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.02" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/splashPoweredBy"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="48dp"
+        android:text="@string/powered_by"
+        android:textColor="#8A93B5"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.08" />
+
+</FrameLayout>
