@@ -31,7 +31,7 @@ class SplashActivity : AppCompatActivity() {
 
         videoView.setOnPreparedListener { mp: MediaPlayer ->
             mp.isLooping = false
-            // mp.setVolume(0f, 0f)
+            mp.setVolume(0f, 0f)   // silent intro — no sound on app open
         }
 
         videoView.setOnCompletionListener { goToMain() }

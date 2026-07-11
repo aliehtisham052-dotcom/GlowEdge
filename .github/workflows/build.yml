@@ -71,27 +71,27 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.26.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.26.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.27.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.27.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.26.apk
-            GlowEdge-v6.26.aab
+            GlowEdge-v6.27.apk
+            GlowEdge-v6.27.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.26
-          name: GlowEdge v6.26 — Fix live wallpaper clock clash
+          tag_name: v6.27
+          name: GlowEdge v6.27 — Mute intro + simpler notification
           body: |
-            GlowEdge v6.26 - Fix live wallpaper clock overlap
-            - FIXED: the live wallpaper was drawing its own time and date, which overlapped the phone's own lock-screen clock (two clocks on top of each other). Removed the wallpaper's clock and date entirely - the phone shows those already.
-            - The live wallpaper now shows only a clean, centered battery ring (which the system does not show), placed low so it never clashes with the clock, notifications or fingerprint area.
-            - Keeps the Neon Lines style, vivid colors and denser bars from v6.25.
+            GlowEdge v6.27 - Silent intro + simpler notification
+            - Muted the splash intro video - the app now opens silently (no sound from the intro clip).
+            - Simplified the persistent notification text to just "Glow is on" instead of the longer detection status.
+            - Music/naat detection is unchanged and still active (HPS harmonic analysis).
           files: |
-            GlowEdge-v6.26.apk
-            GlowEdge-v6.26.aab
+            GlowEdge-v6.27.apk
+            GlowEdge-v6.27.aab

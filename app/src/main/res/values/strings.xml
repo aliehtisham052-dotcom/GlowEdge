@@ -38,8 +38,8 @@
     <string name="set_current_as_wallpaper">🖼️ Set current theme as Wallpaper</string>
     <string name="apply">Apply</string>
     <string name="stop">Stop</string>
-    <string name="notification_running">Auto-detecting music/naat</string>
-    <string name="notification_forced">Force Glow ON — always glowing</string>
+    <string name="notification_running">Glow is on</string>
+    <string name="notification_forced">Glow is on — always</string>
     <string name="force_glow_on">Force Glow ON</string>
     <string name="force_glow_off">Back to Auto</string>
     <string name="force_glow_title">Force Glow (Manual)</string>
@@ -60,7 +60,7 @@
     <string name="developer_label">Developer</string>
     <string name="developer_name">Innovation-313</string>
     <string name="developer_email">aliehtisham052@gmail.com</string>
-    <string name="app_version">Version 6.26</string>
+    <string name="app_version">Version 6.27</string>
     <string name="notif_glow">Notification Glow</string>
     <string name="notif_glow_desc">Flash the edges in an app color when a message or notification arrives. Works even without music.</string>
     <string name="notif_glow_need_access">Please allow notification access for GlowEdge to detect calls and messages.</string>
