@@ -255,10 +255,14 @@ class VisualizerService : Service() {
 
         // Speech rejection: normal talking is strongly mid-band dominant with low spread.
         // If it looks like speech, do not treat it as music regardless of other cues.
-        // STRICT speech rejection: this app is for music/naat/kalam, not local chatting.
+        // STRICT speech rejection: this app is for music/naat/kalam, not local chatting or bayan.
         // Speech = mid-band dominant + narrow spread + short choppy phrases (no long sustain).
-        // A cappella naat sustains notes (long sustain) so it passes even without bass.
-        val longVocalSustain = sustainFrames > 14
+        // A cappella naat sustains actual held notes (long AND spectrally steady) so it still
+        // passes even without bass. A fluent bayan/lecture can also run on for a long time
+        // without pauses, but its spectrum keeps shifting syllable to syllable — it is NOT
+        // spectrally steady the way a held sung note is — so it must also clear the
+        // steadiness bar to bypass rejection, or it stays correctly classified as speech.
+        val longVocalSustain = sustainFrames > 22 && steadiness >= 0.42f
         val looksLikeSpeech = balance < 0.45f && spread < 0.40f && !longVocalSustain
         if (looksLikeSpeech) {
             // fall quickly so the glow dies fast when someone talks

@@ -675,7 +675,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
         paint.style = Paint.Style.FILL
         paint.maskFilter = blur(max(2f, baseThickness * 0.4f))
 
-        val n = 26
+        val n = 40
         val gap = height / n.toFloat()
         val barH = max(5f, baseThickness * 0.55f)
         val minLen = width * 0.03f          // always visible
@@ -701,7 +701,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
 
         val barH = max(4f, baseThickness * 0.55f)
 
-        val nSide = 22
+        val nSide = 34
         val gapV = height / nSide.toFloat()
         val minV = width * 0.025f
         val maxV = width * 0.16f
@@ -717,7 +717,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
             canvas.drawRoundRect(rect, barH, barH, paint)
         }
 
-        val nTop = 16
+        val nTop = 26
         val gapH = width / nTop.toFloat()
         val minH = height * 0.02f
         val maxH = height * 0.10f
