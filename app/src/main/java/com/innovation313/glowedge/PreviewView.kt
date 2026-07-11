@@ -31,10 +31,7 @@ class PreviewView @JvmOverloads constructor(
             ProfileManager.thickness(context).toFloat() * 0.7f,
             ProfileManager.speed(context) / 10f,
             ProfileManager.intensity(context) / 10f,
-            false,
-            ProfileManager.personalText(context),
-            ProfileManager.personalTextEnabled(context),
-            ProfileManager.personalTextColor(context)
+            false
         )
         lastStyle = ProfileManager.style(context)
         lastTheme = ProfileManager.themeIndex(context)

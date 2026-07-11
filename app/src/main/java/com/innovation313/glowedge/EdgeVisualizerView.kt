@@ -68,17 +68,6 @@ class EdgeVisualizerView(context: Context) : View(context) {
     private val rect = RectF()
     private val hsv = floatArrayOf(0f, 1f, 1f)
 
-    // ---- Personal Glow Text: optional name/keyword travelling around the edge ----
-    private var personalText = ""
-    private var personalTextOn = false
-    private var personalTextColor = Color.WHITE
-    private var textPathOffset = 0f
-    private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        style = Paint.Style.FILL
-        typeface = Typeface.DEFAULT_BOLD
-        textAlign = Paint.Align.CENTER
-    }
-
     companion object {
         private const val SOUND_THRESHOLD = 0.06f
         private const val HOLD_MS = 1200L
@@ -104,8 +93,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
 
     fun applySettings(
         style: Int, cStart: Int, cEnd: Int,
-        isRainbow: Boolean, thickness: Float, spd: Float, inten: Float, saver: Boolean,
-        personalTextValue: String = "", personalTextEnabled: Boolean = false, personalTextColorValue: Int = Color.WHITE
+        isRainbow: Boolean, thickness: Float, spd: Float, inten: Float, saver: Boolean
     ) {
         styleId = style
         colorStart = cStart
@@ -115,9 +103,6 @@ class EdgeVisualizerView(context: Context) : View(context) {
         speed = spd
         intensity = inten
         batterySaver = saver
-        personalText = personalTextValue
-        personalTextOn = personalTextEnabled
-        personalTextColor = personalTextColorValue
         shader = null
         postInvalidate()
     }
@@ -233,7 +218,6 @@ class EdgeVisualizerView(context: Context) : View(context) {
                 GlowStyles.SEGMENTS -> drawSegments(canvas)
                 else -> drawGlowLine(canvas)
             }
-            drawPersonalText(canvas)
             postInvalidateDelayed(33L)
             return
         }
@@ -345,7 +329,6 @@ class EdgeVisualizerView(context: Context) : View(context) {
             GlowStyles.SEGMENTS -> drawSegments(canvas)
             else -> drawGlowLine(canvas)
         }
-        drawPersonalText(canvas)
 
         postInvalidateDelayed(33L)
     }
@@ -569,83 +552,6 @@ class EdgeVisualizerView(context: Context) : View(context) {
     private fun screenCornerRadius(): Float {
         // Approximate modern phone screen corner radius; scales with screen size
         return (width.coerceAtMost(height) * 0.09f).coerceIn(40f, 130f)
-    }
-
-    /** Optional overlay: the user's own name/text travels around the edge, on top of
-     *  whichever style is active. Never changes the underlying glow — it only adds
-     *  on top, and only when the user has explicitly turned it on.
-     *
-     *  Uses plain canvas.drawText (same call the "Innovation-313" signature tag uses)
-     *  rather than drawTextOnPath, because drawTextOnPath does not apply Android's
-     *  bidi/shaping engine — Urdu, Arabic and other RTL scripts would shape correctly
-     *  letter-by-letter but read in the wrong order along the curve. drawText goes
-     *  through the full Minikin text layout, so every language reads correctly, and
-     *  the text stays upright (never sideways/upside-down on the side edges).
-     */
-    private fun drawPersonalText(canvas: Canvas) {
-        if (!personalTextOn || personalText.isBlank() || width == 0 || height == 0) return
-        val w = width.toFloat()
-        val h = height.toFloat()
-        val per = 2f * (w + h)
-        if (per < 10f) return
-
-        textPaint.textSize = (width.coerceAtMost(height) * 0.048f).coerceIn(26f, 52f)
-        textPaint.color = personalTextColor
-        textPaint.alpha = 255
-        textPaint.maskFilter = blur(max(3f, textPaint.textSize * 0.10f))
-
-        // Repeats around the loop with a fixed gap; gap includes the text's own
-        // measured width so different languages/lengths space out evenly.
-        val gap = textPaint.measureText(personalText) + textPaint.textSize * 2.4f
-        if (gap < 10f) return
-
-        // Slow, gentle drift — deliberately slower than before and independent of the
-        // glow's own motion, so it never fights with it.
-        textPathOffset += 0.30f * speed
-        if (textPathOffset > gap) textPathOffset -= gap
-
-        val pad = textPaint.textSize * 0.75f
-        var d = -textPathOffset
-        while (d < per) {
-            if (d >= 0f) {
-                val dd = d % per
-                when {
-                    dd < w -> {
-                        // top edge: horizontal, upright
-                        val pnt = pointOnPerimeter(dd)
-                        val tx = pnt[0].coerceIn(100f, w - 100f)
-                        canvas.drawText(personalText, tx, pad, textPaint)
-                    }
-                    dd < w + h -> {
-                        // right edge: rotated vertical, reads bottom-to-top
-                        val pnt = pointOnPerimeter(dd)
-                        val ty = pnt[1].coerceIn(100f, h - 100f)
-                        val tx = w - pad
-                        canvas.save()
-                        canvas.rotate(-90f, tx, ty)
-                        canvas.drawText(personalText, tx, ty, textPaint)
-                        canvas.restore()
-                    }
-                    dd < 2f * w + h -> {
-                        // bottom edge: horizontal, upright
-                        val pnt = pointOnPerimeter(dd)
-                        val tx = pnt[0].coerceIn(100f, w - 100f)
-                        canvas.drawText(personalText, tx, h - pad * 0.4f, textPaint)
-                    }
-                    else -> {
-                        // left edge: rotated vertical, reads top-to-bottom
-                        val pnt = pointOnPerimeter(dd)
-                        val ty = pnt[1].coerceIn(100f, h - 100f)
-                        val tx = pad
-                        canvas.save()
-                        canvas.rotate(90f, tx, ty)
-                        canvas.drawText(personalText, tx, ty, textPaint)
-                        canvas.restore()
-                    }
-                }
-            }
-            d += gap
-        }
     }
 
     /** Eased 0..1 curve so quiet stays subtle and loud pops - like a designer's response curve. */

@@ -71,27 +71,28 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.17.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.17.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.18.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.18.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.17.apk
-            GlowEdge-v6.17.aab
+            GlowEdge-v6.18.apk
+            GlowEdge-v6.18.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.17
-          name: GlowEdge v6.17 — Quick Set Wallpaper
+          tag_name: v6.18
+          name: GlowEdge v6.18 — Personal Glow Text removed
           body: |
-            GlowEdge v6.17 - Quick Set Wallpaper
-            - NEW: "Set current theme as Wallpaper" button right under the Color Theme picker in Settings - no need to go to the Wallpapers tab separately.
-            - Uses the same static, non-animated wallpaper generator as before - completely separate from the live glow effect.
+            GlowEdge v6.18 - Personal Glow Text removed
+            - Fully removed the Personal Glow Text feature (text box, toggle, color picker, edge-rendering) per feedback that it was not adding value.
+            - Cleaned up every reference across settings, rendering, About text, Privacy text and the welcome screen.
+            - Also fixed a leftover reference in the Share Your Glow image generator.
             Developed by Innovation-313
           files: |
-            GlowEdge-v6.17.apk
-            GlowEdge-v6.17.aab
+            GlowEdge-v6.18.apk
+            GlowEdge-v6.18.aab

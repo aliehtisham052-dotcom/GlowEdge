@@ -61,9 +61,6 @@ object ProfileManager {
     private const val KEY_MUSIC_ONLY = "music_only"
     private const val KEY_SENSITIVITY = "music_sensitivity"
     private const val KEY_ONBOARDED = "onboarded"
-    private const val KEY_PERSONAL_TEXT = "personal_text"
-    private const val KEY_PERSONAL_TEXT_ON = "personal_text_on"
-    private const val KEY_PERSONAL_TEXT_COLOR = "personal_text_color"
     private const val KEY_FORCE_GLOW = "force_glow"
 
     val themes = listOf(
@@ -167,26 +164,6 @@ object ProfileManager {
 
     fun isOnboarded(context: Context): Boolean =
         prefs(context).getBoolean(KEY_ONBOARDED, false)
-
-    // ---- Personal Glow Text: optional name/keyword that travels around the edge ----
-    fun setPersonalText(context: Context, text: String) =
-        prefs(context).edit().putString(KEY_PERSONAL_TEXT, text.take(40)).apply()
-
-    fun personalText(context: Context): String =
-        prefs(context).getString(KEY_PERSONAL_TEXT, "") ?: ""
-
-    fun setPersonalTextEnabled(context: Context, on: Boolean) =
-        prefs(context).edit().putBoolean(KEY_PERSONAL_TEXT_ON, on).apply()
-
-    /** Off by default — this feature is optional, never forced on the user. */
-    fun personalTextEnabled(context: Context): Boolean =
-        prefs(context).getBoolean(KEY_PERSONAL_TEXT_ON, false)
-
-    fun setPersonalTextColor(context: Context, color: Int) =
-        prefs(context).edit().putInt(KEY_PERSONAL_TEXT_COLOR, color).apply()
-
-    fun personalTextColor(context: Context): Int =
-        prefs(context).getInt(KEY_PERSONAL_TEXT_COLOR, Color.parseColor("#FFFFFF"))
 
     // ---- Manual Force Glow override: one-tap from the notification, bypasses
     // automatic music/naat detection entirely so the user always has a reliable
