@@ -22,6 +22,7 @@ class VisualizerService : Service() {
         const val CHANNEL_ID = "glowedge_channel"
         const val ACTION_STOP = "com.innovation313.glowedge.STOP"
         const val ACTION_TEST = "com.innovation313.glowedge.TEST"
+        const val ACTION_TOGGLE_FORCE = "com.innovation313.glowedge.TOGGLE_FORCE"
         @Volatile
         var isRunning = false
     }
@@ -34,6 +35,7 @@ class VisualizerService : Service() {
     private var musicScore = 0f          // 0 = speech/noise, 1 = clearly musical
     private var prevLevel = 0f
     private var musicOnly = true
+    private var forceGlow = false
     private var sensitivity = 5
     private val fluxHistory = FloatArray(16)
     private var fluxIndex = 0
@@ -95,14 +97,22 @@ class VisualizerService : Service() {
             edgeView?.forceTestGlow()
             return START_STICKY
         }
+        if (intent?.action == ACTION_TOGGLE_FORCE) {
+            ProfileManager.setForceGlow(this, !ProfileManager.forceGlow(this))
+            applyCurrentSettings()
+            updateNotification()
+            return START_STICKY
+        }
         wasStartedByUser = true
         applyCurrentSettings()
+        updateNotification()
         return START_STICKY
     }
 
     private fun applyCurrentSettings() {
         musicOnly = ProfileManager.musicOnly(this)
         sensitivity = ProfileManager.sensitivity(this)
+        forceGlow = ProfileManager.forceGlow(this)
         val theme = ProfileManager.theme(this)
         edgeView?.applySettings(
             ProfileManager.style(this),
@@ -124,6 +134,21 @@ class VisualizerService : Service() {
         nm.createNotificationChannel(
             NotificationChannel(CHANNEL_ID, "GlowEdge", NotificationManager.IMPORTANCE_LOW)
         )
+        val notification = buildNotification()
+        if (Build.VERSION.SDK_INT >= 34) {
+            startForeground(1, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+        } else {
+            startForeground(1, notification)
+        }
+    }
+
+    /** Rebuilds the notification so its Force Glow label reflects the current mode. */
+    private fun updateNotification() {
+        val nm = getSystemService(NotificationManager::class.java)
+        nm.notify(1, buildNotification())
+    }
+
+    private fun buildNotification(): android.app.Notification {
         val stopIntent = PendingIntent.getService(
             this, 1,
             Intent(this, VisualizerService::class.java).setAction(ACTION_STOP),
@@ -134,19 +159,25 @@ class VisualizerService : Service() {
             Intent(this, MainActivity::class.java),
             PendingIntent.FLAG_IMMUTABLE
         )
-        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+        val toggleIntent = PendingIntent.getService(
+            this, 3,
+            Intent(this, VisualizerService::class.java).setAction(ACTION_TOGGLE_FORCE),
+            PendingIntent.FLAG_IMMUTABLE
+        )
+        val forced = ProfileManager.forceGlow(this)
+        val statusText = if (forced) getString(R.string.notification_forced)
+                          else getString(R.string.notification_running)
+        val toggleLabel = if (forced) getString(R.string.force_glow_off)
+                           else getString(R.string.force_glow_on)
+        return NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_stat_glow)
             .setContentTitle(getString(R.string.app_name))
-            .setContentText(getString(R.string.notification_running))
+            .setContentText(statusText)
             .setContentIntent(openIntent)
+            .addAction(0, toggleLabel, toggleIntent)
             .addAction(0, getString(R.string.stop), stopIntent)
             .setOngoing(true)
             .build()
-        if (Build.VERSION.SDK_INT >= 34) {
-            startForeground(1, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
-        } else {
-            startForeground(1, notification)
-        }
     }
 
     private fun addOverlay() {
@@ -332,7 +363,7 @@ class VisualizerService : Service() {
 
                         // ---- Music vs speech detection ----
                         val musical = isMusical(bands, rawLevel)
-                        val gatedLevel = if (!musicOnly || musical) rawLevel else 0f
+                        val gatedLevel = if (forceGlow || !musicOnly || musical) rawLevel else 0f
                         edgeView?.setAudioData(gatedLevel, bands)
                     }
                 }, Visualizer.getMaxCaptureRate() / 4, false, true)

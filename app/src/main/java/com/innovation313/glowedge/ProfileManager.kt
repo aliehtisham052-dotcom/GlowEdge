@@ -64,6 +64,7 @@ object ProfileManager {
     private const val KEY_PERSONAL_TEXT = "personal_text"
     private const val KEY_PERSONAL_TEXT_ON = "personal_text_on"
     private const val KEY_PERSONAL_TEXT_COLOR = "personal_text_color"
+    private const val KEY_FORCE_GLOW = "force_glow"
 
     val themes = listOf(
         // Vivid, distinct designer palette: each theme is a clearly different hue pair,
@@ -182,4 +183,13 @@ object ProfileManager {
 
     fun personalTextColor(context: Context): Int =
         prefs(context).getInt(KEY_PERSONAL_TEXT_COLOR, Color.parseColor("#FFFFFF"))
+
+    // ---- Manual Force Glow override: one-tap from the notification, bypasses
+    // automatic music/naat detection entirely so the user always has a reliable
+    // fallback if the auto-detector gets something wrong. ----
+    fun setForceGlow(context: Context, on: Boolean) =
+        prefs(context).edit().putBoolean(KEY_FORCE_GLOW, on).apply()
+
+    fun forceGlow(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_FORCE_GLOW, false)
 }

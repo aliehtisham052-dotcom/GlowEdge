@@ -782,6 +782,13 @@ class MainActivity : AppCompatActivity() {
             notifyService()
         }
 
+        val forceGlow = findViewById<MaterialSwitch>(R.id.switchForceGlow)
+        forceGlow.isChecked = ProfileManager.forceGlow(this)
+        forceGlow.setOnCheckedChangeListener { _, checked ->
+            ProfileManager.setForceGlow(this, checked)
+            notifyService()
+        }
+
         val sens = findViewById<SeekBar>(R.id.seekSensitivity)
         sens.min = 1
         sens.max = 10

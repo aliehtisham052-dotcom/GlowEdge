@@ -71,27 +71,28 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.13.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.13.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.14.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.14.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.13.apk
-            GlowEdge-v6.13.aab
+            GlowEdge-v6.14.apk
+            GlowEdge-v6.14.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.13
-          name: GlowEdge v6.13 — Welcome screen fix
+          tag_name: v6.14
+          name: GlowEdge v6.14 — Force Glow manual toggle
           body: |
-            GlowEdge v6.13 - Welcome screen fix
-            - Fixed the first onboarding screen: was still showing "8 styles - 7 color themes" from months ago. Now correctly shows 12 styles - 9 themes + Custom Colors.
-            - Added a 5th welcome bullet highlighting Personal Glow Text for new users.
+            GlowEdge v6.14 - Force Glow (manual override)
+            - NEW: Force Glow toggle - a reliable one-tap manual override that bypasses automatic music/naat detection entirely. Available both as a Settings switch in the app and as a button on the persistent notification.
+            - Use this any time auto-detection gets it wrong, instead of waiting on further algorithm tuning.
+            - Notification now shows current mode (Auto-detecting vs Force Glow ON) at a glance.
             Developed by Innovation-313
           files: |
-            GlowEdge-v6.13.apk
-            GlowEdge-v6.13.aab
+            GlowEdge-v6.14.apk
+            GlowEdge-v6.14.aab
