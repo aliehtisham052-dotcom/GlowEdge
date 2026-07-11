@@ -175,13 +175,22 @@ class EdgeVisualizerView(context: Context) : View(context) {
     /** Color along the gradient. In rainbow mode this walks the full hue wheel and slowly rotates. */
     private fun colorAt(t: Float): Int {
         return if (rainbow) {
-            hsv[0] = (hueShift + t * 300f) % 360f
-            hsv[1] = 0.90f
-            hsv[2] = 0.97f
+            hsv[0] = (hueShift + t * 320f) % 360f
+            hsv[1] = 1.0f          // full saturation for vivid, punchy color
+            hsv[2] = 1.0f          // full brightness
             Color.HSVToColor(hsv)
         } else {
-            lerpColor(colorStart, colorEnd, t)
+            vivid(lerpColor(colorStart, colorEnd, t))
         }
+    }
+
+    /** Pushes a color toward full saturation/brightness so the glow reads bright and
+     *  punchy on screen, without changing its hue — keeps themes recognizable but vivid. */
+    private fun vivid(color: Int): Int {
+        Color.colorToHSV(color, hsv)
+        hsv[1] = (hsv[1] * 1.15f).coerceAtMost(1f)
+        hsv[2] = (hsv[2] * 1.12f).coerceAtMost(1f)
+        return Color.HSVToColor(hsv)
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -214,8 +223,8 @@ class EdgeVisualizerView(context: Context) : View(context) {
                 GlowStyles.AURORA -> drawAurora(canvas)
                 GlowStyles.COMET -> drawComet(canvas)
                 GlowStyles.RIPPLE -> drawRipple(canvas)
-            GlowStyles.SEGMENTS -> drawSegments(canvas)
                 GlowStyles.SEGMENTS -> drawSegments(canvas)
+                GlowStyles.NEON_LINES -> drawNeonLines(canvas)
                 else -> drawGlowLine(canvas)
             }
             postInvalidateDelayed(33L)
@@ -327,6 +336,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
             GlowStyles.COMET -> drawComet(canvas)
             GlowStyles.RIPPLE -> drawRipple(canvas)
             GlowStyles.SEGMENTS -> drawSegments(canvas)
+            GlowStyles.NEON_LINES -> drawNeonLines(canvas)
             else -> drawGlowLine(canvas)
         }
 
@@ -554,6 +564,61 @@ class EdgeVisualizerView(context: Context) : View(context) {
         return (width.coerceAtMost(height) * 0.09f).coerceIn(40f, 130f)
     }
 
+    /**
+     * Neon Lines: two concentric neon frames that rotate in opposite directions at
+     * slightly different speeds, so they weave past each other. The outer frame is a
+     * soft wide bloom, the inner is a crisp bright line — together they read like layered
+     * flowing neon tubing around the screen. Both react to loudness for thickness and glow.
+     */
+    private fun drawNeonLines(canvas: Canvas) {
+        val loud = easeOut(displayLevel)
+        val corner = screenCornerRadius()
+
+        val colors = if (rainbow) RAINBOW
+                     else intArrayOf(colorStart, colorEnd, colorStart, colorEnd, colorStart)
+
+        // --- Outer frame: wide soft bloom, rotating one way ---
+        val outerSweep = SweepGradient(width / 2f, height / 2f, colors, null)
+        shaderMatrix.setRotate(rotationDeg * 1.0f, width / 2f, height / 2f)
+        outerSweep.setLocalMatrix(shaderMatrix)
+        paint.shader = outerSweep
+        paint.style = Paint.Style.STROKE
+        paint.strokeCap = Paint.Cap.ROUND
+
+        val outerThick = baseThickness * (0.30f + loud * 1.4f * intensity)
+        paint.strokeWidth = max(3f, outerThick)
+        paint.maskFilter = blur(max(3f, outerThick * (0.9f + loud)))
+        var inset = width * 0.02f + outerThick * 0.5f
+        rect.set(inset, inset, width - inset, height - inset)
+        paint.alpha = 200
+        canvas.drawRoundRect(rect, corner, corner, paint)
+
+        // --- Inner frame: crisp bright line, rotating the other way, tighter inset ---
+        val innerColors = if (rainbow) RAINBOW
+                          else intArrayOf(colorEnd, colorStart, colorEnd, colorStart, colorEnd)
+        val innerSweep = SweepGradient(width / 2f, height / 2f, innerColors, null)
+        shaderMatrix.setRotate(-rotationDeg * 1.35f, width / 2f, height / 2f)
+        innerSweep.setLocalMatrix(shaderMatrix)
+        paint.shader = innerSweep
+
+        val innerThick = baseThickness * (0.18f + loud * 0.8f * intensity)
+        // Soft glow pass
+        paint.strokeWidth = max(2f, innerThick * 1.6f)
+        paint.maskFilter = blur(max(2f, innerThick * 1.2f))
+        val innerInset = width * 0.055f + innerThick
+        rect.set(innerInset, innerInset, width - innerInset, height - innerInset)
+        val innerCorner = (corner * 0.8f).coerceAtLeast(24f)
+        paint.alpha = 180
+        canvas.drawRoundRect(rect, innerCorner, innerCorner, paint)
+        // Crisp bright core on top
+        paint.maskFilter = null
+        paint.strokeWidth = max(1.5f, innerThick * 0.5f)
+        paint.alpha = 255
+        canvas.drawRoundRect(rect, innerCorner, innerCorner, paint)
+
+        paint.alpha = 255
+    }
+
     /** Eased 0..1 curve so quiet stays subtle and loud pops - like a designer's response curve. */
     private fun easeOut(x: Float): Float {
         val t = x.coerceIn(0f, 1f)
@@ -581,9 +646,9 @@ class EdgeVisualizerView(context: Context) : View(context) {
         paint.style = Paint.Style.FILL
         paint.maskFilter = blur(max(2f, baseThickness * 0.4f))
 
-        val n = 40
+        val n = 56
         val gap = height / n.toFloat()
-        val barH = max(5f, baseThickness * 0.55f)
+        val barH = max(4f, baseThickness * 0.42f)
         val minLen = width * 0.03f          // always visible
         val maxLen = width * 0.20f          // never overwhelming
         for (i in 0 until n) {
@@ -605,9 +670,9 @@ class EdgeVisualizerView(context: Context) : View(context) {
         paint.style = Paint.Style.FILL
         paint.maskFilter = blur(max(2f, baseThickness * 0.35f))
 
-        val barH = max(4f, baseThickness * 0.55f)
+        val barH = max(3f, baseThickness * 0.42f)
 
-        val nSide = 34
+        val nSide = 46
         val gapV = height / nSide.toFloat()
         val minV = width * 0.025f
         val maxV = width * 0.16f
@@ -623,7 +688,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
             canvas.drawRoundRect(rect, barH, barH, paint)
         }
 
-        val nTop = 26
+        val nTop = 34
         val gapH = width / nTop.toFloat()
         val minH = height * 0.02f
         val maxH = height * 0.10f

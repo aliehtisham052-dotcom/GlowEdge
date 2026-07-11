@@ -2,7 +2,7 @@
     <string name="app_name">GlowEdge</string>
     <string name="welcome_tagline">Music-reactive edge lighting</string>
     <string name="welcome_f1">🎵  Reacts to music, naat &amp; poetry</string>
-    <string name="welcome_f2">🌈  12 styles · 13 themes + Custom Colors</string>
+    <string name="welcome_f2">🌈  13 styles · 13 themes + Custom Colors</string>
     <string name="welcome_f3">📱  Glowing edges over any app</string>
     <string name="welcome_f4">🔒  No ads · No internet · Private</string>
     <string name="welcome_f5">✨  Glow-themed wallpapers for every color</string>
@@ -50,7 +50,7 @@
     <string name="speed">Animation Speed</string>
 
     <string name="premium_desc">GlowEdge turns your music, naat and melodic audio into a living glow around your screen edges. Completely free — every style and feature unlocked.</string>
-    <string name="premium_features">✦ 12 visualizer styles\n✦ 13 color themes + unlimited Custom Colors (millions of combinations)\n✦ Glow-themed lock screen Wallpapers, 3 templates \u00d7 every color theme\n✦ Beat &amp; rhythm sync, loudness-reactive glow\n✦ Music-Only smart detection + Force Glow manual override\n✦ Notification Glow\n✦ Thickness, speed &amp; intensity controls\n✦ Battery Saver &amp; Auto-start\n✦ Works with headphones &amp; earbuds\n✦ No ads · No tracking · No internet access</string>
+    <string name="premium_features">✦ 13 visualizer styles\n✦ 13 color themes + unlimited Custom Colors (millions of combinations)\n✦ Clean edge-glow lock screen Wallpapers + a live wallpaper with clock, date &amp; battery\n✦ Beat &amp; rhythm sync, loudness-reactive glow\n✦ Music-Only smart detection + Force Glow manual override\n✦ Notification Glow\n✦ Thickness, speed &amp; intensity controls\n✦ Battery Saver &amp; Auto-start\n✦ Works with headphones &amp; earbuds\n✦ No ads · No tracking · No internet access</string>
 
     <string name="intensity">Glow Intensity</string>
     <string name="autostart">Auto-start on boot</string>
@@ -60,7 +60,7 @@
     <string name="developer_label">Developer</string>
     <string name="developer_name">Innovation-313</string>
     <string name="developer_email">aliehtisham052@gmail.com</string>
-    <string name="app_version">Version 6.24</string>
+    <string name="app_version">Version 6.25</string>
     <string name="notif_glow">Notification Glow</string>
     <string name="notif_glow_desc">Flash the edges in an app color when a message or notification arrives. Works even without music.</string>
     <string name="notif_glow_need_access">Please allow notification access for GlowEdge to detect calls and messages.</string>

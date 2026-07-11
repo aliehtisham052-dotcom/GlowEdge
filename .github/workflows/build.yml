@@ -71,26 +71,28 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.24.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.24.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.25.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.25.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.24.apk
-            GlowEdge-v6.24.aab
+            GlowEdge-v6.25.apk
+            GlowEdge-v6.25.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.24
-          name: GlowEdge v6.24 — Battery ring on live wallpaper
+          tag_name: v6.25
+          name: GlowEdge v6.25 — Neon Lines + vivid colors
           body: |
-            GlowEdge v6.24 - Battery ring + clean wallpapers
-            - NEW: the live wallpaper now shows an elegant circular battery ring on the right (a faint full track, a bright arc filling to the current level, and the percentage centred inside) - a premium, glanceable read.
-            - Clean wallpaper design: edge-glow shine only, no bottom flame, no theme name, no branding text. The live wallpaper shows only time, date and battery.
+            GlowEdge v6.25 - Neon Lines style + vivid colors + denser bars
+            - NEW STYLE: Neon Lines - two concentric neon frames that rotate in opposite directions at different speeds, weaving past each other, with a soft outer bloom and a crisp bright inner core. 13 styles total now.
+            - Colors are now more vivid: full-saturation rainbow, and a saturation/brightness boost on theme colors so the glow reads bright and punchy.
+            - Denser line styles: Side Bars 40 to 56, Bars Around sides 34 to 46 and top/bottom 26 to 34, with thinner bars for a premium equalizer look.
+            - Also includes the live wallpaper battery ring and clean edge-glow wallpapers.
           files: |
-            GlowEdge-v6.24.apk
-            GlowEdge-v6.24.aab
+            GlowEdge-v6.25.apk
+            GlowEdge-v6.25.aab
