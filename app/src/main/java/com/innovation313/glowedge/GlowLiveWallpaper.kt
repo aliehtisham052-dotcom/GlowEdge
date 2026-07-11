@@ -18,9 +18,6 @@ import android.os.Handler
 import android.os.Looper
 import android.service.wallpaper.WallpaperService
 import android.view.SurfaceHolder
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 /**
  * A live wallpaper that renders GlowEdge's signature glow design plus glanceable,
@@ -40,10 +37,6 @@ class GlowLiveWallpaper : WallpaperService() {
         private var visible = false
         private var width = 0
         private var height = 0
-
-        private val timeFmt = SimpleDateFormat("HH:mm", Locale.getDefault())
-        private val dateFmt = SimpleDateFormat("MMMM d, yyyy", Locale.getDefault())
-        private val dayFmt = SimpleDateFormat("EEEE", Locale.US)
 
         private val RAINBOW = intArrayOf(
             Color.parseColor("#FF3B5C"), Color.parseColor("#FFD93B"), Color.parseColor("#3BE885"),
@@ -115,11 +108,10 @@ class GlowLiveWallpaper : WallpaperService() {
             val theme = ProfileManager.theme(this@GlowLiveWallpaper)
             val c1 = theme.colorStart
             val c2 = theme.colorEnd
-            val beam = if (theme.rainbow) RAINBOW[3] else c1
 
             drawField(canvas, w, h, c2)
             drawEdgeShine(canvas, w, h, c1, c2)
-            drawInfo(canvas, w, h, theme, beam)
+            drawInfo(canvas, w, h, theme)
         }
 
         private fun drawField(canvas: Canvas, w: Float, h: Float, warm: Int) {
@@ -168,75 +160,31 @@ class GlowLiveWallpaper : WallpaperService() {
         }
 
         /** Time, date + day, and a live battery reading — the glanceable info block. */
-        private fun drawInfo(canvas: Canvas, w: Float, h: Float, theme: Profile, beam: Int) {
-            val now = Date()
-            val leftPad = w * 0.10f
-
-            // Big time
-            val timePaint = Paint(Paint.ANTI_ALIAS_FLAG)
-            timePaint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
-            timePaint.textSize = w * 0.20f
-            timePaint.color = Color.WHITE
-            timePaint.setShadowLayer(w * 0.03f, 0f, 0f, withAlpha(beam, 120))
-            canvas.drawText(timeFmt.format(now), leftPad, h * 0.20f, timePaint)
-
-            // Date row with a small theme dot
-            val dotPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-            dotPaint.color = theme.colorStart
-            dotPaint.setShadowLayer(w * 0.02f, 0f, 0f, withAlpha(theme.colorStart, 160))
-            canvas.drawCircle(leftPad + w * 0.012f, h * 0.265f, w * 0.014f, dotPaint)
-
-            val datePaint = Paint(Paint.ANTI_ALIAS_FLAG)
-            datePaint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
-            datePaint.textSize = w * 0.048f
-            datePaint.color = theme.colorStart
-            canvas.drawText(dateFmt.format(now).uppercase(), leftPad + w * 0.045f, h * 0.282f, datePaint)
-
-            val dayPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-            dayPaint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL)
-            dayPaint.textSize = w * 0.036f
-            dayPaint.color = withAlpha(Color.WHITE, 150)
-            dayPaint.letterSpacing = 0.08f
-            canvas.drawText(dayFmt.format(now).uppercase(), leftPad + w * 0.045f, h * 0.318f, dayPaint)
-
-            // Battery row
+        private fun drawInfo(canvas: Canvas, w: Float, h: Float, theme: Profile) {
+            // NOTE: we deliberately do NOT draw the time or date here. On the lock screen
+            // the phone draws its own clock and date on top of the wallpaper, so drawing
+            // ours too would overlap and look messy. We only show a battery ring — which
+            // the system does not show — placed low and centered so it never clashes with
+            // the system clock, notifications or the fingerprint/camera area.
             val (level, charging) = batteryInfo()
             val batteryColor = when {
                 charging -> theme.colorEnd
                 level <= 15 -> Color.parseColor("#FF5252")
                 else -> theme.colorStart
             }
-            dotPaint.color = batteryColor
-            dotPaint.setShadowLayer(w * 0.02f, 0f, 0f, withAlpha(batteryColor, 160))
-            canvas.drawCircle(leftPad + w * 0.012f, h * 0.365f, w * 0.014f, dotPaint)
-
-            val battPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-            battPaint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
-            battPaint.textSize = w * 0.048f
-            battPaint.color = batteryColor
-            val battLabel = "BATTERY $level%" + if (charging) "  \u26A1" else ""
-            canvas.drawText(battLabel, leftPad + w * 0.045f, h * 0.382f, battPaint)
-
-            val statePaint = Paint(Paint.ANTI_ALIAS_FLAG)
-            statePaint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL)
-            statePaint.textSize = w * 0.036f
-            statePaint.color = withAlpha(batteryColor, 150)
-            statePaint.letterSpacing = 0.08f
-            val stateLabel = if (charging) "CHARGING" else if (level <= 15) "LOW" else "IDLE"
-            canvas.drawText(stateLabel, leftPad + w * 0.045f, h * 0.418f, statePaint)
-
             drawBatteryRing(canvas, w, h, level, batteryColor, charging)
         }
 
         /**
-         * A refined circular battery ring on the right side: a faint full track with a
-         * bright arc filling to the current level, and the percentage centred inside.
-         * Gives a premium, glanceable read of the battery at a distance.
+         * A refined circular battery ring: a faint full track with a bright arc filling
+         * to the current level, and the percentage centred inside. Placed in the lower
+         * third and centered so it never overlaps the system clock or notifications.
+         * Gives a premium, glanceable read of the battery the system doesn't provide.
          */
         private fun drawBatteryRing(canvas: Canvas, w: Float, h: Float, level: Int, color: Int, charging: Boolean) {
-            val cx = w * 0.78f
-            val cy = h * 0.325f
-            val r = w * 0.12f
+            val cx = w * 0.5f
+            val cy = h * 0.60f
+            val r = w * 0.13f
             val ring = RectF(cx - r, cy - r, cx + r, cy + r)
 
             // Faint full track.

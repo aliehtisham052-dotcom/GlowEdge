@@ -71,28 +71,27 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.25.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.25.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.26.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.26.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.25.apk
-            GlowEdge-v6.25.aab
+            GlowEdge-v6.26.apk
+            GlowEdge-v6.26.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.25
-          name: GlowEdge v6.25 — Neon Lines + vivid colors
+          tag_name: v6.26
+          name: GlowEdge v6.26 — Fix live wallpaper clock clash
           body: |
-            GlowEdge v6.25 - Neon Lines style + vivid colors + denser bars
-            - NEW STYLE: Neon Lines - two concentric neon frames that rotate in opposite directions at different speeds, weaving past each other, with a soft outer bloom and a crisp bright inner core. 13 styles total now.
-            - Colors are now more vivid: full-saturation rainbow, and a saturation/brightness boost on theme colors so the glow reads bright and punchy.
-            - Denser line styles: Side Bars 40 to 56, Bars Around sides 34 to 46 and top/bottom 26 to 34, with thinner bars for a premium equalizer look.
-            - Also includes the live wallpaper battery ring and clean edge-glow wallpapers.
+            GlowEdge v6.26 - Fix live wallpaper clock overlap
+            - FIXED: the live wallpaper was drawing its own time and date, which overlapped the phone's own lock-screen clock (two clocks on top of each other). Removed the wallpaper's clock and date entirely - the phone shows those already.
+            - The live wallpaper now shows only a clean, centered battery ring (which the system does not show), placed low so it never clashes with the clock, notifications or fingerprint area.
+            - Keeps the Neon Lines style, vivid colors and denser bars from v6.25.
           files: |
-            GlowEdge-v6.25.apk
-            GlowEdge-v6.25.aab
+            GlowEdge-v6.26.apk
+            GlowEdge-v6.26.aab

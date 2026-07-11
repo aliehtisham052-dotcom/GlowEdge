@@ -32,9 +32,9 @@
     <string name="premium">About</string>
     <string name="wallpapers">Wallpapers</string>
     <string name="wallpapers_desc">Clean edge-glow lock screen wallpapers in every color theme. Tap Set as Lock Screen to apply.</string>
-    <string name="live_wallpaper_description">GlowEdge — live clock, date and battery in your glow theme</string>
-    <string name="live_wallpaper_button">✨ Live Wallpaper — clock, date &amp; battery</string>
-    <string name="live_wallpaper_desc">A living wallpaper that shows the time, date and battery in your chosen glow theme. Applies to home and lock screen (Android shows live wallpapers on both).</string>
+    <string name="live_wallpaper_description">GlowEdge — edge glow with a live battery ring in your theme</string>
+    <string name="live_wallpaper_button">✨ Live Wallpaper — edge glow + battery ring</string>
+    <string name="live_wallpaper_desc">A living wallpaper with your theme\'s edge glow and a battery ring. Your phone still shows its own clock on the lock screen, so this stays clean underneath. Applies to home and lock screen.</string>
     <string name="set_current_as_wallpaper">🖼️ Set current theme as Wallpaper</string>
     <string name="apply">Apply</string>
     <string name="stop">Stop</string>
@@ -60,7 +60,7 @@
     <string name="developer_label">Developer</string>
     <string name="developer_name">Innovation-313</string>
     <string name="developer_email">aliehtisham052@gmail.com</string>
-    <string name="app_version">Version 6.25</string>
+    <string name="app_version">Version 6.26</string>
     <string name="notif_glow">Notification Glow</string>
     <string name="notif_glow_desc">Flash the edges in an app color when a message or notification arrives. Works even without music.</string>
     <string name="notif_glow_need_access">Please allow notification access for GlowEdge to detect calls and messages.</string>
