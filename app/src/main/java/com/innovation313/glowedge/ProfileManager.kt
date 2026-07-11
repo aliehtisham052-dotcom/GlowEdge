@@ -150,7 +150,7 @@ object ProfileManager {
 
     /** 1 (strict: only clear music) .. 10 (loose: almost any sound). Default 5. */
     fun sensitivity(context: Context): Int =
-        prefs(context).getInt(KEY_SENSITIVITY, 4).coerceIn(1, 10)
+        prefs(context).getInt(KEY_SENSITIVITY, 2).coerceIn(1, 10)
 
     fun setIntro(context: Context, on: Boolean) =
         prefs(context).edit().putBoolean(KEY_INTRO, on).apply()

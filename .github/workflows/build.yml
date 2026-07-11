@@ -71,28 +71,28 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.14.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.14.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.15.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.15.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.14.apk
-            GlowEdge-v6.14.aab
+            GlowEdge-v6.15.apk
+            GlowEdge-v6.15.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.14
-          name: GlowEdge v6.14 — Force Glow manual toggle
+          tag_name: v6.15
+          name: GlowEdge v6.15 — Stricter default sensitivity
           body: |
-            GlowEdge v6.14 - Force Glow (manual override)
-            - NEW: Force Glow toggle - a reliable one-tap manual override that bypasses automatic music/naat detection entirely. Available both as a Settings switch in the app and as a button on the persistent notification.
-            - Use this any time auto-detection gets it wrong, instead of waiting on further algorithm tuning.
-            - Notification now shows current mode (Auto-detecting vs Force Glow ON) at a glance.
+            GlowEdge v6.15 - Stricter default sensitivity
+            - Real-world testing showed the detection heuristics (coarse 32-band energy analysis, no true pitch tracking) still catch plain speech/TTS voice sometimes - a known ceiling of this approach.
+            - Lowered default sensitivity from 4 to 2 (out of 10) so out-of-the-box behavior errs toward missing occasional naat rather than false-triggering on speech.
+            - Force Glow (v6.14) remains the reliable manual fallback for anything the auto-detector still gets wrong.
             Developed by Innovation-313
           files: |
-            GlowEdge-v6.14.apk
-            GlowEdge-v6.14.aab
+            GlowEdge-v6.15.apk
+            GlowEdge-v6.15.aab
