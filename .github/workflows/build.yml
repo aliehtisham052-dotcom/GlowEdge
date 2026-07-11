@@ -71,28 +71,27 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.12.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.12.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.13.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.13.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.12.apk
-            GlowEdge-v6.12.aab
+            GlowEdge-v6.13.apk
+            GlowEdge-v6.13.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.12
-          name: GlowEdge v6.12 — Detection recalibration
+          tag_name: v6.13
+          name: GlowEdge v6.13 — Welcome screen fix
           body: |
-            GlowEdge v6.12 - Detection recalibration
-            - v6.11 required all 3 cues at once, every single frame - too fragile for real naat, which naturally has quiet verses and expressive pauses that briefly dip one cue.
-            - New: two paths to musical - (A) spread + balance together (the reliable core signal speech structurally lacks), or (B) very high steadiness with some spread (covers sparse a cappella naat/zikr with little bass).
-            - Slower fall-off so brief natural pauses in naat do not kill the glow instantly.
+            GlowEdge v6.13 - Welcome screen fix
+            - Fixed the first onboarding screen: was still showing "8 styles - 7 color themes" from months ago. Now correctly shows 12 styles - 9 themes + Custom Colors.
+            - Added a 5th welcome bullet highlighting Personal Glow Text for new users.
             Developed by Innovation-313
           files: |
-            GlowEdge-v6.12.apk
-            GlowEdge-v6.12.aab
+            GlowEdge-v6.13.apk
+            GlowEdge-v6.13.aab

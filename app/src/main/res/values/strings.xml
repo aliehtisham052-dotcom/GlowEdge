@@ -3,9 +3,10 @@
     <string name="welcome_subtitle">Music-reactive edge lighting for your screen\nAap ki music, screen ke kinaron par jagmagati roshni 🎵</string>
     <string name="welcome_tagline">Music-reactive edge lighting</string>
     <string name="welcome_f1">🎵  Reacts to music, naat &amp; poetry</string>
-    <string name="welcome_f2">🌈  8 styles · 7 color themes</string>
+    <string name="welcome_f2">🌈  12 styles · 9 themes + Custom Colors</string>
     <string name="welcome_f3">📱  Glowing edges over any app</string>
     <string name="welcome_f4">🔒  No ads · No internet · Private</string>
+    <string name="welcome_f5">✨  Your own name, glowing on the edge</string>
     <string name="get_started">Get Started</string>
 
     <string name="overlay_title">Display over other apps</string>
@@ -57,7 +58,7 @@
     <string name="developer_label">Developer</string>
     <string name="developer_name">Innovation-313</string>
     <string name="developer_email">aliehtisham052@gmail.com</string>
-    <string name="app_version">Version 6.12</string>
+    <string name="app_version">Version 6.13</string>
     <string name="notif_glow">Notification Glow</string>
     <string name="notif_glow_desc">Flash the edges in an app color when a message or notification arrives. Works even without music.</string>
     <string name="notif_glow_need_access">Please allow notification access for GlowEdge to detect calls and messages.</string>
