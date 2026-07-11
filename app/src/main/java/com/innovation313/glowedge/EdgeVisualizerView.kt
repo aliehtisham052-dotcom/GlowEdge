@@ -35,6 +35,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
     private var intensity = 1f
     private var flamePhase = 0f
     private var batterySaver = false
+    private var glowEdges = 0   // 0 = all edges, 1 = sides only, 2 = top & bottom
     private val cometTrail = ArrayList<Float>()
     private val ripples = ArrayList<FloatArray>()  // each: [progress, startLevel]
     private var lastBeatLevel = 0f
@@ -93,7 +94,8 @@ class EdgeVisualizerView(context: Context) : View(context) {
 
     fun applySettings(
         style: Int, cStart: Int, cEnd: Int,
-        isRainbow: Boolean, thickness: Float, spd: Float, inten: Float, saver: Boolean
+        isRainbow: Boolean, thickness: Float, spd: Float, inten: Float, saver: Boolean,
+        edges: Int = 0
     ) {
         styleId = style
         colorStart = cStart
@@ -103,6 +105,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
         speed = spd
         intensity = inten
         batterySaver = saver
+        glowEdges = edges
         shader = null
         postInvalidate()
     }
@@ -324,6 +327,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
         if (hueShift > 360f) hueShift -= 360f
         flamePhase += (0.08f * speed + displayLevel * 0.15f) * rhythmMul
 
+        val restoreCount = applyEdgeClip(canvas)
         when (styleId) {
             GlowStyles.SIDE_BARS -> drawSideBars(canvas)
             GlowStyles.BARS_AROUND -> drawBarsAround(canvas)
@@ -339,8 +343,32 @@ class EdgeVisualizerView(context: Context) : View(context) {
             GlowStyles.NEON_LINES -> drawNeonLines(canvas)
             else -> drawGlowLine(canvas)
         }
+        if (restoreCount >= 0) canvas.restoreToCount(restoreCount)
 
         postInvalidateDelayed(33L)
+    }
+
+    /**
+     * Clips the canvas to the chosen edges so the glow only appears where the user wants:
+     * all edges (no clip), sides only (left+right bands), or top &amp; bottom (top+bottom bands).
+     * Returns a save-count to restore, or -1 if no clipping was applied.
+     */
+    private fun applyEdgeClip(canvas: Canvas): Int {
+        if (glowEdges == 0) return -1
+        val band = (width.coerceAtMost(height) * 0.22f)
+        val sc = canvas.save()
+        val region = android.graphics.Path()
+        if (glowEdges == 1) {
+            // sides only: left strip + right strip
+            region.addRect(0f, 0f, band, height.toFloat(), android.graphics.Path.Direction.CW)
+            region.addRect(width - band, 0f, width.toFloat(), height.toFloat(), android.graphics.Path.Direction.CW)
+        } else {
+            // top & bottom only: top strip + bottom strip
+            region.addRect(0f, 0f, width.toFloat(), band, android.graphics.Path.Direction.CW)
+            region.addRect(0f, height - band, width.toFloat(), height.toFloat(), android.graphics.Path.Direction.CW)
+        }
+        canvas.clipPath(region)
+        return sc
     }
 
     private fun drawPulse(canvas: Canvas) {

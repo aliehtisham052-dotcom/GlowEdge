@@ -71,27 +71,27 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.27.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.27.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.28.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.28.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.27.apk
-            GlowEdge-v6.27.aab
+            GlowEdge-v6.28.apk
+            GlowEdge-v6.28.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.27
-          name: GlowEdge v6.27 — Mute intro + simpler notification
+          tag_name: v6.28
+          name: GlowEdge v6.28 — Glow Trigger + Glow Edges
           body: |
-            GlowEdge v6.27 - Silent intro + simpler notification
-            - Muted the splash intro video - the app now opens silently (no sound from the intro clip).
-            - Simplified the persistent notification text to just "Glow is on" instead of the longer detection status.
-            - Music/naat detection is unchanged and still active (HPS harmonic analysis).
+            GlowEdge v6.28 - Glow Trigger selector + Glow Edges
+            - Replaced the Music-Only and Force Glow toggles with one clear Glow Trigger selector: "Every sound" or "Music only". Simpler, no confusing double toggle.
+            - NEW: Glow Edges - choose which screen edges glow: All edges, Sides only, or Top and bottom.
+            - Removed the Force Glow notification button; notification now just shows "Glow is on" with a Stop action.
           files: |
-            GlowEdge-v6.27.apk
-            GlowEdge-v6.27.aab
+            GlowEdge-v6.28.apk
+            GlowEdge-v6.28.aab

@@ -768,19 +768,8 @@ class MainActivity : AppCompatActivity() {
             ProfileManager.setIntro(this, checked)
         }
 
-        val musicOnly = findViewById<MaterialSwitch>(R.id.switchMusicOnly)
-        musicOnly.isChecked = ProfileManager.musicOnly(this)
-        musicOnly.setOnCheckedChangeListener { _, checked ->
-            ProfileManager.setMusicOnly(this, checked)
-            notifyService()
-        }
-
-        val forceGlow = findViewById<MaterialSwitch>(R.id.switchForceGlow)
-        forceGlow.isChecked = ProfileManager.forceGlow(this)
-        forceGlow.setOnCheckedChangeListener { _, checked ->
-            ProfileManager.setForceGlow(this, checked)
-            notifyService()
-        }
+        buildGlowTriggerButtons()
+        buildGlowEdgesButtons()
 
         val sens = findViewById<SeekBar>(R.id.seekSensitivity)
         sens.min = 1
@@ -796,6 +785,70 @@ class MainActivity : AppCompatActivity() {
             override fun onStartTrackingTouch(sb: SeekBar?) = Unit
             override fun onStopTrackingTouch(sb: SeekBar?) = Unit
         })
+    }
+
+    /** Segmented selector: "Every sound" vs "Music only" — replaces the old
+     *  Music-Only + Force Glow toggles with one clear choice. */
+    private fun buildGlowTriggerButtons() {
+        val container = findViewById<LinearLayout>(R.id.glowTriggerContainer)
+        container.removeAllViews()
+        val labels = listOf(
+            getString(R.string.glow_trigger_every),
+            getString(R.string.glow_trigger_music)
+        )
+        labels.forEachIndexed { index, label ->
+            val chip = TextView(this)
+            chip.text = label
+            chip.textSize = 14f
+            chip.gravity = Gravity.CENTER
+            chip.setPadding(dp(14), dp(12), dp(14), dp(12))
+            val lp = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            lp.marginEnd = if (index == 0) dp(10) else 0
+            chip.layoutParams = lp
+            // index 1 (music only) == musicOnly true
+            val selected = ProfileManager.musicOnly(this) == (index == 1)
+            chip.setBackgroundResource(R.drawable.bg_card)
+            chip.setTextColor(if (selected) ContextCompat.getColor(this, R.color.gold) else Color.WHITE)
+            chip.alpha = if (selected) 1f else 0.6f
+            chip.setOnClickListener {
+                ProfileManager.setMusicOnly(this, index == 1)
+                notifyService()
+                buildGlowTriggerButtons()
+            }
+            container.addView(chip)
+        }
+    }
+
+    /** Segmented selector for which screen edges glow: All / Sides / Top &amp; bottom. */
+    private fun buildGlowEdgesButtons() {
+        val container = findViewById<LinearLayout>(R.id.glowEdgesContainer)
+        container.removeAllViews()
+        val labels = listOf(
+            getString(R.string.glow_edges_all),
+            getString(R.string.glow_edges_sides),
+            getString(R.string.glow_edges_topbottom)
+        )
+        labels.forEachIndexed { index, label ->
+            val chip = TextView(this)
+            chip.text = label
+            chip.textSize = 13f
+            chip.gravity = Gravity.CENTER
+            chip.setPadding(dp(10), dp(12), dp(10), dp(12))
+            val lp = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            lp.marginEnd = if (index < 2) dp(8) else 0
+            chip.layoutParams = lp
+            val selected = ProfileManager.glowEdges(this) == index
+            chip.setBackgroundResource(R.drawable.bg_card)
+            chip.setTextColor(if (selected) ContextCompat.getColor(this, R.color.gold) else Color.WHITE)
+            chip.alpha = if (selected) 1f else 0.6f
+            chip.setOnClickListener {
+                ProfileManager.setGlowEdges(this, index)
+                notifyService()
+                buildGlowEdgesButtons()
+                findViewById<PreviewView?>(R.id.previewView)?.refresh()
+            }
+            container.addView(chip)
+        }
     }
 
     private fun hasNotificationAccess(): Boolean {

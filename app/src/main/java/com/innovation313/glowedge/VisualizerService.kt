@@ -22,7 +22,6 @@ class VisualizerService : Service() {
         const val CHANNEL_ID = "glowedge_channel"
         const val ACTION_STOP = "com.innovation313.glowedge.STOP"
         const val ACTION_TEST = "com.innovation313.glowedge.TEST"
-        const val ACTION_TOGGLE_FORCE = "com.innovation313.glowedge.TOGGLE_FORCE"
         @Volatile
         var isRunning = false
     }
@@ -34,7 +33,6 @@ class VisualizerService : Service() {
     // ---- Music / melody detection state ----
     private var musicScore = 0f          // 0 = speech/noise, 1 = clearly musical
     private var musicOnly = true
-    private var forceGlow = false
     private var sensitivity = 5
     // Running history of how tonal/harmonic recent frames were (music sustains tonality;
     // speech only touches it briefly on vowels).
@@ -97,12 +95,6 @@ class VisualizerService : Service() {
             edgeView?.forceTestGlow()
             return START_STICKY
         }
-        if (intent?.action == ACTION_TOGGLE_FORCE) {
-            ProfileManager.setForceGlow(this, !ProfileManager.forceGlow(this))
-            applyCurrentSettings()
-            updateNotification()
-            return START_STICKY
-        }
         wasStartedByUser = true
         applyCurrentSettings()
         updateNotification()
@@ -112,7 +104,6 @@ class VisualizerService : Service() {
     private fun applyCurrentSettings() {
         musicOnly = ProfileManager.musicOnly(this)
         sensitivity = ProfileManager.sensitivity(this)
-        forceGlow = ProfileManager.forceGlow(this)
         val theme = ProfileManager.theme(this)
         edgeView?.applySettings(
             ProfileManager.style(this),
@@ -122,7 +113,8 @@ class VisualizerService : Service() {
             ProfileManager.thickness(this).toFloat(),
             ProfileManager.speed(this) / 10f,
             ProfileManager.intensity(this) / 10f,
-            ProfileManager.batterySaver(this)
+            ProfileManager.batterySaver(this),
+            ProfileManager.glowEdges(this)
         )
     }
 
@@ -156,22 +148,11 @@ class VisualizerService : Service() {
             Intent(this, MainActivity::class.java),
             PendingIntent.FLAG_IMMUTABLE
         )
-        val toggleIntent = PendingIntent.getService(
-            this, 3,
-            Intent(this, VisualizerService::class.java).setAction(ACTION_TOGGLE_FORCE),
-            PendingIntent.FLAG_IMMUTABLE
-        )
-        val forced = ProfileManager.forceGlow(this)
-        val statusText = if (forced) getString(R.string.notification_forced)
-                          else getString(R.string.notification_running)
-        val toggleLabel = if (forced) getString(R.string.force_glow_off)
-                           else getString(R.string.force_glow_on)
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_stat_glow)
             .setContentTitle(getString(R.string.app_name))
-            .setContentText(statusText)
+            .setContentText(getString(R.string.notification_running))
             .setContentIntent(openIntent)
-            .addAction(0, toggleLabel, toggleIntent)
             .addAction(0, getString(R.string.stop), stopIntent)
             .setOngoing(true)
             .build()
@@ -395,7 +376,7 @@ class VisualizerService : Service() {
 
                         // ---- Music vs speech detection (now harmonic-aware) ----
                         val musical = isMusical(bands, rawLevel, spectrum)
-                        val gatedLevel = if (forceGlow || !musicOnly || musical) rawLevel else 0f
+                        val gatedLevel = if (!musicOnly || musical) rawLevel else 0f
                         edgeView?.setAudioData(gatedLevel, bands)
                     }
                 }, Visualizer.getMaxCaptureRate() / 4, false, true)

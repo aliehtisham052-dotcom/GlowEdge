@@ -63,7 +63,7 @@ object ProfileManager {
     private const val KEY_MUSIC_ONLY = "music_only"
     private const val KEY_SENSITIVITY = "music_sensitivity"
     private const val KEY_ONBOARDED = "onboarded"
-    private const val KEY_FORCE_GLOW = "force_glow"
+    private const val KEY_GLOW_EDGES = "glow_edges"
 
     val themes = listOf(
         // Vivid, distinct designer palette: each theme is a clearly different hue pair,
@@ -167,12 +167,10 @@ object ProfileManager {
     fun isOnboarded(context: Context): Boolean =
         prefs(context).getBoolean(KEY_ONBOARDED, false)
 
-    // ---- Manual Force Glow override: one-tap from the notification, bypasses
-    // automatic music/naat detection entirely so the user always has a reliable
-    // fallback if the auto-detector gets something wrong. ----
-    fun setForceGlow(context: Context, on: Boolean) =
-        prefs(context).edit().putBoolean(KEY_FORCE_GLOW, on).apply()
+    // Which screen edges glow: 0 = all, 1 = sides only, 2 = top & bottom
+    fun setGlowEdges(context: Context, mode: Int) =
+        prefs(context).edit().putInt(KEY_GLOW_EDGES, mode).apply()
 
-    fun forceGlow(context: Context): Boolean =
-        prefs(context).getBoolean(KEY_FORCE_GLOW, false)
+    fun glowEdges(context: Context): Int =
+        prefs(context).getInt(KEY_GLOW_EDGES, 0).coerceIn(0, 2)
 }
