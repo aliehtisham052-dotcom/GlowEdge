@@ -81,6 +81,7 @@ class VisualizerService : Service() {
             if (state == android.telephony.TelephonyManager.EXTRA_STATE_RINGING &&
                 lastCallState != android.telephony.TelephonyManager.EXTRA_STATE_RINGING) {
                 if (ProfileManager.callGlow(this@VisualizerService)) {
+                    wakeScreenForCall()
                     val theme = ProfileManager.theme(this@VisualizerService)
                     edgeView?.triggerCallFlash(theme.colorStart)
                 }
@@ -89,6 +90,29 @@ class VisualizerService : Service() {
         }
     }
     private var callReceiverRegistered = false
+
+    /**
+     * Turns the screen on when a call arrives so the glow flash is actually visible in
+     * rest/screen-off mode (an overlay can't draw on a dark screen). We briefly acquire
+     * a screen-on wake lock, then release it — the incoming-call UI keeps the screen on
+     * after that, so we don't hold it and drain the battery.
+     */
+    private fun wakeScreenForCall() {
+        try {
+            val pm = getSystemService(POWER_SERVICE) as android.os.PowerManager
+            @Suppress("DEPRECATION")
+            val wl = pm.newWakeLock(
+                android.os.PowerManager.FULL_WAKE_LOCK or
+                android.os.PowerManager.ACQUIRE_CAUSES_WAKEUP or
+                android.os.PowerManager.ON_AFTER_RELEASE,
+                "GlowEdge:CallGlow"
+            )
+            wl.acquire(3000L)   // auto-releases after 3s; the call UI keeps the screen on
+            edgeView?.postDelayed({
+                try { if (wl.isHeld) wl.release() } catch (_: Exception) {}
+            }, 2500L)
+        } catch (_: Exception) {}
+    }
 
     private fun registerCallListener() {
         if (!ProfileManager.callGlow(this)) return

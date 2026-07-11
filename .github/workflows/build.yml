@@ -71,27 +71,27 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.32.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.32.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.33.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.33.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.32.apk
-            GlowEdge-v6.32.aab
+            GlowEdge-v6.33.apk
+            GlowEdge-v6.33.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.32
-          name: GlowEdge v6.32 — Fix Call Glow detection
+          tag_name: v6.33
+          name: GlowEdge v6.33 — Call Glow wakes screen
           body: |
-            GlowEdge v6.32 - Fix Call Glow not detecting calls
-            - FIXED: Call Glow was using the old PhoneStateListener, which is deprecated and unreliable on Android 12+ (this is why calls were not detected). Switched to a PHONE_STATE BroadcastReceiver that works across all Android versions.
-            - FIXED: after granting phone permission, the service now refreshes so the call listener actually registers (previously it did not). Toggle reflects grant/deny.
-            - Keeps the MediaSession-based Music Only detection.
+            GlowEdge v6.33 - Call Glow wakes the screen
+            - Call Glow now wakes the screen when a call arrives in rest/screen-off mode, so the glow flash is actually visible (an overlay cannot draw on a dark screen). Uses a brief 3s screen-on wake lock that auto-releases - the incoming-call UI keeps the screen on after that.
+            - Added the normal WAKE_LOCK permission (no user prompt).
+            - Keeps the reliable PHONE_STATE broadcast detection and MediaSession music detection.
           files: |
-            GlowEdge-v6.32.apk
-            GlowEdge-v6.32.aab
+            GlowEdge-v6.33.apk
+            GlowEdge-v6.33.aab
