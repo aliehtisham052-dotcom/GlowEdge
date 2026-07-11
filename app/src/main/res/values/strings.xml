@@ -38,7 +38,7 @@
     <string name="force_glow_on">Force Glow ON</string>
     <string name="force_glow_off">Back to Auto</string>
     <string name="force_glow_title">Force Glow (Manual)</string>
-    <string name="force_glow_desc">Skips music/naat detection entirely and keeps the glow on always. Use this any time auto-detection gets it wrong — it's also a one-tap toggle from the notification.</string>
+    <string name="force_glow_desc">Skips music/naat detection entirely and keeps the glow on always. Use this any time auto-detection gets it wrong \u2014 it\'s also a one-tap toggle from the notification.</string>
 
     <string name="color_theme">Color Theme</string>
     <string name="personal_text_title">Meri Glow Text</string>
