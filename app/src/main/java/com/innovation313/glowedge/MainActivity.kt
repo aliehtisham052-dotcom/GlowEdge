@@ -548,7 +548,7 @@ class MainActivity : AppCompatActivity() {
             val preview = ImageView(this)
             preview.layoutParams = LinearLayout.LayoutParams(dp(70), dp(124))
             preview.scaleType = ImageView.ScaleType.CENTER_CROP
-            preview.setImageBitmap(WallpaperGenerator.generate(theme, dp(140), dp(248)))
+            preview.setImageBitmap(WallpaperGenerator.generate(theme, dp(140), dp(248), aurora = ProfileManager.wallpaperGlow(this) == 1))
 
             val textCol = LinearLayout(this)
             textCol.orientation = LinearLayout.VERTICAL
@@ -678,7 +678,8 @@ class MainActivity : AppCompatActivity() {
                 val chg = status == android.os.BatteryManager.BATTERY_STATUS_CHARGING ||
                           status == android.os.BatteryManager.BATTERY_STATUS_FULL
                 val bmp = WallpaperGenerator.generateWithBattery(
-                    theme, dm.widthPixels, dm.heightPixels, pct, chg, bs
+                    theme, dm.widthPixels, dm.heightPixels, pct, chg, bs,
+                    aurora = ProfileManager.wallpaperGlow(this) == 1
                 )
                 val wm = WallpaperManager.getInstance(this)
                 // Lock screen only, as requested — a static wallpaper can target just the
@@ -1000,6 +1001,37 @@ class MainActivity : AppCompatActivity() {
 
         buildGlowEdgesButtons()
         buildBatteryStyleButtons()
+        buildWallpaperGlowButtons()
+    }
+
+    /** Slim vs Aurora selector for the wallpaper edge look. */
+    private fun buildWallpaperGlowButtons() {
+        val container = findViewById<LinearLayout>(R.id.wallpaperGlowContainer) ?: return
+        container.removeAllViews()
+        val labels = listOf(
+            getString(R.string.wallpaper_glow_slim),
+            getString(R.string.wallpaper_glow_aurora)
+        )
+        labels.forEachIndexed { index, label ->
+            val chip = TextView(this)
+            chip.text = label
+            chip.textSize = 14f
+            chip.gravity = Gravity.CENTER
+            chip.setPadding(dp(14), dp(12), dp(14), dp(12))
+            val lp = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            lp.marginEnd = if (index == 0) dp(10) else 0
+            chip.layoutParams = lp
+            val selected = ProfileManager.wallpaperGlow(this) == index
+            chip.setBackgroundResource(R.drawable.bg_card)
+            chip.setTextColor(if (selected) ContextCompat.getColor(this, R.color.gold) else Color.WHITE)
+            chip.alpha = if (selected) 1f else 0.6f
+            chip.setOnClickListener {
+                ProfileManager.setWallpaperGlow(this, index)
+                buildWallpaperGlowButtons()
+                buildWallpaperCards()   // preview cards re-render in the new look
+            }
+            container.addView(chip)
+        }
     }
 
     /**

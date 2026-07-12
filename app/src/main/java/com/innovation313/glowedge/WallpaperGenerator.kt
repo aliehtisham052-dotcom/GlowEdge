@@ -29,7 +29,7 @@ object WallpaperGenerator {
         Color.parseColor("#3BD4FF"), Color.parseColor("#B93BFF"), Color.parseColor("#FF3B5C")
     )
 
-    fun generate(theme: Profile, width: Int, height: Int, template: Int = TEMPLATE_BORDER): Bitmap {
+    fun generate(theme: Profile, width: Int, height: Int, template: Int = TEMPLATE_BORDER, aurora: Boolean = false): Bitmap {
         val w = width.coerceAtLeast(64)
         val h = height.coerceAtLeast(64)
         val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
@@ -39,7 +39,7 @@ object WallpaperGenerator {
 
         drawField(canvas, fw, fh)
         drawSparkles(canvas, fw, fh, theme)
-        drawEdgeShine(canvas, fw, fh, theme)
+        drawEdgeShine(canvas, fw, fh, theme, aurora)
         return bmp
     }
 
@@ -50,9 +50,9 @@ object WallpaperGenerator {
      */
     fun generateWithBattery(
         theme: Profile, width: Int, height: Int,
-        level: Int, charging: Boolean, batteryStyle: Int
+        level: Int, charging: Boolean, batteryStyle: Int, aurora: Boolean = false
     ): Bitmap {
-        val bmp = generate(theme, width, height)
+        val bmp = generate(theme, width, height, aurora = aurora)
         val canvas = Canvas(bmp)
         BatteryModule.draw(
             canvas, bmp.width.toFloat(), bmp.height.toFloat(),
@@ -122,7 +122,7 @@ object WallpaperGenerator {
      * in the theme's gradient, then a crisp thin inner line for definition. This is the
      * whole design — clean, edge-only, nothing in the centre.
      */
-    private fun drawEdgeShine(canvas: Canvas, w: Float, h: Float, theme: Profile) {
+    private fun drawEdgeShine(canvas: Canvas, w: Float, h: Float, theme: Profile, aurora: Boolean = false) {
         // Multi-stop gradient so the colour reads as flowing from one into the next,
         // matching the live wallpaper's language even in this still image.
         val colors = if (theme.rainbow) RAINBOW
@@ -134,7 +134,7 @@ object WallpaperGenerator {
                          theme.colorStart
                      )
 
-        val slim = w * 0.0042f          // fine core line, matching the live wallpaper
+        val slim = if (aurora) w * 0.011f else w * 0.0042f   // Aurora = bold flowing bloom
         // Flush against the true screen border, inset only by half the stroke width so the
         // line isn't clipped. Corner radius traces a modern phone's rounded display.
         val inset = slim * 0.5f
@@ -148,18 +148,18 @@ object WallpaperGenerator {
 
         // Wide soft halo, drawn on a slightly inset rect so the bloom spreads inward across
         // the screen rather than being clipped at the border.
-        val haloInset = w * 0.016f
+        val haloInset = if (aurora) w * 0.030f else w * 0.016f
         val haloRect = RectF(haloInset, haloInset, w - haloInset, h - haloInset)
         val haloCorner = corner - (haloInset * 0.5f)
-        paint.strokeWidth = slim * 6.5f
-        paint.maskFilter = BlurMaskFilter(w * 0.040f, BlurMaskFilter.Blur.NORMAL)
-        paint.alpha = 120
+        paint.strokeWidth = slim * (if (aurora) 9.0f else 6.5f)
+        paint.maskFilter = BlurMaskFilter(w * (if (aurora) 0.085f else 0.040f), BlurMaskFilter.Blur.NORMAL)
+        paint.alpha = if (aurora) 170 else 120
         canvas.drawRoundRect(haloRect, haloCorner, haloCorner, paint)
 
         // Tighter glow hugging the core line at the edge.
         paint.strokeWidth = slim * 2.4f
         paint.maskFilter = BlurMaskFilter(slim * 2.6f, BlurMaskFilter.Blur.NORMAL)
-        paint.alpha = 205
+        paint.alpha = if (aurora) 230 else 205
         canvas.drawRoundRect(rect, corner, corner, paint)
 
         // The slim, crisp core line — flush against the true screen border.

@@ -63,7 +63,7 @@
     <string name="feedback_body">My feedback / reason:\n\n\n\n— Please describe what you liked, what to improve, or the problem you faced.</string>
     <string name="developer_name">Innovation-313</string>
     <string name="support_email">innovation313.support@gmail.com</string>
-    <string name="app_version">Version 6.46</string>
+    <string name="app_version">Version 6.47</string>
     <string name="notif_glow_need_access">Please allow notification access for GlowEdge to detect calls and messages.</string>
     <string name="live_preview">Live Preview</string>
     <string name="battery_saver">Battery Saver</string>
@@ -86,6 +86,10 @@
     <string name="show_on_notifications">Notifications</string>
     <string name="presets_header">ONE-TAP PRESETS</string>
     <string name="preset_applied">%1$s applied ✨</string>
+    <string name="wallpaper_glow_title">Wallpaper Glow</string>
+    <string name="wallpaper_glow_desc">The edge look on your wallpapers: Slim is a fine refined line; Aurora is a bold flowing bloom that washes colour into the screen.</string>
+    <string name="wallpaper_glow_slim">Slim</string>
+    <string name="wallpaper_glow_aurora">Aurora</string>
     <string name="battery_style_title">Battery Style</string>
     <string name="battery_style_desc">The battery design shown on your wallpapers — live and static both use it.</string>
     <string name="battery_style_applied">Battery style updated — re-apply your wallpaper to see it</string>

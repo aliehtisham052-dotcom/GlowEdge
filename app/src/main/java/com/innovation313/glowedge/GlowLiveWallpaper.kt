@@ -293,7 +293,10 @@ class GlowLiveWallpaper : WallpaperService() {
             // Close the loop so there is no seam where the gradient wraps.
             colors[stops - 1] = colors[0]
 
-            val slim = w * 0.0042f                 // a fine, refined core line
+            // Slim = fine refined line. Aurora = the bold look: a thicker band whose bloom
+            // spreads well into the screen, like coloured light washing in from the edges.
+            val aurora = ProfileManager.wallpaperGlow(this@GlowLiveWallpaper) == 1
+            val slim = if (aurora) w * 0.011f else w * 0.0042f
             // Sit flush against the true screen border — inset only by half the line's own
             // width so the stroke isn't clipped. Corner radius matches a modern phone's
             // rounded display, so the glow traces the actual edge of the screen.
@@ -315,19 +318,20 @@ class GlowLiveWallpaper : WallpaperService() {
 
             // 1) Wide, very soft halo. Drawn on a slightly INSET rect so the bloom spreads
             // inward across the screen instead of being clipped away at the border — the
-            // core line still sits flush at the very edge.
-            val haloInset = w * 0.016f
+            // core line still sits flush at the very edge. Aurora pushes this much wider
+            // and brighter, so the colours visibly wash into the screen.
+            val haloInset = if (aurora) w * 0.030f else w * 0.016f
             haloRect.set(haloInset, haloInset, w - haloInset, h - haloInset)
             val haloCorner = corner - (haloInset * 0.5f)
-            paint.strokeWidth = slim * 6.5f * breathe
-            paint.maskFilter = BlurMaskFilter(w * 0.040f, BlurMaskFilter.Blur.NORMAL)
-            paint.alpha = (120 * breathe).toInt().coerceIn(0, 255)
+            paint.strokeWidth = slim * (if (aurora) 9.0f else 6.5f) * breathe
+            paint.maskFilter = BlurMaskFilter(w * (if (aurora) 0.085f else 0.040f), BlurMaskFilter.Blur.NORMAL)
+            paint.alpha = ((if (aurora) 170 else 120) * breathe).toInt().coerceIn(0, 255)
             canvas.drawRoundRect(haloRect, haloCorner, haloCorner, paint)
 
             // 2) Tighter glow, hugging the core line at the edge.
             paint.strokeWidth = slim * 2.4f
             paint.maskFilter = BlurMaskFilter(slim * 2.6f, BlurMaskFilter.Blur.NORMAL)
-            paint.alpha = 205
+            paint.alpha = if (aurora) 230 else 205
             canvas.drawRoundRect(rect, corner, corner, paint)
 
             // 3) The slim, crisp core line — flush against the true screen border.

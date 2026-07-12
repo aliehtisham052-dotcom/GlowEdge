@@ -71,26 +71,26 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.46.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.46.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.47.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.47.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.46.apk
-            GlowEdge-v6.46.aab
+            GlowEdge-v6.47.apk
+            GlowEdge-v6.47.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.46
-          name: GlowEdge v6.46 - One-tap Presets + Glow shows on
+          tag_name: v6.47
+          name: GlowEdge v6.47 - Aurora wallpaper glow
           body: |
-            GlowEdge v6.46 - One-tap Presets + unified Show-on
-            - NEW: eight one-tap PRESETS at the top of the Styles tab (Golden Badr, Spectrum Flow, Neon Pulse, Aurora Sky, Ember Storm, Mirror Rain, Velvet Ripple, Ice Chase). Each bundles a style, colour theme, speed, intensity and thickness - a finished look in a single tap, with the palette shown as colour dots.
-            - NEW: unified "Glow shows on" section in Settings with three chips - Calls, Charging, Notifications - replacing the three separate switches scattered through the app. Each chip still handles its own permission when enabled.
+            GlowEdge v6.47 - Aurora wallpaper glow
+            - NEW: Wallpaper Glow selector in Settings - Slim (the fine refined line) or AURORA: a bold flowing bloom that washes colour into the screen from the edges, like the look in modern edge-lighting lock screens. Pair it with the Spectrum theme for a full rainbow border.
+            - Applies to both the live and static wallpaper; wallpaper preview cards re-render in the chosen look.
           files: |
-            GlowEdge-v6.46.apk
-            GlowEdge-v6.46.aab
+            GlowEdge-v6.47.apk
+            GlowEdge-v6.47.aab

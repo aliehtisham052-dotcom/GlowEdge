@@ -71,6 +71,7 @@ object ProfileManager {
     private const val KEY_QUIET_START = "quiet_start"   // minutes from midnight
     private const val KEY_QUIET_END = "quiet_end"
     private const val KEY_CHARGING_GLOW = "charging_glow"
+    private const val KEY_WALLPAPER_GLOW = "wallpaper_glow_style"
 
     val themes = listOf(
         // Vivid, distinct designer palette: each theme is a clearly different hue pair,
@@ -208,6 +209,13 @@ object ProfileManager {
 
     fun chargingGlow(context: Context): Boolean =
         prefs(context).getBoolean(KEY_CHARGING_GLOW, false)
+
+    // Wallpaper edge look: 0 = Slim (fine refined line), 1 = Aurora (bold flowing bloom)
+    fun setWallpaperGlow(context: Context, style: Int) =
+        prefs(context).edit().putInt(KEY_WALLPAPER_GLOW, style).apply()
+
+    fun wallpaperGlow(context: Context): Int =
+        prefs(context).getInt(KEY_WALLPAPER_GLOW, 0).coerceIn(0, 1)
 
     // ---- Quiet Hours: no glow during a chosen window (e.g. while sleeping) ----
     fun setQuietHours(context: Context, on: Boolean) =
