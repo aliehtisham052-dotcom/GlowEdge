@@ -1174,12 +1174,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun hasNotificationAccess(): Boolean {
-        val enabled = Settings.Secure.getString(
-            contentResolver, "enabled_notification_listeners"
-        ) ?: return false
-        return enabled.contains(packageName)
-    }
+    /** Delegates to the single source of truth so the two copies can't drift apart. */
+    private fun hasNotificationAccess(): Boolean =
+        MediaPlaybackDetector.hasNotificationAccess(this)
 
     private fun openNotificationAccess() {
         try {

@@ -129,6 +129,11 @@ class VisualizerService : Service() {
 
     private fun applyCurrentSettings() {
         musicOnly = ProfileManager.musicOnly(this)
+        // Demo mode is a fallback for when the mic is unavailable. It was only ever
+        // switched ON, never off — so if it had started (Music Only off + mic blocked),
+        // it kept glowing forever even after the user turned Music Only back ON, which
+        // directly contradicts that setting. Clear it whenever Music Only is active.
+        if (musicOnly) edgeView?.setDemoMode(false)
         val theme = ProfileManager.theme(this)
         edgeView?.applySettings(
             ProfileManager.style(this),

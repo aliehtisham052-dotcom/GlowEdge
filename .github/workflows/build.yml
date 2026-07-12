@@ -71,27 +71,27 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.55.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.55.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.56.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.56.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.55.apk
-            GlowEdge-v6.55.aab
+            GlowEdge-v6.56.apk
+            GlowEdge-v6.56.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.55
-          name: GlowEdge v6.55 - Remove Neon Lines style
+          tag_name: v6.56
+          name: GlowEdge v6.56 - Fix contradicting settings
           body: |
-            GlowEdge v6.55 - Remove Neon Lines style
-            - Removed the Neon Lines (twin counter-rotating frames) glow style. Anyone who had it selected falls back to Glow Line automatically.
-            - The Mirror Rain preset now uses the Dots style (rain-like falling points) instead.
-            - 12 glow styles remain.
+            GlowEdge v6.56 - Settings no longer contradict each other
+            - FIXED: demo mode (the fallback glow used when a device blocks the mic) was only ever switched ON, never off. Once started, it kept glowing forever - even after you turned Music Only back ON, directly contradicting that setting. It is now cleared whenever Music Only is active.
+            - FIXED: demo mode also ignored Quiet Hours entirely. The quiet gate lived in the service and only covered mic-driven levels, while demo mode fabricates its own levels in the view - so it glowed all night regardless. Quiet Hours now silences it too. (Test Glow stays exempt, as it is a deliberate user action.)
+            - Consolidated a duplicated Notification Access check that existed in two places and could have drifted apart.
           files: |
-            GlowEdge-v6.55.apk
-            GlowEdge-v6.55.aab
+            GlowEdge-v6.56.apk
+            GlowEdge-v6.56.aab

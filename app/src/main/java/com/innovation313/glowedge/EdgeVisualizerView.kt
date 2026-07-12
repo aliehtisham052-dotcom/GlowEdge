@@ -126,6 +126,19 @@ class EdgeVisualizerView(context: Context) : View(context) {
     /** Force a self-animating demo glow (used when the device blocks audio capture). */
     fun setDemoMode(on: Boolean) { demoMode = on }
 
+    // Quiet Hours check, cached: the draw loop runs ~30fps, so we re-evaluate this
+    // time-based setting only every 30 seconds — plenty for a minute-resolution window.
+    private var lastQuietCheck = 0L
+    private var lastQuietState = false
+    private fun isQuietNowCached(): Boolean {
+        val now = SystemClock.elapsedRealtime()
+        if (now - lastQuietCheck > 30_000L) {
+            lastQuietCheck = now
+            lastQuietState = try { ProfileManager.isQuietNow(context) } catch (_: Exception) { false }
+        }
+        return lastQuietState
+    }
+
     private var testUntil = 0L
     private val segPath = Path()
 
@@ -262,7 +275,11 @@ class EdgeVisualizerView(context: Context) : View(context) {
 
         // Demo animation runs ONLY if explicitly enabled (device truly blocks audio),
         // never just because it is quiet. This keeps the screen dark on silence / normal voice.
-        if (demoMode) {
+        // It must ALSO respect Quiet Hours: the quiet gate lives in the service and only
+        // covers mic-driven levels, but demo mode fabricates its own levels right here —
+        // so without this check it would keep glowing all night, contradicting the setting.
+        // (Test Glow stays exempt: it's a deliberate, user-initiated action.)
+        if (demoMode && !isQuietNowCached() ) {
             demoPhase += 0.06f
             var sum = 0f
             for (i in 0 until bandCount) {
