@@ -25,8 +25,10 @@ object WallpaperGenerator {
     val templateNames = listOf("Signature")
 
     private val RAINBOW = intArrayOf(
-        Color.parseColor("#FF3B5C"), Color.parseColor("#FFD93B"), Color.parseColor("#3BE885"),
-        Color.parseColor("#3BD4FF"), Color.parseColor("#B93BFF"), Color.parseColor("#FF3B5C")
+        Color.parseColor("#FF3B5C"), Color.parseColor("#FF8A3B"),
+        Color.parseColor("#FFD93B"), Color.parseColor("#3BE885"),
+        Color.parseColor("#3BD4FF"), Color.parseColor("#3B7BFF"),
+        Color.parseColor("#B93BFF"), Color.parseColor("#FF3B5C")
     )
 
     fun generate(theme: Profile, width: Int, height: Int, template: Int = TEMPLATE_BORDER, aurora: Boolean = false): Bitmap {
@@ -77,7 +79,9 @@ object WallpaperGenerator {
             val size = (0.5f + rnd.nextFloat() * 1.7f) * minDim * 0.0032f
             val bright = 0.35f + rnd.nextFloat() * 0.65f
             val alpha = (bright * 190f).toInt().coerceIn(0, 255)
-            val color = if (i % 3 == 0) theme.colorEnd else theme.colorStart
+            val color = if (theme.rainbow) {
+                RAINBOW[i % (RAINBOW.size - 1)]
+            } else if (i % 3 == 0) theme.colorEnd else theme.colorStart
 
             paint.color = withAlpha(color, alpha)
             paint.maskFilter = BlurMaskFilter(size * 2.6f, BlurMaskFilter.Blur.NORMAL)

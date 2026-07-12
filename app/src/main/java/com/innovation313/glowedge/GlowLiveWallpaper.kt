@@ -158,7 +158,7 @@ class GlowLiveWallpaper : WallpaperService() {
             phase += 0.55f            // flowing gradient rotation
 
             drawField(canvas, w, h, c2)
-            drawSparkles(canvas, w, h, c1, c2, t)
+            drawSparkles(canvas, w, h, c1, c2, t, theme.rainbow)
             drawFlowingEdge(canvas, w, h, theme, c1, c2, t)
             drawBatteryRing(canvas, w, h, theme, t)
             drawNowPlaying(canvas, w, h, theme, t)
@@ -230,7 +230,7 @@ class GlowLiveWallpaper : WallpaperService() {
          * makes the wallpaper feel alive. Each sparkle rises slowly, sways, and pulses
          * its brightness on its own rhythm, then wraps around at the top.
          */
-        private fun drawSparkles(canvas: Canvas, w: Float, h: Float, c1: Int, c2: Int, t: Float) {
+        private fun drawSparkles(canvas: Canvas, w: Float, h: Float, c1: Int, c2: Int, t: Float, rainbow: Boolean) {
             if (!sparklesReady) return
             val minDim = if (w < h) w else h
             for (i in 0 until SPARKLE_COUNT) {
@@ -246,7 +246,13 @@ class GlowLiveWallpaper : WallpaperService() {
                 val twinkle = 0.35f + 0.65f * (0.5f + 0.5f * sin(t * 2.1f + sPhase[i] * 1.7f))
                 val alpha = (twinkle * 190f).toInt().coerceIn(0, 255)
 
-                val color = if (i % 3 == 0) c2 else c1
+                // In Spectrum mode every sparkle carries its own hue, drifting slowly —
+                // so the field itself shows all colours, not just the theme pair.
+                val color = if (rainbow) {
+                    hsvTmp[0] = ((sPhase[i] * 57.3f) + t * 12f) % 360f
+                    hsvTmp[1] = 0.9f; hsvTmp[2] = 1f
+                    Color.HSVToColor(hsvTmp)
+                } else if (i % 3 == 0) c2 else c1
                 val r = sSize[i] * minDim * 0.0032f
 
                 sparkPaint.color = withAlpha(color, alpha)
@@ -273,11 +279,13 @@ class GlowLiveWallpaper : WallpaperService() {
         private fun drawFlowingEdge(canvas: Canvas, w: Float, h: Float, theme: Profile, c1: Int, c2: Int, t: Float) {
             // Build the flowing colour stops. Each stop shifts hue slightly over time, so
             // colours continuously transition into one another instead of just rotating.
-            val stops = 7
+            // Rainbow needs many stops across the FULL 360° wheel — with too few, whole
+            // colour families never appear on the border at all.
+            val stops = if (theme.rainbow) 13 else 7
             val colors = IntArray(stops)
             if (theme.rainbow) {
                 for (i in 0 until stops) {
-                    val hue = ((i / (stops - 1f)) * 340f + t * 26f) % 360f
+                    val hue = ((i / (stops - 1f)) * 360f + t * 26f) % 360f
                     hsvTmp[0] = hue; hsvTmp[1] = 1f; hsvTmp[2] = 1f
                     colors[i] = Color.HSVToColor(hsvTmp)
                 }
