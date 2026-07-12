@@ -63,7 +63,7 @@
     <string name="feedback_body">My feedback / reason:\n\n\n\n— Please describe what you liked, what to improve, or the problem you faced.</string>
     <string name="developer_name">Innovation-313</string>
     <string name="support_email">innovation313.support@gmail.com</string>
-    <string name="app_version">Version 6.42</string>
+    <string name="app_version">Version 6.43</string>
     <string name="notif_glow">Notification Glow</string>
     <string name="notif_glow_desc">Flash the edges in an app color when a message or notification arrives. Works even without music.</string>
     <string name="notif_glow_need_access">Please allow notification access for GlowEdge to detect calls and messages.</string>
@@ -82,6 +82,9 @@
     <string name="music_only_title">Music Only</string>
     <string name="music_only_desc2">Glow reacts only when music or naat is playing from a media app — not to talking or notification sounds. Needs Notification Access.</string>
     <string name="grant_notif_access">➜ Grant Notification Access</string>
+    <string name="music_status_no_access">● Not connected — grant Notification Access below</string>
+    <string name="music_status_playing">● Music detected right now</string>
+    <string name="music_status_idle">● Connected — waiting for music</string>
     <string name="notif_access_needed">Music Only needs Notification Access to read what\'s playing. Please enable GlowEdge in the list.</string>
     <string name="call_glow_title">Call Glow</string>
     <string name="call_glow_desc">Flash the edge glow when a call comes in — even from rest/screen-off, it wakes the screen so you see the glow. Needs phone-state permission.</string>

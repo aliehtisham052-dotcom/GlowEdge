@@ -601,6 +601,15 @@
                         android:textSize="13sp" />
 
                     <TextView
+                        android:id="@+id/musicStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:textColor="@color/gold"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                    <TextView
                         android:id="@+id/btnMusicNotifAccess"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

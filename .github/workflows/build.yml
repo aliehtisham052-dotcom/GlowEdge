@@ -71,30 +71,27 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.42.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.42.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.43.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.43.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.42.apk
-            GlowEdge-v6.42.aab
+            GlowEdge-v6.43.apk
+            GlowEdge-v6.43.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.42
-          name: GlowEdge v6.42 - Battery styles on all wallpapers
+          tag_name: v6.43
+          name: GlowEdge v6.43 - Fix Music Only detection
           body: |
-            GlowEdge v6.42 - Battery module on every wallpaper, in three designs
-            - The battery module now appears on the STATIC wallpaper too, not just the live one - both share one renderer, so they look identical.
-            - THREE distinct battery designs, selectable in Settings:
-              * Orbit - a ring with tick marks and a bright bead orbiting the filled arc
-              * Segments - a dial split into lit segments like a premium gauge, leading segment pulsing
-              * Capsule - a minimal horizontal capsule that fills, with a travelling shine
-            - Note: the static wallpaper is an image, so it shows the charge at the moment you applied it; the live wallpaper stays current.
+            GlowEdge v6.43 - Fix Music Only
+            - FIXED the real cause: when you grant Notification Access while the app is running, Android does not actually bind our listener until a reboot - so reading what is playing kept failing and Music Only looked broken. We now request a rebind immediately, so it works right away.
+            - Music Only no longer fails silently. If access is missing, it falls back to checking whether the music stream is active, so the glow still responds instead of never lighting up.
+            - Added a live status line under Music Only: it tells you plainly whether we are connected and whether music is being detected right now.
           files: |
-            GlowEdge-v6.42.apk
-            GlowEdge-v6.42.aab
+            GlowEdge-v6.43.apk
+            GlowEdge-v6.43.aab

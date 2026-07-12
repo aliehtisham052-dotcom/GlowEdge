@@ -198,6 +198,10 @@ class MainActivity : AppCompatActivity() {
         }
         updateMainUi()
         findViewById<PreviewView?>(R.id.previewView)?.refresh()
+        // Refresh after returning from the Notification Access screen, and rebind the
+        // listener if access was just granted, so Music Only works without a reboot.
+        updateMusicStatus()
+        notifyService()
     }
 
     override fun onRequestPermissionsResult(
@@ -918,6 +922,8 @@ class MainActivity : AppCompatActivity() {
             openNotificationAccess()
         }
 
+        updateMusicStatus()
+
         buildGlowEdgesButtons()
         buildBatteryStyleButtons()
 
@@ -970,6 +976,29 @@ class MainActivity : AppCompatActivity() {
             }
             container.addView(chip)
         }
+    }
+
+    /**
+     * Shows plainly what the music detector is doing right now, so Music Only isn't a
+     * black box: whether we have Notification Access, and whether music is detected at
+     * this moment. If access was just granted, ask Android to bind our listener — it
+     * otherwise won't connect until a reboot, which makes the feature look broken.
+     */
+    private fun updateMusicStatus() {
+        val status = findViewById<TextView>(R.id.musicStatus) ?: return
+        val hasAccess = MediaPlaybackDetector.hasNotificationAccess(this)
+        if (hasAccess) MediaPlaybackDetector.requestRebind(this)
+
+        val playing = MediaPlaybackDetector.isMusicPlaying(this)
+        status.text = when {
+            !hasAccess -> getString(R.string.music_status_no_access)
+            playing -> getString(R.string.music_status_playing)
+            else -> getString(R.string.music_status_idle)
+        }
+        status.setTextColor(
+            if (!hasAccess) Color.parseColor("#FF8A80")
+            else ContextCompat.getColor(this, R.color.gold)
+        )
     }
 
     /** Segmented selector for the battery module design shown on both wallpapers. */
