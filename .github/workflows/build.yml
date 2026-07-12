@@ -71,27 +71,27 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.39.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.39.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.40.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.40.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.39.apk
-            GlowEdge-v6.39.aab
+            GlowEdge-v6.40.apk
+            GlowEdge-v6.40.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.39
-          name: GlowEdge v6.39 — Edge flush to screen border
+          tag_name: v6.40
+          name: GlowEdge v6.40 — No intro clip
           body: |
-            GlowEdge v6.39 - Wallpaper edge sits flush to the screen border
-            - The wallpaper glow line now traces the TRUE screen edge instead of floating inset from it, with a corner radius matching a modern phone display - a much more elegant look.
-            - Its soft halo is drawn slightly inward so the bloom spreads across the screen instead of being clipped away at the border.
-            - Applies to both the live and static wallpaper.
+            GlowEdge v6.40 - Instant open, no intro clip
+            - Removed the splash intro video entirely - the app now opens straight to the main screen. Also drops the video asset, so the APK is smaller.
+            - Footer now reads "Powered by Innovation-313".
+            - Keeps the flush-to-border wallpaper edge from v6.39.
           files: |
-            GlowEdge-v6.39.apk
-            GlowEdge-v6.39.aab
+            GlowEdge-v6.40.apk
+            GlowEdge-v6.40.aab

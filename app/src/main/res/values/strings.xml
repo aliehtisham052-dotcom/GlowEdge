@@ -54,7 +54,6 @@
     <string name="intensity">Glow Intensity</string>
     <string name="autostart">Auto-start on boot</string>
     <string name="autostart_desc">Start the glow automatically when your phone turns on.</string>
-    <string name="powered_by">POWERED BY INNOVATION-313</string>
     <string name="share_glow">✨ Share Your Glow</string>
     <string name="developer_label">Developer</string>
     <string name="feedback_title">Send Feedback</string>
@@ -64,7 +63,7 @@
     <string name="feedback_body">My feedback / reason:\n\n\n\n— Please describe what you liked, what to improve, or the problem you faced.</string>
     <string name="developer_name">Innovation-313</string>
     <string name="support_email">innovation313.support@gmail.com</string>
-    <string name="app_version">Version 6.39</string>
+    <string name="app_version">Version 6.40</string>
     <string name="notif_glow">Notification Glow</string>
     <string name="notif_glow_desc">Flash the edges in an app color when a message or notification arrives. Works even without music.</string>
     <string name="notif_glow_need_access">Please allow notification access for GlowEdge to detect calls and messages.</string>
@@ -99,5 +98,5 @@
     <string name="copyright_text">© 2026 Ehtisham Ali (Innovation-313). All rights reserved.\n\nGlowEdge, its design and its source code are the intellectual property of Innovation-313. Commercial use, republishing, or claiming authorship without written permission is not allowed.\n\nContact: innovation313.support@gmail.com</string>
     <string name="intro_anim">Startup Animation</string>
     <string name="intro_anim_desc">When the glow turns on, lines sweep in from the corners before settling into your style.</string>
-    <string name="footer">Developed by Innovation-313</string>
+    <string name="footer">Powered by Innovation-313</string>
 </resources>
