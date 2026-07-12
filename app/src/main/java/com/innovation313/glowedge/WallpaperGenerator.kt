@@ -105,34 +105,42 @@ object WallpaperGenerator {
      * whole design — clean, edge-only, nothing in the centre.
      */
     private fun drawEdgeShine(canvas: Canvas, w: Float, h: Float, theme: Profile) {
+        // Multi-stop gradient so the colour reads as flowing from one into the next,
+        // matching the live wallpaper's language even in this still image.
         val colors = if (theme.rainbow) RAINBOW
-                     else intArrayOf(theme.colorStart, theme.colorEnd, theme.colorStart, theme.colorEnd, theme.colorStart)
+                     else intArrayOf(
+                         theme.colorStart,
+                         mix(theme.colorStart, theme.colorEnd, 0.5f),
+                         theme.colorEnd,
+                         mix(theme.colorEnd, theme.colorStart, 0.5f),
+                         theme.colorStart
+                     )
 
-        val thickness = w * 0.018f
-        val inset = thickness * 1.6f
+        val slim = w * 0.0075f          // slim core line, matching the live wallpaper
+        val inset = w * 0.030f
         val rect = RectF(inset, inset, w - inset, h - inset)
-        val corner = w * 0.11f
+        val corner = w * 0.105f
 
         val paint = Paint(Paint.ANTI_ALIAS_FLAG)
         paint.style = Paint.Style.STROKE
         paint.strokeCap = Paint.Cap.ROUND
-
-        // Wide, very soft outer bloom.
         paint.shader = android.graphics.SweepGradient(w / 2f, h / 2f, colors, null)
-        paint.strokeWidth = thickness * 2.4f
-        paint.maskFilter = BlurMaskFilter(w * 0.06f, BlurMaskFilter.Blur.NORMAL)
-        paint.alpha = 150
+
+        // Wide soft halo — the glow, without thickening the line itself.
+        paint.strokeWidth = slim * 5.5f
+        paint.maskFilter = BlurMaskFilter(w * 0.045f, BlurMaskFilter.Blur.NORMAL)
+        paint.alpha = 110
         canvas.drawRoundRect(rect, corner, corner, paint)
 
-        // Mid glow.
-        paint.strokeWidth = thickness
-        paint.maskFilter = BlurMaskFilter(thickness * 1.4f, BlurMaskFilter.Blur.NORMAL)
-        paint.alpha = 235
+        // Tighter glow.
+        paint.strokeWidth = slim * 2.2f
+        paint.maskFilter = BlurMaskFilter(slim * 2.4f, BlurMaskFilter.Blur.NORMAL)
+        paint.alpha = 200
         canvas.drawRoundRect(rect, corner, corner, paint)
 
-        // Crisp thin inner line.
+        // The slim, crisp core line.
         paint.maskFilter = null
-        paint.strokeWidth = thickness * 0.28f
+        paint.strokeWidth = slim
         paint.alpha = 255
         canvas.drawRoundRect(rect, corner, corner, paint)
     }

@@ -71,28 +71,28 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.36.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.36.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.37.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.37.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.36.apk
-            GlowEdge-v6.36.aab
+            GlowEdge-v6.37.apk
+            GlowEdge-v6.37.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.36
-          name: GlowEdge v6.36 — Animated sparkling wallpaper
+          tag_name: v6.37
+          name: GlowEdge v6.37 — Slim smart flowing edge
           body: |
-            GlowEdge v6.36 - Animated sparkling live wallpaper
-            - The live wallpaper is now genuinely ANIMATED: the edge glow flows and breathes, and drifting sparkles rise and twinkle across the screen in your theme colours - a unique pattern, not a still image. Runs at 30fps only while visible and stops completely when hidden, so it stays battery-friendly.
-            - Upgraded battery ring: tick marks around the dial, a glowing progress arc, a travelling bright highlight that orbits the filled arc, a status word, and a pulsing bolt while charging.
-            - The static lock-screen wallpaper now carries the same sparkle field (as a still composition), so both share one design language.
-            - NOTE: a static wallpaper is an image and cannot move - the animation lives in the Live Wallpaper.
+            GlowEdge v6.37 - Slim, smart, colour-flowing edge
+            - The edge line is now SLIM and refined: a fine bright core riding on a soft halo, instead of a thick band.
+            - Colours now genuinely FLOW: a multi-stop gradient whose stops drift over time, so each colour melts into the next and that into the next again - a continuously moving phase, never a static rotation.
+            - Added a comet head with a fading trail that travels the edge, picking up whatever colour is flowing at that point.
+            - The static wallpaper edge is slimmed to match, with a multi-stop gradient in the same language.
           files: |
-            GlowEdge-v6.36.apk
-            GlowEdge-v6.36.aab
+            GlowEdge-v6.37.apk
+            GlowEdge-v6.37.aab

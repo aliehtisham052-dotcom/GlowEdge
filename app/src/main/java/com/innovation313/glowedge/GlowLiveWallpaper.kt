@@ -47,11 +47,6 @@ class GlowLiveWallpaper : WallpaperService() {
         private var phase = 0f            // drives the flowing edge gradient
         private var startTime = SystemClock.elapsedRealtime()
 
-        private val RAINBOW = intArrayOf(
-            Color.parseColor("#FF3B5C"), Color.parseColor("#FFD93B"), Color.parseColor("#3BE885"),
-            Color.parseColor("#3BD4FF"), Color.parseColor("#B93BFF"), Color.parseColor("#FF3B5C")
-        )
-
         // ---- Sparkles: soft points of light drifting upward and twinkling ----
         private val SPARKLE_COUNT = 46
         private val sx = FloatArray(SPARKLE_COUNT)      // 0..1 across width
@@ -62,10 +57,15 @@ class GlowLiveWallpaper : WallpaperService() {
         private val sDrift = FloatArray(SPARKLE_COUNT)  // gentle sideways sway
         private var sparklesReady = false
 
-        // Reused paints — never allocate inside the frame loop.
+        // Reused paints and objects — never allocate inside the frame loop.
         private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
         private val sparkPaint = Paint(Paint.ANTI_ALIAS_FLAG)
         private val rect = RectF()
+        private val hsvTmp = FloatArray(3)
+        private val edgeMatrix = android.graphics.Matrix()
+        private val edgePath = android.graphics.Path()
+        private val pathMeasure = android.graphics.PathMeasure()
+        private val posTmp = FloatArray(2)
 
         private val frameRunnable = Runnable { draw() }
 
@@ -214,21 +214,45 @@ class GlowLiveWallpaper : WallpaperService() {
         }
 
         /**
-         * The signature edge glow, now flowing: a sweep gradient that rotates continuously
-         * around the screen border, with a soft bloom, a mid glow and a crisp inner line,
-         * plus a bright "comet" head that travels the perimeter.
+         * The signature edge: a SLIM, smart line whose colours flow and morph continuously.
+         *
+         * Rather than a fixed two-colour sweep, we build a multi-stop gradient whose stops
+         * are themselves drifting through the theme's hue range over time — so the colour
+         * you see at any point on the edge melts into the next, and that into the next
+         * again, in a never-repeating flowing phase. A slim bright core rides on a soft
+         * halo, with a small comet head travelling the perimeter for life.
          */
         private fun drawFlowingEdge(canvas: Canvas, w: Float, h: Float, theme: Profile, c1: Int, c2: Int, t: Float) {
-            val colors = if (theme.rainbow) RAINBOW else intArrayOf(c1, c2, c1, c2, c1)
-            val thickness = w * 0.018f
-            val inset = thickness * 1.6f
+            // Build the flowing colour stops. Each stop shifts hue slightly over time, so
+            // colours continuously transition into one another instead of just rotating.
+            val stops = 7
+            val colors = IntArray(stops)
+            if (theme.rainbow) {
+                for (i in 0 until stops) {
+                    val hue = ((i / (stops - 1f)) * 340f + t * 26f) % 360f
+                    hsvTmp[0] = hue; hsvTmp[1] = 1f; hsvTmp[2] = 1f
+                    colors[i] = Color.HSVToColor(hsvTmp)
+                }
+            } else {
+                // Morph between the theme's two colours, and let the blend point itself
+                // travel — so the pair keeps re-mixing rather than sitting static.
+                for (i in 0 until stops) {
+                    val base = i / (stops - 1f)
+                    val wave = 0.5f + 0.5f * sin(t * 0.9f + base * 6.283f)
+                    colors[i] = mix(c1, c2, wave)
+                }
+            }
+            // Close the loop so there is no seam where the gradient wraps.
+            colors[stops - 1] = colors[0]
+
+            val slim = w * 0.0075f                 // the slim core line
+            val inset = w * 0.030f
             rect.set(inset, inset, w - inset, h - inset)
-            val corner = w * 0.11f
+            val corner = w * 0.105f
 
             val sweep = SweepGradient(w / 2f, h / 2f, colors, null)
-            val m = android.graphics.Matrix()
-            m.setRotate(phase, w / 2f, h / 2f)
-            sweep.setLocalMatrix(m)
+            edgeMatrix.setRotate(phase, w / 2f, h / 2f)
+            sweep.setLocalMatrix(edgeMatrix)
 
             paint.reset()
             paint.isAntiAlias = true
@@ -236,25 +260,64 @@ class GlowLiveWallpaper : WallpaperService() {
             paint.strokeCap = Paint.Cap.ROUND
             paint.shader = sweep
 
-            // Breathing intensity so the glow gently pulses
-            val breathe = 0.85f + 0.15f * sin(t * 1.1f)
+            val breathe = 0.88f + 0.12f * sin(t * 1.1f)
 
-            paint.strokeWidth = thickness * 2.4f * breathe
-            paint.maskFilter = BlurMaskFilter(w * 0.06f, BlurMaskFilter.Blur.NORMAL)
-            paint.alpha = (150 * breathe).toInt().coerceIn(0, 255)
+            // 1) Wide, very soft halo — gives the slim line its glow without thickening it.
+            paint.strokeWidth = slim * 5.5f * breathe
+            paint.maskFilter = BlurMaskFilter(w * 0.045f, BlurMaskFilter.Blur.NORMAL)
+            paint.alpha = (110 * breathe).toInt().coerceIn(0, 255)
             canvas.drawRoundRect(rect, corner, corner, paint)
 
-            paint.strokeWidth = thickness * breathe
-            paint.maskFilter = BlurMaskFilter(thickness * 1.4f, BlurMaskFilter.Blur.NORMAL)
-            paint.alpha = 235
+            // 2) Tighter glow, still soft.
+            paint.strokeWidth = slim * 2.2f
+            paint.maskFilter = BlurMaskFilter(slim * 2.4f, BlurMaskFilter.Blur.NORMAL)
+            paint.alpha = 200
             canvas.drawRoundRect(rect, corner, corner, paint)
 
+            // 3) The slim, crisp core line — this is the "smart" edge itself.
             paint.maskFilter = null
-            paint.strokeWidth = thickness * 0.28f
+            paint.strokeWidth = slim
             paint.alpha = 255
             canvas.drawRoundRect(rect, corner, corner, paint)
 
             paint.shader = null
+            paint.maskFilter = null
+
+            // 4) A small comet head travelling the perimeter — gives the slim line a sense
+            // of direction and life, picking up whatever colour is flowing at that point.
+            drawCometHead(canvas, rect, corner, colors, slim, t)
+        }
+
+        /** A bright bead that runs along the rounded-rect edge path, trailing a soft glow. */
+        private fun drawCometHead(
+            canvas: Canvas, r: RectF, corner: Float, colors: IntArray, slim: Float, t: Float
+        ) {
+            edgePath.reset()
+            edgePath.addRoundRect(r, corner, corner, android.graphics.Path.Direction.CW)
+            pathMeasure.setPath(edgePath, false)
+            val len = pathMeasure.length
+            if (len <= 0f) return
+
+            val headColor = colors[((t * 1.4f).toInt()) % colors.size]
+
+            // Head plus a few trailing beads that fade behind it.
+            for (k in 0 until 6) {
+                val d = ((t * 0.16f - k * 0.012f) % 1f + 1f) % 1f * len
+                if (!pathMeasure.getPosTan(d, posTmp, null)) continue
+                val fade = 1f - k / 6f
+                val rad = slim * (1.9f - k * 0.22f).coerceAtLeast(0.4f)
+
+                paint.style = Paint.Style.FILL
+                paint.color = withAlpha(headColor, (220 * fade * fade).toInt())
+                paint.maskFilter = BlurMaskFilter(slim * 3.2f, BlurMaskFilter.Blur.NORMAL)
+                canvas.drawCircle(posTmp[0], posTmp[1], rad * 1.6f, paint)
+
+                if (k == 0) {
+                    paint.maskFilter = null
+                    paint.color = withAlpha(mix(headColor, Color.WHITE, 0.8f), 245)
+                    canvas.drawCircle(posTmp[0], posTmp[1], rad * 0.55f, paint)
+                }
+            }
             paint.maskFilter = null
         }
 
