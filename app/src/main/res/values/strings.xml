@@ -55,7 +55,7 @@
     <string name="autostart">Auto-start on boot</string>
     <string name="autostart_desc">Start the glow automatically when your phone turns on.</string>
     <string name="share_glow">✨ Share Your Glow</string>
-    <string name="developer_label">Developer</string>
+    <string name="developer_label">Powered by</string>
     <string name="feedback_title">Send Feedback</string>
     <string name="feedback_desc">Tell us what to improve, or report a problem — your reason helps make GlowEdge better.</string>
     <string name="feedback_button">✉ Send Feedback</string>
@@ -63,7 +63,7 @@
     <string name="feedback_body">My feedback / reason:\n\n\n\n— Please describe what you liked, what to improve, or the problem you faced.</string>
     <string name="developer_name">Innovation-313</string>
     <string name="support_email">innovation313.support@gmail.com</string>
-    <string name="app_version">Version 6.40</string>
+    <string name="app_version">Version 6.41</string>
     <string name="notif_glow">Notification Glow</string>
     <string name="notif_glow_desc">Flash the edges in an app color when a message or notification arrives. Works even without music.</string>
     <string name="notif_glow_need_access">Please allow notification access for GlowEdge to detect calls and messages.</string>

@@ -71,27 +71,27 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.40.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.40.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.41.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.41.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.40.apk
-            GlowEdge-v6.40.aab
+            GlowEdge-v6.41.apk
+            GlowEdge-v6.41.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.40
-          name: GlowEdge v6.40 — No intro clip
+          tag_name: v6.41
+          name: GlowEdge v6.41 — Powered by Innovation-313
           body: |
-            GlowEdge v6.40 - Instant open, no intro clip
-            - Removed the splash intro video entirely - the app now opens straight to the main screen. Also drops the video asset, so the APK is smaller.
-            - Footer now reads "Powered by Innovation-313".
-            - Keeps the flush-to-border wallpaper edge from v6.39.
+            GlowEdge v6.41 - Powered by Innovation-313
+            - The About tab now reads "Powered by Innovation-313" instead of "Developer", and the footer matches.
+            - Intro splash video removed - the app opens straight to the main screen (smaller APK too).
+            - Keeps the flush-to-border wallpaper edge.
           files: |
-            GlowEdge-v6.40.apk
-            GlowEdge-v6.40.aab
+            GlowEdge-v6.41.apk
+            GlowEdge-v6.41.aab
