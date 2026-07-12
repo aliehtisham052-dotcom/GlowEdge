@@ -86,6 +86,9 @@ class VisualizerService : Service() {
     private var visualizer: Visualizer? = null
 
 
+    /** Not a bound service — nothing binds to us. */
+    override fun onBind(intent: Intent?): IBinder? = null
+
     override fun onCreate() {
         super.onCreate()
         isRunning = true
