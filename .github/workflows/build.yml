@@ -71,26 +71,25 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.50.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.50.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.51.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.51.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.50.apk
-            GlowEdge-v6.50.aab
+            GlowEdge-v6.51.apk
+            GlowEdge-v6.51.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.50
-          name: GlowEdge v6.50 - Fix Test Glow
+          tag_name: v6.51
+          name: GlowEdge v6.51 - Fix Charging/Call flash from screen-off
           body: |
-            GlowEdge v6.50 - Fix Test Glow
-            - FIXED: Test Glow could appear dead. When the glow had been silent, the overlay view fades to alpha 0 - and some phone ROMs skip drawing an alpha-0 view entirely, so the code that would have woken it back up (inside the draw pass) never ran. The test now restores the view's visibility itself before asking for a frame, guaranteeing it renders.
-            - The test also applies your current style/theme first on a cold start, so it always shows the look you actually have selected.
+            GlowEdge v6.51 - Charging and Call flash now visible from screen-off
+            - FIXED: the same ROM quirk that broke Test Glow also hit Charging Glow and Call Glow. From screen-off the overlay sits faded at alpha 0, and some ROMs skip drawing an alpha-0 view entirely - so the flash fired invisibly even though the wake lock lit the screen. Both flash triggers now restore the view visibility themselves before requesting a frame.
           files: |
-            GlowEdge-v6.50.apk
-            GlowEdge-v6.50.aab
+            GlowEdge-v6.51.apk
+            GlowEdge-v6.51.aab

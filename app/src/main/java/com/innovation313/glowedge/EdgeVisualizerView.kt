@@ -154,6 +154,11 @@ class EdgeVisualizerView(context: Context) : View(context) {
         flashStart = SystemClock.elapsedRealtime()
         flashUntil = flashStart + 2600L
         lastActiveTime = SystemClock.elapsedRealtime()
+        // Same ROM quirk as Test Glow: after silence (e.g. screen off) the view sits at
+        // alpha 0, and some ROMs skip the draw pass for alpha-0 views entirely — so the
+        // flash fired invisibly. Restore visibility here, before asking for a frame.
+        alpha = 1f
+        invalidate()
         postInvalidate()
     }
 
@@ -163,6 +168,8 @@ class EdgeVisualizerView(context: Context) : View(context) {
         flashStart = SystemClock.elapsedRealtime()
         flashUntil = flashStart + 8000L
         lastActiveTime = SystemClock.elapsedRealtime()
+        alpha = 1f          // see note in triggerNotificationFlash
+        invalidate()
         postInvalidate()
     }
 
