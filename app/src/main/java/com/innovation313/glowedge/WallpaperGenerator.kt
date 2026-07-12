@@ -117,28 +117,34 @@ object WallpaperGenerator {
                      )
 
         val slim = w * 0.0042f          // fine core line, matching the live wallpaper
-        val inset = w * 0.030f
+        // Flush against the true screen border, inset only by half the stroke width so the
+        // line isn't clipped. Corner radius traces a modern phone's rounded display.
+        val inset = slim * 0.5f
         val rect = RectF(inset, inset, w - inset, h - inset)
-        val corner = w * 0.105f
+        val corner = (if (w < h) w else h) * 0.085f
 
         val paint = Paint(Paint.ANTI_ALIAS_FLAG)
         paint.style = Paint.Style.STROKE
         paint.strokeCap = Paint.Cap.ROUND
         paint.shader = android.graphics.SweepGradient(w / 2f, h / 2f, colors, null)
 
-        // Wide soft halo — the glow, without thickening the line itself.
+        // Wide soft halo, drawn on a slightly inset rect so the bloom spreads inward across
+        // the screen rather than being clipped at the border.
+        val haloInset = w * 0.016f
+        val haloRect = RectF(haloInset, haloInset, w - haloInset, h - haloInset)
+        val haloCorner = corner - (haloInset * 0.5f)
         paint.strokeWidth = slim * 6.5f
-        paint.maskFilter = BlurMaskFilter(w * 0.045f, BlurMaskFilter.Blur.NORMAL)
-        paint.alpha = 110
-        canvas.drawRoundRect(rect, corner, corner, paint)
+        paint.maskFilter = BlurMaskFilter(w * 0.040f, BlurMaskFilter.Blur.NORMAL)
+        paint.alpha = 120
+        canvas.drawRoundRect(haloRect, haloCorner, haloCorner, paint)
 
-        // Tighter glow.
+        // Tighter glow hugging the core line at the edge.
         paint.strokeWidth = slim * 2.4f
-        paint.maskFilter = BlurMaskFilter(slim * 2.4f, BlurMaskFilter.Blur.NORMAL)
-        paint.alpha = 200
+        paint.maskFilter = BlurMaskFilter(slim * 2.6f, BlurMaskFilter.Blur.NORMAL)
+        paint.alpha = 205
         canvas.drawRoundRect(rect, corner, corner, paint)
 
-        // The slim, crisp core line.
+        // The slim, crisp core line — flush against the true screen border.
         paint.maskFilter = null
         paint.strokeWidth = slim
         paint.alpha = 255

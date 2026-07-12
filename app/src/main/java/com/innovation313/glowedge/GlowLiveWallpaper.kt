@@ -61,6 +61,7 @@ class GlowLiveWallpaper : WallpaperService() {
         private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
         private val sparkPaint = Paint(Paint.ANTI_ALIAS_FLAG)
         private val rect = RectF()
+        private val haloRect = RectF()
         private val hsvTmp = FloatArray(3)
         private val edgeMatrix = android.graphics.Matrix()
         private val edgePath = android.graphics.Path()
@@ -246,9 +247,12 @@ class GlowLiveWallpaper : WallpaperService() {
             colors[stops - 1] = colors[0]
 
             val slim = w * 0.0042f                 // a fine, refined core line
-            val inset = w * 0.030f
+            // Sit flush against the true screen border — inset only by half the line's own
+            // width so the stroke isn't clipped. Corner radius matches a modern phone's
+            // rounded display, so the glow traces the actual edge of the screen.
+            val inset = slim * 0.5f
             rect.set(inset, inset, w - inset, h - inset)
-            val corner = w * 0.105f
+            val corner = (if (w < h) w else h) * 0.085f
 
             val sweep = SweepGradient(w / 2f, h / 2f, colors, null)
             edgeMatrix.setRotate(phase, w / 2f, h / 2f)
@@ -262,19 +266,24 @@ class GlowLiveWallpaper : WallpaperService() {
 
             val breathe = 0.88f + 0.12f * sin(t * 1.1f)
 
-            // 1) Wide, very soft halo — gives the slim line its glow without thickening it.
+            // 1) Wide, very soft halo. Drawn on a slightly INSET rect so the bloom spreads
+            // inward across the screen instead of being clipped away at the border — the
+            // core line still sits flush at the very edge.
+            val haloInset = w * 0.016f
+            haloRect.set(haloInset, haloInset, w - haloInset, h - haloInset)
+            val haloCorner = corner - (haloInset * 0.5f)
             paint.strokeWidth = slim * 6.5f * breathe
-            paint.maskFilter = BlurMaskFilter(w * 0.045f, BlurMaskFilter.Blur.NORMAL)
-            paint.alpha = (110 * breathe).toInt().coerceIn(0, 255)
-            canvas.drawRoundRect(rect, corner, corner, paint)
+            paint.maskFilter = BlurMaskFilter(w * 0.040f, BlurMaskFilter.Blur.NORMAL)
+            paint.alpha = (120 * breathe).toInt().coerceIn(0, 255)
+            canvas.drawRoundRect(haloRect, haloCorner, haloCorner, paint)
 
-            // 2) Tighter glow, still soft.
+            // 2) Tighter glow, hugging the core line at the edge.
             paint.strokeWidth = slim * 2.4f
-            paint.maskFilter = BlurMaskFilter(slim * 2.4f, BlurMaskFilter.Blur.NORMAL)
-            paint.alpha = 200
+            paint.maskFilter = BlurMaskFilter(slim * 2.6f, BlurMaskFilter.Blur.NORMAL)
+            paint.alpha = 205
             canvas.drawRoundRect(rect, corner, corner, paint)
 
-            // 3) The slim, crisp core line — this is the "smart" edge itself.
+            // 3) The slim, crisp core line — flush against the true screen border.
             paint.maskFilter = null
             paint.strokeWidth = slim
             paint.alpha = 255
