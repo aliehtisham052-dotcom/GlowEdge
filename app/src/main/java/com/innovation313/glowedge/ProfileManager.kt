@@ -181,7 +181,7 @@ object ProfileManager {
         prefs(context).getInt(KEY_GLOW_EDGES, 0).coerceIn(0, 2)
 
 
-    // Which battery module design the wallpapers show: 0 = Orbit, 1 = Segments, 2 = Capsule
+    // Which battery module design the wallpapers show: 0 = Orbit, 1 = Segments
     fun setBatteryStyle(context: Context, style: Int) =
         prefs(context).edit().putInt(KEY_BATTERY_STYLE, style).apply()
 

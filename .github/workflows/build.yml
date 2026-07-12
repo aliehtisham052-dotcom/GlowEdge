@@ -71,26 +71,26 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.53.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.53.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.54.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.54.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.53.apk
-            GlowEdge-v6.53.aab
+            GlowEdge-v6.54.apk
+            GlowEdge-v6.54.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.53
-          name: GlowEdge v6.53 - Consistent music detection
+          tag_name: v6.54
+          name: GlowEdge v6.54 - Remove Capsule battery style
           body: |
-            GlowEdge v6.53 - Music Only now consistent across all players
-            - FIXED: the glow felt random - the same naat glowed in YouTube but not on WhatsApp. Cause: with Notification Access granted, detection relied ONLY on MediaSession, and plenty of real playback never publishes one (WhatsApp voice notes and forwarded clips, status videos, some browsers and in-app players).
-            - Detection now checks the music stream as well when no session is playing, so ANY media the phone actually plays lights the glow - while room conversation, notification pings and ringtones still stay excluded (they do not use the music stream).
+            GlowEdge v6.54 - Battery styles refined to two
+            - Removed the Capsule battery style: its percentage and temperature sat below the bar and hung awkwardly. The two dial styles remain - Orbit and Segments - both with the number, status word and temperature cleanly centred.
+            - Anyone who had Capsule selected is automatically moved to Segments.
           files: |
-            GlowEdge-v6.53.apk
-            GlowEdge-v6.53.aab
+            GlowEdge-v6.54.apk
+            GlowEdge-v6.54.aab

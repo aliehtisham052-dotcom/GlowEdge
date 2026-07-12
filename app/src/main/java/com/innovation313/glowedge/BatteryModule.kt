@@ -23,10 +23,9 @@ object BatteryModule {
 
     const val STYLE_ORBIT = 0
     const val STYLE_SEGMENTS = 1
-    const val STYLE_CAPSULE = 2
-    const val STYLE_COUNT = 3
+    const val STYLE_COUNT = 2
 
-    val styleNames = listOf("Orbit", "Segments", "Capsule")
+    val styleNames = listOf("Orbit", "Segments")
 
     /**
      * @param t seconds since start — drives the animated parts. Pass a fixed value (e.g. 0f)
@@ -43,10 +42,9 @@ object BatteryModule {
         }
         when (style) {
             STYLE_SEGMENTS -> drawSegments(canvas, w, h, theme, level, charging, color, t)
-            STYLE_CAPSULE -> drawCapsule(canvas, w, h, theme, level, charging, color, t)
             else -> drawOrbit(canvas, w, h, theme, level, charging, color, t)
         }
-        drawTemperature(canvas, w, h, tempC, style)
+        drawTemperature(canvas, w, h, tempC)
     }
 
     /**
@@ -57,11 +55,10 @@ object BatteryModule {
      * Turns amber above 40C and red above 45C, which is when heat actually starts hurting
      * the cell. Skipped entirely if the device didn't report a temperature.
      */
-    private fun drawTemperature(canvas: Canvas, w: Float, h: Float, tempC: Float, style: Int) {
+    private fun drawTemperature(canvas: Canvas, w: Float, h: Float, tempC: Float) {
         if (tempC <= 0f) return
         val cy = h * 0.60f
-        // Capsule already puts its number below the bar, so push the temp a little lower.
-        val y = if (style == STYLE_CAPSULE) cy + w * 0.175f else cy + w * 0.125f
+        val y = cy + w * 0.125f
 
         val color = when {
             tempC >= 45f -> Color.parseColor("#FF5252")
@@ -195,91 +192,6 @@ object BatteryModule {
         }
         paint.maskFilter = null
         drawCentreText(canvas, cx, cy, w, level, charging, color, theme, t)
-    }
-
-    // -------------------------------------------------------------- CAPSULE
-
-    /**
-     * A minimal horizontal capsule that fills with the charge, with a soft travelling
-     * shine sweeping across the filled part. The number sits beside it, not inside.
-     */
-    private fun drawCapsule(
-        canvas: Canvas, w: Float, h: Float, theme: Profile,
-        level: Int, charging: Boolean, color: Int, t: Float
-    ) {
-        val capW = w * 0.46f
-        val capH = w * 0.115f
-        val cx = w * 0.5f
-        val cy = h * 0.60f
-        val left = cx - capW / 2f
-        val top = cy - capH / 2f
-        val outer = RectF(left, top, left + capW, top + capH)
-        val radius = capH / 2f
-
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-
-        // Shell
-        paint.style = Paint.Style.STROKE
-        paint.strokeWidth = w * 0.005f
-        paint.color = withAlpha(Color.WHITE, 55)
-        canvas.drawRoundRect(outer, radius, radius, paint)
-
-        // Fill
-        val pad = w * 0.010f
-        val innerW = (capW - pad * 2f) * (level / 100f)
-        if (innerW > 1f) {
-            val fill = RectF(left + pad, top + pad, left + pad + innerW, top + capH - pad)
-            val fr = (capH - pad * 2f) / 2f
-
-            paint.style = Paint.Style.FILL
-            paint.color = color
-            paint.maskFilter = BlurMaskFilter(w * 0.02f, BlurMaskFilter.Blur.NORMAL)
-            paint.alpha = 170
-            canvas.drawRoundRect(fill, fr, fr, paint)
-
-            paint.maskFilter = null
-            paint.alpha = 255
-            canvas.drawRoundRect(fill, fr, fr, paint)
-
-            // Travelling shine across the filled part
-            canvas.save()
-            canvas.clipRect(fill)
-            val shineX = fill.left + ((t * 0.28f) % 1f) * (fill.width() + w * 0.12f) - w * 0.06f
-            paint.color = withAlpha(Color.WHITE, 90)
-            paint.maskFilter = BlurMaskFilter(w * 0.022f, BlurMaskFilter.Blur.NORMAL)
-            canvas.drawRoundRect(
-                RectF(shineX, fill.top, shineX + w * 0.035f, fill.bottom), fr, fr, paint
-            )
-            canvas.restore()
-            paint.maskFilter = null
-        }
-
-        // Nub on the right, like a battery terminal
-        paint.style = Paint.Style.FILL
-        paint.color = withAlpha(Color.WHITE, 55)
-        val nubH = capH * 0.38f
-        canvas.drawRoundRect(
-            RectF(left + capW + w * 0.006f, cy - nubH / 2f,
-                  left + capW + w * 0.020f, cy + nubH / 2f),
-            w * 0.006f, w * 0.006f, paint
-        )
-
-        // Number below the capsule
-        paint.textAlign = Paint.Align.CENTER
-        paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
-        paint.textSize = w * 0.085f
-        paint.color = Color.WHITE
-        paint.setShadowLayer(w * 0.018f, 0f, 0f, withAlpha(color, 140))
-        canvas.drawText("$level%", cx, cy + capH * 1.30f + w * 0.055f, paint)
-        paint.clearShadowLayer()
-
-        if (charging) {
-            val pulse = 0.55f + 0.45f * (0.5f + 0.5f * sin(t * 3.0f))
-            paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL)
-            paint.textSize = w * 0.050f
-            paint.color = withAlpha(theme.colorEnd, (255 * pulse).toInt().coerceIn(0, 255))
-            canvas.drawText("\u26A1", cx, cy - capH * 1.05f, paint)
-        }
     }
 
     // --------------------------------------------------------------- shared
