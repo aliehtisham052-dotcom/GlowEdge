@@ -52,13 +52,14 @@ object WallpaperGenerator {
      */
     fun generateWithBattery(
         theme: Profile, width: Int, height: Int,
-        level: Int, charging: Boolean, batteryStyle: Int, aurora: Boolean = false
+        level: Int, charging: Boolean, batteryStyle: Int, aurora: Boolean = false,
+        tempC: Float = -1f
     ): Bitmap {
         val bmp = generate(theme, width, height, aurora = aurora)
         val canvas = Canvas(bmp)
         BatteryModule.draw(
             canvas, bmp.width.toFloat(), bmp.height.toFloat(),
-            theme, level, charging, batteryStyle, 0f   // t=0: a still frame of the live design
+            theme, level, charging, batteryStyle, 0f, tempC   // t=0: a still frame
         )
         return bmp
     }

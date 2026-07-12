@@ -64,13 +64,11 @@ object ProfileManager {
     private const val KEY_SENSITIVITY = "music_sensitivity"
     private const val KEY_ONBOARDED = "onboarded"
     private const val KEY_GLOW_EDGES = "glow_edges"
-    private const val KEY_CALL_GLOW = "call_glow"
     private const val KEY_BATTERY_STYLE = "battery_style"
     private const val KEY_NOW_PLAYING = "now_playing"
     private const val KEY_QUIET_HOURS = "quiet_hours"
     private const val KEY_QUIET_START = "quiet_start"   // minutes from midnight
     private const val KEY_QUIET_END = "quiet_end"
-    private const val KEY_CHARGING_GLOW = "charging_glow"
     private const val KEY_WALLPAPER_GLOW = "wallpaper_glow_style"
 
     val themes = listOf(
@@ -182,11 +180,6 @@ object ProfileManager {
     fun glowEdges(context: Context): Int =
         prefs(context).getInt(KEY_GLOW_EDGES, 0).coerceIn(0, 2)
 
-    fun setCallGlow(context: Context, on: Boolean) =
-        prefs(context).edit().putBoolean(KEY_CALL_GLOW, on).apply()
-
-    fun callGlow(context: Context): Boolean =
-        prefs(context).getBoolean(KEY_CALL_GLOW, false)
 
     // Which battery module design the wallpapers show: 0 = Orbit, 1 = Segments, 2 = Capsule
     fun setBatteryStyle(context: Context, style: Int) =
@@ -203,12 +196,6 @@ object ProfileManager {
     fun nowPlayingEnabled(context: Context): Boolean =
         prefs(context).getBoolean(KEY_NOW_PLAYING, false)
 
-    // ---- Charging Glow: flash the glow when the charger is plugged in ----
-    fun setChargingGlow(context: Context, on: Boolean) =
-        prefs(context).edit().putBoolean(KEY_CHARGING_GLOW, on).apply()
-
-    fun chargingGlow(context: Context): Boolean =
-        prefs(context).getBoolean(KEY_CHARGING_GLOW, false)
 
     // Wallpaper edge look: 0 = Slim (fine refined line), 1 = Aurora (bold flowing bloom)
     fun setWallpaperGlow(context: Context, style: Int) =

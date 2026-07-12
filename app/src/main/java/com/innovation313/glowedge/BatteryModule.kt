@@ -34,7 +34,7 @@ object BatteryModule {
      */
     fun draw(
         canvas: Canvas, w: Float, h: Float, theme: Profile,
-        level: Int, charging: Boolean, style: Int, t: Float
+        level: Int, charging: Boolean, style: Int, t: Float, tempC: Float = -1f
     ) {
         val color = when {
             charging -> theme.colorEnd
@@ -46,6 +46,35 @@ object BatteryModule {
             STYLE_CAPSULE -> drawCapsule(canvas, w, h, theme, level, charging, color, t)
             else -> drawOrbit(canvas, w, h, theme, level, charging, color, t)
         }
+        drawTemperature(canvas, w, h, tempC, style)
+    }
+
+    /**
+     * Battery temperature, in a small line under the module. This is real battery info the
+     * phone does not surface anywhere on the lock screen — unlike signal or WiFi, which the
+     * status bar already shows, so it adds something instead of duplicating it.
+     *
+     * Turns amber above 40C and red above 45C, which is when heat actually starts hurting
+     * the cell. Skipped entirely if the device didn't report a temperature.
+     */
+    private fun drawTemperature(canvas: Canvas, w: Float, h: Float, tempC: Float, style: Int) {
+        if (tempC <= 0f) return
+        val cy = h * 0.60f
+        // Capsule already puts its number below the bar, so push the temp a little lower.
+        val y = if (style == STYLE_CAPSULE) cy + w * 0.175f else cy + w * 0.125f
+
+        val color = when {
+            tempC >= 45f -> Color.parseColor("#FF5252")
+            tempC >= 40f -> Color.parseColor("#FFB300")
+            else -> withAlpha(Color.WHITE, 150)
+        }
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+        paint.textAlign = Paint.Align.CENTER
+        paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL)
+        paint.textSize = w * 0.032f
+        paint.letterSpacing = 0.10f
+        paint.color = color
+        canvas.drawText(String.format("%.0f\u00B0C", tempC), w * 0.5f, y, paint)
     }
 
     // ---------------------------------------------------------------- ORBIT

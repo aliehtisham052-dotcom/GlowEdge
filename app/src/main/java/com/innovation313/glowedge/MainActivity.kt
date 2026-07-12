@@ -49,7 +49,6 @@ class MainActivity : AppCompatActivity() {
         private const val PAGE_AUDIO = 2
         private const val PAGE_NOTIF = 3
         private const val PAGE_MAIN = 4
-        private const val REQ_PHONE_STATE = 20
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -211,21 +210,6 @@ class MainActivity : AppCompatActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQ_PHONE_STATE) {
-            // Phone permission just answered — refresh the service so Call Glow's
-            // listener registers now that permission state may have changed.
-            if (grantResults.isNotEmpty() &&
-                grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                notifyService()
-                Toast.makeText(this, getString(R.string.call_glow_ready), Toast.LENGTH_SHORT).show()
-            } else {
-                // Denied — turn the chip back off so it reflects reality.
-                ProfileManager.setCallGlow(this, false)
-                buildShowOnChips()
-                Toast.makeText(this, getString(R.string.call_glow_denied), Toast.LENGTH_LONG).show()
-            }
-            return
-        }
         goToNextNeededPage()
     }
 
@@ -677,9 +661,13 @@ class MainActivity : AppCompatActivity() {
                 val status = bi?.getIntExtra(android.os.BatteryManager.EXTRA_STATUS, -1) ?: -1
                 val chg = status == android.os.BatteryManager.BATTERY_STATUS_CHARGING ||
                           status == android.os.BatteryManager.BATTERY_STATUS_FULL
+                // EXTRA_TEMPERATURE is in tenths of a degree Celsius.
+                val rawTemp = bi?.getIntExtra(android.os.BatteryManager.EXTRA_TEMPERATURE, -1) ?: -1
+                val tempC = if (rawTemp > 0) rawTemp / 10f else -1f
                 val bmp = WallpaperGenerator.generateWithBattery(
                     theme, dm.widthPixels, dm.heightPixels, pct, chg, bs,
-                    aurora = ProfileManager.wallpaperGlow(this) == 1
+                    aurora = ProfileManager.wallpaperGlow(this) == 1,
+                    tempC = tempC
                 )
                 val wm = WallpaperManager.getInstance(this)
                 // Lock screen only, as requested — a static wallpaper can target just the
@@ -1035,57 +1023,38 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * The unified "Glow shows on" chips: Calls / Charging / Notifications. Each chip is
-     * an independent toggle — gold when active. Handles the permission each one needs
-     * (phone state for calls, Notification Access for notifications) when switched on.
+     * "Glow shows on" — now just Notifications. Calls and Charging were removed: on the
+     * phones this app targets, aggressive battery management kills the background service,
+     * so those flashes fired unreliably and the feature promised more than it delivered.
+     * Notification glow works because the notification listener is already bound.
      */
     private fun buildShowOnChips() {
         val container = findViewById<LinearLayout>(R.id.showOnContainer) ?: return
         container.removeAllViews()
-        data class Chip(val label: String, val isOn: Boolean, val toggle: () -> Unit)
-        val chips = listOf(
-            Chip(getString(R.string.show_on_calls), ProfileManager.callGlow(this)) {
-                val turningOn = !ProfileManager.callGlow(this)
-                if (turningOn && ContextCompat.checkSelfPermission(
-                        this, android.Manifest.permission.READ_PHONE_STATE
-                    ) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                    androidx.core.app.ActivityCompat.requestPermissions(
-                        this, arrayOf(android.Manifest.permission.READ_PHONE_STATE), REQ_PHONE_STATE
-                    )
-                }
-                ProfileManager.setCallGlow(this, turningOn)
-            },
-            Chip(getString(R.string.show_on_charging), ProfileManager.chargingGlow(this)) {
-                ProfileManager.setChargingGlow(this, !ProfileManager.chargingGlow(this))
-            },
-            Chip(getString(R.string.show_on_notifications), prefs.getBoolean("notif_glow", false)) {
-                val turningOn = !prefs.getBoolean("notif_glow", false)
-                prefs.edit().putBoolean("notif_glow", turningOn).apply()
-                if (turningOn && !hasNotificationAccess()) {
-                    Toast.makeText(this, R.string.notif_glow_need_access, Toast.LENGTH_LONG).show()
-                    openNotificationAccess()
-                }
-            }
+        val on = prefs.getBoolean("notif_glow", false)
+
+        val v = TextView(this)
+        v.text = getString(R.string.show_on_notifications)
+        v.textSize = 14f
+        v.gravity = Gravity.CENTER
+        v.setPadding(dp(14), dp(12), dp(14), dp(12))
+        v.layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
         )
-        chips.forEachIndexed { index, chip ->
-            val v = TextView(this)
-            v.text = chip.label
-            v.textSize = 13f
-            v.gravity = Gravity.CENTER
-            v.setPadding(dp(10), dp(12), dp(10), dp(12))
-            val lp = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-            lp.marginEnd = if (index < chips.size - 1) dp(8) else 0
-            v.layoutParams = lp
-            v.setBackgroundResource(R.drawable.bg_card)
-            v.setTextColor(if (chip.isOn) ContextCompat.getColor(this, R.color.gold) else Color.WHITE)
-            v.alpha = if (chip.isOn) 1f else 0.6f
-            v.setOnClickListener {
-                chip.toggle()
-                notifyService()
-                buildShowOnChips()
+        v.setBackgroundResource(R.drawable.bg_card)
+        v.setTextColor(if (on) ContextCompat.getColor(this, R.color.gold) else Color.WHITE)
+        v.alpha = if (on) 1f else 0.6f
+        v.setOnClickListener {
+            val turningOn = !prefs.getBoolean("notif_glow", false)
+            prefs.edit().putBoolean("notif_glow", turningOn).apply()
+            if (turningOn && !hasNotificationAccess()) {
+                Toast.makeText(this, R.string.notif_glow_need_access, Toast.LENGTH_LONG).show()
+                openNotificationAccess()
             }
-            container.addView(v)
+            notifyService()
+            buildShowOnChips()
         }
+        container.addView(v)
     }
 
     /** Segmented selector for which screen edges glow: All / Sides / Top &amp; bottom. */

@@ -49,7 +49,7 @@
     <string name="speed">Animation Speed</string>
 
     <string name="premium_desc">GlowEdge turns your music, naat and melodic audio into a living glow around your screen edges. Completely free — every style and feature unlocked.</string>
-    <string name="premium_features">✦ 13 visualizer styles\n✦ 13 color themes + unlimited Custom Colors (millions of combinations)\n✦ Clean edge-glow lock screen Wallpapers + a live wallpaper with clock, date &amp; battery\n✦ Beat &amp; rhythm sync, loudness-reactive glow\n✦ Glow Trigger: every sound, or music &amp; naat only\n✦ Glow Edges: all edges, sides, or top &amp; bottom\n✦ Charging Glow, Now Playing &amp; Quiet Hours\n✦ Notification Glow\n✦ Thickness, speed &amp; intensity controls\n✦ Battery Saver &amp; Auto-start\n✦ Works with headphones &amp; earbuds\n✦ No ads · No tracking · No internet access</string>
+    <string name="premium_features">✦ 13 visualizer styles\n✦ 13 color themes + unlimited Custom Colors (millions of combinations)\n✦ Clean edge-glow lock screen Wallpapers + a live wallpaper with clock, date &amp; battery\n✦ Beat &amp; rhythm sync, loudness-reactive glow\n✦ Glow Trigger: every sound, or music &amp; naat only\n✦ Glow Edges: all edges, sides, or top &amp; bottom\n✦ Notification Glow, Now Playing &amp; Quiet Hours\n✦ Notification Glow\n✦ Thickness, speed &amp; intensity controls\n✦ Battery Saver &amp; Auto-start\n✦ Works with headphones &amp; earbuds\n✦ No ads · No tracking · No internet access</string>
 
     <string name="intensity">Glow Intensity</string>
     <string name="autostart">Auto-start on boot</string>
@@ -63,7 +63,7 @@
     <string name="feedback_body">My feedback / reason:\n\n\n\n— Please describe what you liked, what to improve, or the problem you faced.</string>
     <string name="developer_name">Innovation-313</string>
     <string name="support_email">innovation313.support@gmail.com</string>
-    <string name="app_version">Version 6.51</string>
+    <string name="app_version">Version 6.52</string>
     <string name="notif_glow_need_access">Please allow notification access for GlowEdge to detect calls and messages.</string>
     <string name="live_preview">Live Preview</string>
     <string name="battery_saver">Battery Saver</string>
@@ -80,9 +80,7 @@
     <string name="quiet_from">From %1$s</string>
     <string name="quiet_to">To %1$s</string>
     <string name="show_on_title">Glow shows on</string>
-    <string name="show_on_desc">Choose which events flash the edge glow. Calls need phone permission; notifications need Notification Access.</string>
-    <string name="show_on_calls">Calls</string>
-    <string name="show_on_charging">Charging</string>
+    <string name="show_on_desc">Flash the edge glow when a notification arrives. Needs Notification Access.</string>
     <string name="show_on_notifications">Notifications</string>
     <string name="presets_header">ONE-TAP PRESETS</string>
     <string name="preset_applied">%1$s applied ✨</string>
@@ -100,8 +98,6 @@
     <string name="music_status_playing">● Music detected right now</string>
     <string name="music_status_idle">● Connected — waiting for music</string>
     <string name="notif_access_needed">Music Only needs Notification Access to read what\'s playing. Please enable GlowEdge in the list.</string>
-    <string name="call_glow_ready">Call Glow is on — incoming calls will flash the glow</string>
-    <string name="call_glow_denied">Call Glow needs phone permission to work. Turned off.</string>
     <string name="about_title">About &amp; Help</string>
     <string name="how_header">HOW THE MENUS WORK</string>
     <string name="how_menus">• Styles tab: Pick how the glow looks. Tap a style card or its Apply button to use it. The Live Preview at the top shows the selected style animating.\n\n• Start / Stop Glow: The gradient button turns the edge glow on or off. When on, the glow appears only while sound is playing.\n\n• Settings tab: Glow Trigger (every sound / music only), Glow Edges (all / sides / top &amp; bottom), detection sensitivity, color theme (incl. Custom Colors picker and quick wallpaper), thickness, animation speed, glow intensity, auto-start, Notification Glow, Battery Saver and startup animation.\n\n• Wallpapers tab: Glow-themed wallpapers matching every color theme.\n\n• About tab: How the app works, features, privacy and copyright.\n\n• Bottom bar: Switch between Styles, Settings, Wallpapers and About.</string>

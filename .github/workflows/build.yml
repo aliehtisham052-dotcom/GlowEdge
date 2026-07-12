@@ -71,25 +71,27 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.51.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.51.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.52.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.52.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.51.apk
-            GlowEdge-v6.51.aab
+            GlowEdge-v6.52.apk
+            GlowEdge-v6.52.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.51
-          name: GlowEdge v6.51 - Fix Charging/Call flash from screen-off
+          tag_name: v6.52
+          name: GlowEdge v6.52 - Battery temperature; Call/Charging Glow removed
           body: |
-            GlowEdge v6.51 - Charging and Call flash now visible from screen-off
-            - FIXED: the same ROM quirk that broke Test Glow also hit Charging Glow and Call Glow. From screen-off the overlay sits faded at alpha 0, and some ROMs skip drawing an alpha-0 view entirely - so the flash fired invisibly even though the wake lock lit the screen. Both flash triggers now restore the view visibility themselves before requesting a frame.
+            GlowEdge v6.52 - Battery temperature, and a deliberate removal
+            - NEW: battery TEMPERATURE now shows under the battery module on both wallpapers. It turns amber above 40C and red above 45C - the point where heat actually starts hurting the cell. This is real battery info the phone does not surface on the lock screen, unlike signal or WiFi which the status bar already shows.
+            - REMOVED: Call Glow and Charging Glow. On the phones this app targets, aggressive battery management kills the background service, so those flashes fired unreliably - the feature promised more than it could deliver. Better to ship fewer things that always work.
+            - As a result the app no longer needs the READ_PHONE_STATE or WAKE_LOCK permissions at all. Two fewer permissions, a smaller privacy surface.
           files: |
-            GlowEdge-v6.51.apk
-            GlowEdge-v6.51.aab
+            GlowEdge-v6.52.apk
+            GlowEdge-v6.52.aab

@@ -122,14 +122,18 @@ class GlowLiveWallpaper : WallpaperService() {
             try { unregisterReceiver(updateReceiver) } catch (_: Exception) {}
         }
 
-        private fun batteryInfo(): Pair<Int, Boolean> {
+        /** Level, charging state, and temperature in Celsius (-1 if unreported). */
+        private fun batteryInfo(): Triple<Int, Boolean, Float> {
             val bm = getSystemService(BATTERY_SERVICE) as BatteryManager
             val level = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
             val intent = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
             val status = intent?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) ?: -1
             val charging = status == BatteryManager.BATTERY_STATUS_CHARGING ||
                            status == BatteryManager.BATTERY_STATUS_FULL
-            return Pair(level.coerceIn(0, 100), charging)
+            // EXTRA_TEMPERATURE is in tenths of a degree Celsius.
+            val rawTemp = intent?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1) ?: -1
+            val tempC = if (rawTemp > 0) rawTemp / 10f else -1f
+            return Triple(level.coerceIn(0, 100), charging, tempC)
         }
 
         private fun draw() {
@@ -392,9 +396,9 @@ class GlowLiveWallpaper : WallpaperService() {
         /** Battery module — delegated to the shared renderer so the static wallpaper
          *  shows exactly the same design. Style is chosen in Settings. */
         private fun drawBatteryRing(canvas: Canvas, w: Float, h: Float, theme: Profile, t: Float) {
-            val (level, charging) = batteryInfo()
+            val (level, charging, tempC) = batteryInfo()
             val style = ProfileManager.batteryStyle(this@GlowLiveWallpaper)
-            BatteryModule.draw(canvas, w, h, theme, level, charging, style, t)
+            BatteryModule.draw(canvas, w, h, theme, level, charging, style, t, tempC)
         }
 
         private fun withAlpha(color: Int, alpha: Int): Int =

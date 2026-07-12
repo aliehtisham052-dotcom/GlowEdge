@@ -59,48 +59,12 @@ class VisualizerService : Service() {
         return lastQuietState
     }
 
-    // ---- Charging Glow: flash the edge when the charger is plugged in ----
-    private val chargingReceiver = object : android.content.BroadcastReceiver() {
-        override fun onReceive(context: android.content.Context?, intent: Intent?) {
-            if (intent?.action != Intent.ACTION_POWER_CONNECTED) return
-            if (!ProfileManager.chargingGlow(this@VisualizerService)) return
-            if (ProfileManager.isQuietNow(this@VisualizerService)) return
-            // Wake the screen first — the charger is normally plugged in while the screen
-            // is off, and an overlay can't be seen on a dark screen.
-            wakeScreenForGlow("GlowEdge:ChargingGlow", 2500L)
-            val theme = ProfileManager.theme(this@VisualizerService)
-            edgeView?.triggerCallFlash(theme.colorEnd)
-        }
-    }
-    private var chargingReceiverRegistered = false
-
-    private fun registerChargingListener() {
-        if (chargingReceiverRegistered) return
-        try {
-            val filter = android.content.IntentFilter(Intent.ACTION_POWER_CONNECTED)
-            if (Build.VERSION.SDK_INT >= 33) {
-                registerReceiver(chargingReceiver, filter, android.content.Context.RECEIVER_EXPORTED)
-            } else {
-                @Suppress("UnspecifiedRegisterReceiverFlag")
-                registerReceiver(chargingReceiver, filter)
-            }
-            chargingReceiverRegistered = true
-        } catch (_: Exception) {}
-    }
-
-    private fun unregisterChargingListener() {
-        if (!chargingReceiverRegistered) return
-        try { unregisterReceiver(chargingReceiver) } catch (_: Exception) {}
-        chargingReceiverRegistered = false
-    }
-
     private val notifReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: android.content.Context?, intent: Intent?) {
             when (intent?.action) {
                 GlowNotificationService.ACTION_NOTIFICATION_GLOW -> {
                     // Quiet Hours silences notification flashes — night-time notification
-                    // light is exactly what that setting exists to stop. (Call Glow stays
-                    // deliberately exempt: a ringing call is urgent and opt-in.)
+                    // light is exactly what that setting exists to stop.
                     if (ProfileManager.isQuietNow(this@VisualizerService)) return
                     val color = intent.getIntExtra(GlowNotificationService.EXTRA_COLOR, 0)
                     val repeat = intent.getBooleanExtra("repeat", false)
@@ -121,79 +85,6 @@ class VisualizerService : Service() {
     private var edgeView: EdgeVisualizerView? = null
     private var visualizer: Visualizer? = null
 
-    // ---- Call Glow: flash the edge glow on an incoming call. We listen for the
-    // ACTION_PHONE_STATE_CHANGED broadcast, which is reliable across all Android
-    // versions (the old PhoneStateListener.listen() is deprecated and unreliable on
-    // Android 12+). EXTRA_STATE == RINGING means an incoming call. ----
-    private var lastCallState = "IDLE"
-    private val callReceiver = object : android.content.BroadcastReceiver() {
-        override fun onReceive(context: android.content.Context?, intent: Intent?) {
-            if (intent?.action != "android.intent.action.PHONE_STATE") return
-            val state = intent.getStringExtra(android.telephony.TelephonyManager.EXTRA_STATE) ?: return
-            if (state == android.telephony.TelephonyManager.EXTRA_STATE_RINGING &&
-                lastCallState != android.telephony.TelephonyManager.EXTRA_STATE_RINGING) {
-                if (ProfileManager.callGlow(this@VisualizerService)) {
-                    wakeScreenForCall()
-                    val theme = ProfileManager.theme(this@VisualizerService)
-                    edgeView?.triggerCallFlash(theme.colorStart)
-                }
-            }
-            lastCallState = state
-        }
-    }
-    private var callReceiverRegistered = false
-
-    /**
-     * Turns the screen on so a glow flash is actually visible when the phone is at rest.
-     * An overlay cannot draw on a dark screen, so without this the flash fires but nobody
-     * sees it — which is exactly why Charging Glow appeared not to work: you plug the
-     * charger in while the screen is off.
-     *
-     * We acquire a screen-on wake lock briefly and release it, rather than holding it.
-     */
-    private fun wakeScreenForGlow(tag: String, holdMs: Long) {
-        try {
-            val pm = getSystemService(POWER_SERVICE) as android.os.PowerManager
-            @Suppress("DEPRECATION")
-            val wl = pm.newWakeLock(
-                android.os.PowerManager.FULL_WAKE_LOCK or
-                android.os.PowerManager.ACQUIRE_CAUSES_WAKEUP or
-                android.os.PowerManager.ON_AFTER_RELEASE,
-                tag
-            )
-            wl.acquire(holdMs)
-            edgeView?.postDelayed({
-                try { if (wl.isHeld) wl.release() } catch (_: Exception) {}
-            }, holdMs - 500L)
-        } catch (_: Exception) {}
-    }
-
-    private fun wakeScreenForCall() = wakeScreenForGlow("GlowEdge:CallGlow", 3000L)
-
-    private fun registerCallListener() {
-        if (!ProfileManager.callGlow(this)) return
-        if (callReceiverRegistered) return
-        try {
-            val filter = android.content.IntentFilter("android.intent.action.PHONE_STATE")
-            if (Build.VERSION.SDK_INT >= 33) {
-                registerReceiver(callReceiver, filter, android.content.Context.RECEIVER_EXPORTED)
-            } else {
-                @Suppress("UnspecifiedRegisterReceiverFlag")
-                registerReceiver(callReceiver, filter)
-            }
-            callReceiverRegistered = true
-        } catch (_: Exception) {}
-    }
-
-    private fun unregisterCallListener() {
-        if (!callReceiverRegistered) return
-        try {
-            unregisterReceiver(callReceiver)
-        } catch (_: Exception) {}
-        callReceiverRegistered = false
-    }
-
-    override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -204,8 +95,6 @@ class VisualizerService : Service() {
         if (ProfileManager.intro(this)) edgeView?.startIntro()
         startVisualizer()
         registerAudioRouteCallback()
-        registerCallListener()
-        registerChargingListener()
         val filter = android.content.IntentFilter(GlowNotificationService.ACTION_NOTIFICATION_GLOW)
         filter.addAction(Intent.ACTION_HEADSET_PLUG)
         filter.addAction(android.media.AudioManager.ACTION_AUDIO_BECOMING_NOISY)
@@ -231,9 +120,6 @@ class VisualizerService : Service() {
         }
         wasStartedByUser = true
         applyCurrentSettings()
-        // Re-sync the call listener in case Call Glow was just toggled or permission granted.
-        unregisterCallListener()
-        registerCallListener()
         updateNotification()
         return START_STICKY
     }
@@ -486,8 +372,6 @@ class VisualizerService : Service() {
     override fun onDestroy() {
         isRunning = false
         try { unregisterReceiver(notifReceiver) } catch (_: Exception) {}
-        unregisterCallListener()
-        unregisterChargingListener()
         try {
             val am = getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
             audioDeviceCallback?.let { am.unregisterAudioDeviceCallback(it) }
