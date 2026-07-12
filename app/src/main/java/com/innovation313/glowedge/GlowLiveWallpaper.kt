@@ -245,7 +245,7 @@ class GlowLiveWallpaper : WallpaperService() {
             // Close the loop so there is no seam where the gradient wraps.
             colors[stops - 1] = colors[0]
 
-            val slim = w * 0.0075f                 // the slim core line
+            val slim = w * 0.0042f                 // a fine, refined core line
             val inset = w * 0.030f
             rect.set(inset, inset, w - inset, h - inset)
             val corner = w * 0.105f
@@ -263,13 +263,13 @@ class GlowLiveWallpaper : WallpaperService() {
             val breathe = 0.88f + 0.12f * sin(t * 1.1f)
 
             // 1) Wide, very soft halo — gives the slim line its glow without thickening it.
-            paint.strokeWidth = slim * 5.5f * breathe
+            paint.strokeWidth = slim * 6.5f * breathe
             paint.maskFilter = BlurMaskFilter(w * 0.045f, BlurMaskFilter.Blur.NORMAL)
             paint.alpha = (110 * breathe).toInt().coerceIn(0, 255)
             canvas.drawRoundRect(rect, corner, corner, paint)
 
             // 2) Tighter glow, still soft.
-            paint.strokeWidth = slim * 2.2f
+            paint.strokeWidth = slim * 2.4f
             paint.maskFilter = BlurMaskFilter(slim * 2.4f, BlurMaskFilter.Blur.NORMAL)
             paint.alpha = 200
             canvas.drawRoundRect(rect, corner, corner, paint)

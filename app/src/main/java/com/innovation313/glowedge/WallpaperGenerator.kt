@@ -116,7 +116,7 @@ object WallpaperGenerator {
                          theme.colorStart
                      )
 
-        val slim = w * 0.0075f          // slim core line, matching the live wallpaper
+        val slim = w * 0.0042f          // fine core line, matching the live wallpaper
         val inset = w * 0.030f
         val rect = RectF(inset, inset, w - inset, h - inset)
         val corner = w * 0.105f
@@ -127,13 +127,13 @@ object WallpaperGenerator {
         paint.shader = android.graphics.SweepGradient(w / 2f, h / 2f, colors, null)
 
         // Wide soft halo — the glow, without thickening the line itself.
-        paint.strokeWidth = slim * 5.5f
+        paint.strokeWidth = slim * 6.5f
         paint.maskFilter = BlurMaskFilter(w * 0.045f, BlurMaskFilter.Blur.NORMAL)
         paint.alpha = 110
         canvas.drawRoundRect(rect, corner, corner, paint)
 
         // Tighter glow.
-        paint.strokeWidth = slim * 2.2f
+        paint.strokeWidth = slim * 2.4f
         paint.maskFilter = BlurMaskFilter(slim * 2.4f, BlurMaskFilter.Blur.NORMAL)
         paint.alpha = 200
         canvas.drawRoundRect(rect, corner, corner, paint)

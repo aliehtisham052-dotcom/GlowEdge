@@ -71,28 +71,26 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.37.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.37.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.38.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.38.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.37.apk
-            GlowEdge-v6.37.aab
+            GlowEdge-v6.38.apk
+            GlowEdge-v6.38.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.37
-          name: GlowEdge v6.37 — Slim smart flowing edge
+          tag_name: v6.38
+          name: GlowEdge v6.38 — Finer wallpaper edge
           body: |
-            GlowEdge v6.37 - Slim, smart, colour-flowing edge
-            - The edge line is now SLIM and refined: a fine bright core riding on a soft halo, instead of a thick band.
-            - Colours now genuinely FLOW: a multi-stop gradient whose stops drift over time, so each colour melts into the next and that into the next again - a continuously moving phase, never a static rotation.
-            - Added a comet head with a fading trail that travels the edge, picking up whatever colour is flowing at that point.
-            - The static wallpaper edge is slimmed to match, with a multi-stop gradient in the same language.
+            GlowEdge v6.38 - Finer wallpaper edge + cleaner wording
+            - The wallpaper edge line (both live and static) is now noticeably finer - a delicate core riding on a slightly wider soft halo, so it glows without looking thick.
+            - Removed the accuracy claims from the Music Only and Call Glow descriptions; the features are unchanged, only the wording is simpler.
           files: |
-            GlowEdge-v6.37.apk
-            GlowEdge-v6.37.aab
+            GlowEdge-v6.38.apk
+            GlowEdge-v6.38.aab
