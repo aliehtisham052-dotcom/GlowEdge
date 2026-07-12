@@ -225,6 +225,7 @@ class VisualizerService : Service() {
         }
         if (intent?.action == ACTION_TEST) {
             wasStartedByUser = true
+            applyCurrentSettings()   // ensure style/theme are applied even on a cold start
             edgeView?.forceTestGlow()
             return START_STICKY
         }

@@ -132,12 +132,19 @@ class EdgeVisualizerView(context: Context) : View(context) {
     /** Show a guaranteed bright glow for a few seconds to verify the overlay works. */
     fun forceTestGlow() {
         testUntil = SystemClock.elapsedRealtime() + 5000L
+        // Undo the idle fade RIGHT HERE, not inside onDraw: when the glow has been silent,
+        // the view sits at alpha 0 — and some ROMs skip the draw pass entirely for an
+        // alpha-0 view, so onDraw (which would have restored alpha) never ran and the
+        // test appeared dead. Restoring alpha first guarantees the next frame renders.
+        visibility01 = 1f
+        alpha = 1f
         // NOTE: demoMode is intentionally NOT set here. The test window (testUntil)
         // drives its own drawing; leaving demoMode on would keep the glow animating
         // forever after the test, wasting CPU and hanging low-end phones.
         lastActiveTime = SystemClock.elapsedRealtime()
         lastRealData = SystemClock.elapsedRealtime()
         introActive = false
+        invalidate()
         postInvalidate()
     }
 
