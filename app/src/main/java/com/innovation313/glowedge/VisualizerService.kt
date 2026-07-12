@@ -46,6 +46,51 @@ class VisualizerService : Service() {
         return lastMusicPlaying
     }
 
+    // Quiet Hours is time-based, so checking it every audio frame would be wasteful —
+    // re-evaluate every 30 seconds, which is plenty for a minute-resolution window.
+    private var lastQuietCheckTime = 0L
+    private var lastQuietState = false
+    private fun isQuietNowCached(): Boolean {
+        val now = SystemClock.elapsedRealtime()
+        if (now - lastQuietCheckTime > 30_000L) {
+            lastQuietCheckTime = now
+            lastQuietState = ProfileManager.isQuietNow(this)
+        }
+        return lastQuietState
+    }
+
+    // ---- Charging Glow: flash the edge when the charger is plugged in ----
+    private val chargingReceiver = object : android.content.BroadcastReceiver() {
+        override fun onReceive(context: android.content.Context?, intent: Intent?) {
+            if (intent?.action != Intent.ACTION_POWER_CONNECTED) return
+            if (!ProfileManager.chargingGlow(this@VisualizerService)) return
+            if (ProfileManager.isQuietNow(this@VisualizerService)) return
+            val theme = ProfileManager.theme(this@VisualizerService)
+            edgeView?.triggerCallFlash(theme.colorEnd)
+        }
+    }
+    private var chargingReceiverRegistered = false
+
+    private fun registerChargingListener() {
+        if (chargingReceiverRegistered) return
+        try {
+            val filter = android.content.IntentFilter(Intent.ACTION_POWER_CONNECTED)
+            if (Build.VERSION.SDK_INT >= 33) {
+                registerReceiver(chargingReceiver, filter, android.content.Context.RECEIVER_EXPORTED)
+            } else {
+                @Suppress("UnspecifiedRegisterReceiverFlag")
+                registerReceiver(chargingReceiver, filter)
+            }
+            chargingReceiverRegistered = true
+        } catch (_: Exception) {}
+    }
+
+    private fun unregisterChargingListener() {
+        if (!chargingReceiverRegistered) return
+        try { unregisterReceiver(chargingReceiver) } catch (_: Exception) {}
+        chargingReceiverRegistered = false
+    }
+
     private val notifReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: android.content.Context?, intent: Intent?) {
             when (intent?.action) {
@@ -149,6 +194,7 @@ class VisualizerService : Service() {
         startVisualizer()
         registerAudioRouteCallback()
         registerCallListener()
+        registerChargingListener()
         val filter = android.content.IntentFilter(GlowNotificationService.ACTION_NOTIFICATION_GLOW)
         filter.addAction(Intent.ACTION_HEADSET_PLUG)
         filter.addAction(android.media.AudioManager.ACTION_AUDIO_BECOMING_NOISY)
@@ -348,11 +394,16 @@ class VisualizerService : Service() {
                         for (i in 0 until 10) bassSum += bands[i]
                         val rawLevel = ((bassSum / 10f) * 0.7f + (sum / bandCount) * 0.5f).coerceIn(0f, 1f)
 
-                        // ---- Music gate ----
-                        // When Music Only is on, we use Android's MediaSession state (exact:
-                        // reported by the playing app itself) instead of guessing from the mic.
-                        // The mic still shapes the glow; MediaSession decides whether it lights up.
-                        val gatedLevel = if (!musicOnly || isMusicPlayingCached()) rawLevel else 0f
+                        // ---- Gates ----
+                        // Quiet Hours wins over everything: inside the window, stay dark.
+                        // Otherwise, when Music Only is on we use MediaSession state (what the
+                        // playing app reports) rather than guessing from the mic; the mic still
+                        // shapes the glow, MediaSession decides whether it lights up at all.
+                        val gatedLevel = when {
+                            isQuietNowCached() -> 0f
+                            !musicOnly || isMusicPlayingCached() -> rawLevel
+                            else -> 0f
+                        }
                         edgeView?.setAudioData(gatedLevel, bands)
                     }
                 }, Visualizer.getMaxCaptureRate() / 4, false, true)
@@ -424,6 +475,7 @@ class VisualizerService : Service() {
         isRunning = false
         try { unregisterReceiver(notifReceiver) } catch (_: Exception) {}
         unregisterCallListener()
+        unregisterChargingListener()
         try {
             val am = getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
             audioDeviceCallback?.let { am.unregisterAudioDeviceCallback(it) }

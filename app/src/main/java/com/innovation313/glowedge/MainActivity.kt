@@ -924,6 +924,33 @@ class MainActivity : AppCompatActivity() {
 
         updateMusicStatus()
 
+        val chargingGlow = findViewById<MaterialSwitch>(R.id.switchChargingGlow)
+        chargingGlow.isChecked = ProfileManager.chargingGlow(this)
+        chargingGlow.setOnCheckedChangeListener { _, checked ->
+            ProfileManager.setChargingGlow(this, checked)
+            notifyService()
+        }
+
+        val nowPlaying = findViewById<MaterialSwitch>(R.id.switchNowPlaying)
+        nowPlaying.isChecked = ProfileManager.nowPlayingEnabled(this)
+        nowPlaying.setOnCheckedChangeListener { _, checked ->
+            ProfileManager.setNowPlaying(this, checked)
+            if (checked && !hasNotificationAccess()) {
+                Toast.makeText(this, getString(R.string.notif_access_needed), Toast.LENGTH_LONG).show()
+                openNotificationAccess()
+            }
+        }
+
+        val quiet = findViewById<MaterialSwitch>(R.id.switchQuietHours)
+        quiet.isChecked = ProfileManager.quietHours(this)
+        quiet.setOnCheckedChangeListener { _, checked ->
+            ProfileManager.setQuietHours(this, checked)
+            notifyService()
+        }
+        updateQuietButtons()
+        findViewById<TextView>(R.id.btnQuietStart).setOnClickListener { pickQuietTime(true) }
+        findViewById<TextView>(R.id.btnQuietEnd).setOnClickListener { pickQuietTime(false) }
+
         buildGlowEdgesButtons()
         buildBatteryStyleButtons()
 
@@ -999,6 +1026,42 @@ class MainActivity : AppCompatActivity() {
             if (!hasAccess) Color.parseColor("#FF8A80")
             else ContextCompat.getColor(this, R.color.gold)
         )
+    }
+
+    /** Shows the current quiet window on the two time buttons. */
+    private fun updateQuietButtons() {
+        findViewById<TextView>(R.id.btnQuietStart)?.text =
+            getString(R.string.quiet_from, formatMinutes(ProfileManager.quietStart(this)))
+        findViewById<TextView>(R.id.btnQuietEnd)?.text =
+            getString(R.string.quiet_to, formatMinutes(ProfileManager.quietEnd(this)))
+    }
+
+    /** Minutes-from-midnight to a readable clock time, in the user's 12/24h preference. */
+    private fun formatMinutes(minutes: Int): String {
+        val cal = java.util.Calendar.getInstance()
+        cal.set(java.util.Calendar.HOUR_OF_DAY, minutes / 60)
+        cal.set(java.util.Calendar.MINUTE, minutes % 60)
+        return android.text.format.DateFormat.getTimeFormat(this).format(cal.time)
+    }
+
+    /** Opens a time picker for either end of the quiet window. */
+    private fun pickQuietTime(isStart: Boolean) {
+        val current = if (isStart) ProfileManager.quietStart(this) else ProfileManager.quietEnd(this)
+        android.app.TimePickerDialog(
+            this,
+            { _, hour, minute ->
+                val mins = hour * 60 + minute
+                if (isStart) {
+                    ProfileManager.setQuietWindow(this, mins, ProfileManager.quietEnd(this))
+                } else {
+                    ProfileManager.setQuietWindow(this, ProfileManager.quietStart(this), mins)
+                }
+                updateQuietButtons()
+                notifyService()
+            },
+            current / 60, current % 60,
+            android.text.format.DateFormat.is24HourFormat(this)
+        ).show()
     }
 
     /** Segmented selector for the battery module design shown on both wallpapers. */

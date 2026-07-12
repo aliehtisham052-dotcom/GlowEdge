@@ -49,7 +49,7 @@
     <string name="speed">Animation Speed</string>
 
     <string name="premium_desc">GlowEdge turns your music, naat and melodic audio into a living glow around your screen edges. Completely free — every style and feature unlocked.</string>
-    <string name="premium_features">✦ 13 visualizer styles\n✦ 13 color themes + unlimited Custom Colors (millions of combinations)\n✦ Clean edge-glow lock screen Wallpapers + a live wallpaper with clock, date &amp; battery\n✦ Beat &amp; rhythm sync, loudness-reactive glow\n✦ Glow Trigger: every sound, or music &amp; naat only\n✦ Glow Edges: all edges, sides, or top &amp; bottom\n✦ Notification Glow\n✦ Thickness, speed &amp; intensity controls\n✦ Battery Saver &amp; Auto-start\n✦ Works with headphones &amp; earbuds\n✦ No ads · No tracking · No internet access</string>
+    <string name="premium_features">✦ 13 visualizer styles\n✦ 13 color themes + unlimited Custom Colors (millions of combinations)\n✦ Clean edge-glow lock screen Wallpapers + a live wallpaper with clock, date &amp; battery\n✦ Beat &amp; rhythm sync, loudness-reactive glow\n✦ Glow Trigger: every sound, or music &amp; naat only\n✦ Glow Edges: all edges, sides, or top &amp; bottom\n✦ Charging Glow, Now Playing &amp; Quiet Hours\n✦ Notification Glow\n✦ Thickness, speed &amp; intensity controls\n✦ Battery Saver &amp; Auto-start\n✦ Works with headphones &amp; earbuds\n✦ No ads · No tracking · No internet access</string>
 
     <string name="intensity">Glow Intensity</string>
     <string name="autostart">Auto-start on boot</string>
@@ -63,7 +63,7 @@
     <string name="feedback_body">My feedback / reason:\n\n\n\n— Please describe what you liked, what to improve, or the problem you faced.</string>
     <string name="developer_name">Innovation-313</string>
     <string name="support_email">innovation313.support@gmail.com</string>
-    <string name="app_version">Version 6.43</string>
+    <string name="app_version">Version 6.44</string>
     <string name="notif_glow">Notification Glow</string>
     <string name="notif_glow_desc">Flash the edges in an app color when a message or notification arrives. Works even without music.</string>
     <string name="notif_glow_need_access">Please allow notification access for GlowEdge to detect calls and messages.</string>
@@ -76,6 +76,14 @@
     <string name="glow_edges_all">All edges</string>
     <string name="glow_edges_sides">Sides only</string>
     <string name="glow_edges_topbottom">Top &amp; bottom</string>
+    <string name="charging_glow_title">Charging Glow</string>
+    <string name="charging_glow_desc">Flash the edge glow when you plug in the charger.</string>
+    <string name="now_playing_title">Now Playing</string>
+    <string name="now_playing_desc">Show the name of the naat or track on the live wallpaper while it plays. Needs Notification Access, same as Music Only.</string>
+    <string name="quiet_hours_title">Quiet Hours</string>
+    <string name="quiet_hours_desc">No glow during these hours — useful while sleeping. Tap a time to change it.</string>
+    <string name="quiet_from">From %1$s</string>
+    <string name="quiet_to">To %1$s</string>
     <string name="battery_style_title">Battery Style</string>
     <string name="battery_style_desc">The battery design shown on your wallpapers — live and static both use it.</string>
     <string name="battery_style_applied">Battery style updated — re-apply your wallpaper to see it</string>

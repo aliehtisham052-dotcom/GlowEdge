@@ -71,27 +71,27 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.43.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.43.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.44.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.44.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.43.apk
-            GlowEdge-v6.43.aab
+            GlowEdge-v6.44.apk
+            GlowEdge-v6.44.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.43
-          name: GlowEdge v6.43 - Fix Music Only detection
+          tag_name: v6.44
+          name: GlowEdge v6.44 - Now Playing, Quiet Hours, Charging Glow
           body: |
-            GlowEdge v6.43 - Fix Music Only
-            - FIXED the real cause: when you grant Notification Access while the app is running, Android does not actually bind our listener until a reboot - so reading what is playing kept failing and Music Only looked broken. We now request a rebind immediately, so it works right away.
-            - Music Only no longer fails silently. If access is missing, it falls back to checking whether the music stream is active, so the glow still responds instead of never lighting up.
-            - Added a live status line under Music Only: it tells you plainly whether we are connected and whether music is being detected right now.
+            GlowEdge v6.44 - Three new features
+            - NOW PLAYING: the live wallpaper can show the name of the naat or track that is playing, low on the screen so it never clashes with the clock. Needs Notification Access, same as Music Only.
+            - QUIET HOURS: pick a window (default 10pm to 6am) during which the glow stays off - useful while sleeping. Handles windows that cross midnight, and overrides every other trigger.
+            - CHARGING GLOW: the edge flashes when you plug in the charger.
           files: |
-            GlowEdge-v6.43.apk
-            GlowEdge-v6.43.aab
+            GlowEdge-v6.44.apk
+            GlowEdge-v6.44.aab

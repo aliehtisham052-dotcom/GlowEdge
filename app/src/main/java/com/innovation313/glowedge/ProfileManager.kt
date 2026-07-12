@@ -66,6 +66,11 @@ object ProfileManager {
     private const val KEY_GLOW_EDGES = "glow_edges"
     private const val KEY_CALL_GLOW = "call_glow"
     private const val KEY_BATTERY_STYLE = "battery_style"
+    private const val KEY_NOW_PLAYING = "now_playing"
+    private const val KEY_QUIET_HOURS = "quiet_hours"
+    private const val KEY_QUIET_START = "quiet_start"   // minutes from midnight
+    private const val KEY_QUIET_END = "quiet_end"
+    private const val KEY_CHARGING_GLOW = "charging_glow"
 
     val themes = listOf(
         // Vivid, distinct designer palette: each theme is a clearly different hue pair,
@@ -189,4 +194,55 @@ object ProfileManager {
     fun batteryStyle(context: Context): Int =
         prefs(context).getInt(KEY_BATTERY_STYLE, BatteryModule.STYLE_ORBIT)
             .coerceIn(0, BatteryModule.STYLE_COUNT - 1)
+
+    // ---- Now Playing: show the track name on the wallpaper while music plays ----
+    fun setNowPlaying(context: Context, on: Boolean) =
+        prefs(context).edit().putBoolean(KEY_NOW_PLAYING, on).apply()
+
+    fun nowPlayingEnabled(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_NOW_PLAYING, false)
+
+    // ---- Charging Glow: flash the glow when the charger is plugged in ----
+    fun setChargingGlow(context: Context, on: Boolean) =
+        prefs(context).edit().putBoolean(KEY_CHARGING_GLOW, on).apply()
+
+    fun chargingGlow(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_CHARGING_GLOW, false)
+
+    // ---- Quiet Hours: no glow during a chosen window (e.g. while sleeping) ----
+    fun setQuietHours(context: Context, on: Boolean) =
+        prefs(context).edit().putBoolean(KEY_QUIET_HOURS, on).apply()
+
+    fun quietHours(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_QUIET_HOURS, false)
+
+    /** Start/end stored as minutes from midnight. Defaults: 22:00 to 06:00. */
+    fun setQuietWindow(context: Context, startMin: Int, endMin: Int) =
+        prefs(context).edit()
+            .putInt(KEY_QUIET_START, startMin.coerceIn(0, 1439))
+            .putInt(KEY_QUIET_END, endMin.coerceIn(0, 1439))
+            .apply()
+
+    fun quietStart(context: Context): Int =
+        prefs(context).getInt(KEY_QUIET_START, 22 * 60)
+
+    fun quietEnd(context: Context): Int =
+        prefs(context).getInt(KEY_QUIET_END, 6 * 60)
+
+    /**
+     * True if we're currently inside the quiet window. Handles windows that cross
+     * midnight (e.g. 22:00 → 06:00), which is the common case for sleep.
+     */
+    fun isQuietNow(context: Context): Boolean {
+        if (!quietHours(context)) return false
+        val cal = java.util.Calendar.getInstance()
+        val now = cal.get(java.util.Calendar.HOUR_OF_DAY) * 60 + cal.get(java.util.Calendar.MINUTE)
+        val start = quietStart(context)
+        val end = quietEnd(context)
+        return if (start <= end) {
+            now in start until end            // same-day window
+        } else {
+            now >= start || now < end         // wraps past midnight
+        }
+    }
 }

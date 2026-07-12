@@ -68,6 +68,10 @@ class GlowLiveWallpaper : WallpaperService() {
         private val pathMeasure = android.graphics.PathMeasure()
         private val posTmp = FloatArray(2)
 
+        // Now Playing cache — the media lookup is too costly to run every frame.
+        private var lastTrack: String? = null
+        private var lastTrackCheck = 0L
+
         private val frameRunnable = Runnable { draw() }
 
         private val updateReceiver = object : BroadcastReceiver() {
@@ -157,6 +161,49 @@ class GlowLiveWallpaper : WallpaperService() {
             drawSparkles(canvas, w, h, c1, c2, t)
             drawFlowingEdge(canvas, w, h, theme, c1, c2, t)
             drawBatteryRing(canvas, w, h, theme, t)
+            drawNowPlaying(canvas, w, h, theme, t)
+        }
+
+        /**
+         * Shows what's playing right now, if the user turned it on and music is playing.
+         * Placed low on the screen, below the battery module, so it doesn't collide with
+         * the system clock or notifications. Gently fades in and out so it never nags.
+         */
+        private fun drawNowPlaying(canvas: Canvas, w: Float, h: Float, theme: Profile, t: Float) {
+            if (!ProfileManager.nowPlayingEnabled(this@GlowLiveWallpaper)) return
+
+            // The media lookup isn't free, so only re-check about once a second.
+            val nowMs = SystemClock.elapsedRealtime()
+            if (nowMs - lastTrackCheck > 1000L) {
+                lastTrackCheck = nowMs
+                lastTrack = MediaPlaybackDetector.nowPlaying(this@GlowLiveWallpaper)
+            }
+            val track = lastTrack ?: return
+
+            val cx = w * 0.5f
+            val cy = h * 0.80f
+            val pulse = 0.80f + 0.20f * sin(t * 1.6f)
+
+            paint.reset()
+            paint.isAntiAlias = true
+            paint.textAlign = Paint.Align.CENTER
+            paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL)
+            paint.textSize = w * 0.038f
+
+            // Trim to fit the screen rather than spilling off the edges.
+            val maxWidth = w * 0.78f
+            var text = "\u266A  $track"
+            if (paint.measureText(text) > maxWidth) {
+                while (text.length > 4 && paint.measureText("$text\u2026") > maxWidth) {
+                    text = text.dropLast(1)
+                }
+                text = "$text\u2026"
+            }
+
+            paint.color = withAlpha(theme.colorStart, (200 * pulse).toInt().coerceIn(0, 255))
+            paint.setShadowLayer(w * 0.02f, 0f, 0f, withAlpha(theme.colorStart, 120))
+            canvas.drawText(text, cx, cy, paint)
+            paint.clearShadowLayer()
         }
 
         /** Deep navy field with a faint warm lift at the base. */
