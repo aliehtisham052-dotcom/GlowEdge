@@ -600,7 +600,17 @@ class MainActivity : AppCompatActivity() {
         Thread {
             try {
                 val dm = resources.displayMetrics
-                val bmp = WallpaperGenerator.generate(theme, dm.widthPixels, dm.heightPixels)
+                val bs = ProfileManager.batteryStyle(this)
+                val bi = registerReceiver(null, android.content.IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+                val lvl = bi?.getIntExtra(android.os.BatteryManager.EXTRA_LEVEL, 50) ?: 50
+                val scale = bi?.getIntExtra(android.os.BatteryManager.EXTRA_SCALE, 100) ?: 100
+                val pct = ((lvl * 100f) / scale.coerceAtLeast(1)).toInt().coerceIn(0, 100)
+                val status = bi?.getIntExtra(android.os.BatteryManager.EXTRA_STATUS, -1) ?: -1
+                val chg = status == android.os.BatteryManager.BATTERY_STATUS_CHARGING ||
+                          status == android.os.BatteryManager.BATTERY_STATUS_FULL
+                val bmp = WallpaperGenerator.generateWithBattery(
+                    theme, dm.widthPixels, dm.heightPixels, pct, chg, bs
+                )
                 val wm = WallpaperManager.getInstance(this)
                 // Lock screen only, as requested — a static wallpaper can target just the
                 // lock screen (FLAG_LOCK); this is not possible for live/animated wallpapers
@@ -909,6 +919,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         buildGlowEdgesButtons()
+        buildBatteryStyleButtons()
 
         val callGlow = findViewById<MaterialSwitch>(R.id.switchCallGlow)
         callGlow.isChecked = ProfileManager.callGlow(this)
@@ -956,6 +967,32 @@ class MainActivity : AppCompatActivity() {
                 notifyService()
                 buildGlowEdgesButtons()
                 findViewById<PreviewView?>(R.id.previewView)?.refresh()
+            }
+            container.addView(chip)
+        }
+    }
+
+    /** Segmented selector for the battery module design shown on both wallpapers. */
+    private fun buildBatteryStyleButtons() {
+        val container = findViewById<LinearLayout>(R.id.batteryStyleContainer)
+        container.removeAllViews()
+        BatteryModule.styleNames.forEachIndexed { index, label ->
+            val chip = TextView(this)
+            chip.text = label
+            chip.textSize = 13f
+            chip.gravity = Gravity.CENTER
+            chip.setPadding(dp(10), dp(12), dp(10), dp(12))
+            val lp = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            lp.marginEnd = if (index < BatteryModule.STYLE_COUNT - 1) dp(8) else 0
+            chip.layoutParams = lp
+            val selected = ProfileManager.batteryStyle(this) == index
+            chip.setBackgroundResource(R.drawable.bg_card)
+            chip.setTextColor(if (selected) ContextCompat.getColor(this, R.color.gold) else Color.WHITE)
+            chip.alpha = if (selected) 1f else 0.6f
+            chip.setOnClickListener {
+                ProfileManager.setBatteryStyle(this, index)
+                buildBatteryStyleButtons()
+                Toast.makeText(this, getString(R.string.battery_style_applied), Toast.LENGTH_SHORT).show()
             }
             container.addView(chip)
         }

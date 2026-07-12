@@ -330,100 +330,12 @@ class GlowLiveWallpaper : WallpaperService() {
             paint.maskFilter = null
         }
 
-        /**
-         * Premium battery ring: a faint track, a glowing progress arc that fills to the
-         * current level, a travelling highlight along the arc, small tick marks, and the
-         * percentage with a status word. Charging adds a pulsing bolt.
-         */
+        /** Battery module — delegated to the shared renderer so the static wallpaper
+         *  shows exactly the same design. Style is chosen in Settings. */
         private fun drawBatteryRing(canvas: Canvas, w: Float, h: Float, theme: Profile, t: Float) {
             val (level, charging) = batteryInfo()
-            val color = when {
-                charging -> theme.colorEnd
-                level <= 15 -> Color.parseColor("#FF5252")
-                else -> theme.colorStart
-            }
-
-            val cx = w * 0.5f
-            val cy = h * 0.60f
-            val r = w * 0.155f
-            rect.set(cx - r, cy - r, cx + r, cy + r)
-            val stroke = w * 0.020f
-
-            paint.reset()
-            paint.isAntiAlias = true
-            paint.style = Paint.Style.STROKE
-            paint.strokeCap = Paint.Cap.ROUND
-
-            // Tick marks around the ring (subtle, premium detail)
-            paint.strokeWidth = w * 0.004f
-            paint.color = withAlpha(Color.WHITE, 40)
-            val tickR1 = r + stroke * 1.1f
-            val tickR2 = tickR1 + w * 0.014f
-            for (i in 0 until 40) {
-                val a = (i / 40f) * 2f * Math.PI
-                val ca = cos(a).toFloat(); val sa = sin(a).toFloat()
-                canvas.drawLine(cx + ca * tickR1, cy + sa * tickR1, cx + ca * tickR2, cy + sa * tickR2, paint)
-            }
-
-            // Faint full track
-            paint.strokeWidth = stroke
-            paint.color = withAlpha(Color.WHITE, 32)
-            canvas.drawArc(rect, 0f, 360f, false, paint)
-
-            // Glowing progress arc
-            val sweepDeg = 360f * (level / 100f)
-            paint.color = color
-            paint.maskFilter = BlurMaskFilter(w * 0.022f, BlurMaskFilter.Blur.NORMAL)
-            paint.alpha = 180
-            canvas.drawArc(rect, -90f, sweepDeg, false, paint)
-
-            paint.maskFilter = null
-            paint.alpha = 255
-            canvas.drawArc(rect, -90f, sweepDeg, false, paint)
-
-            // Travelling highlight along the filled arc — a small bright bead that orbits
-            if (level > 2) {
-                val headDeg = -90f + (t * 40f) % sweepDeg.coerceAtLeast(1f)
-                val a = Math.toRadians(headDeg.toDouble())
-                val hx = cx + (cos(a) * r).toFloat()
-                val hy = cy + (sin(a) * r).toFloat()
-                paint.style = Paint.Style.FILL
-                paint.color = withAlpha(mix(color, Color.WHITE, 0.7f), 230)
-                paint.maskFilter = BlurMaskFilter(w * 0.018f, BlurMaskFilter.Blur.NORMAL)
-                canvas.drawCircle(hx, hy, stroke * 0.62f, paint)
-                paint.maskFilter = null
-                paint.color = Color.WHITE
-                paint.alpha = 220
-                canvas.drawCircle(hx, hy, stroke * 0.26f, paint)
-            }
-
-            // Percentage in the centre
-            paint.reset()
-            paint.isAntiAlias = true
-            paint.textAlign = Paint.Align.CENTER
-            paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD)
-            paint.textSize = w * 0.105f
-            paint.color = Color.WHITE
-            paint.setShadowLayer(w * 0.02f, 0f, 0f, withAlpha(color, 150))
-            canvas.drawText("$level", cx, cy + w * 0.018f, paint)
-            paint.clearShadowLayer()
-
-            // Status word under the number
-            paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL)
-            paint.textSize = w * 0.030f
-            paint.letterSpacing = 0.22f
-            val label = if (charging) "CHARGING" else if (level <= 15) "LOW" else "BATTERY"
-            paint.color = withAlpha(color, 210)
-            canvas.drawText(label, cx, cy + w * 0.075f, paint)
-            paint.letterSpacing = 0f
-
-            // Charging bolt, gently pulsing above the number
-            if (charging) {
-                val pulse = 0.55f + 0.45f * (0.5f + 0.5f * sin(t * 3.0f))
-                paint.textSize = w * 0.055f
-                paint.color = withAlpha(theme.colorEnd, (255 * pulse).toInt().coerceIn(0, 255))
-                canvas.drawText("\u26A1", cx, cy - w * 0.058f, paint)
-            }
+            val style = ProfileManager.batteryStyle(this@GlowLiveWallpaper)
+            BatteryModule.draw(canvas, w, h, theme, level, charging, style, t)
         }
 
         private fun withAlpha(color: Int, alpha: Int): Int =

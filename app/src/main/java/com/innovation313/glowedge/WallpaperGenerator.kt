@@ -44,6 +44,24 @@ object WallpaperGenerator {
     }
 
     /**
+     * Same as generate(), but also renders the battery module — so the static wallpaper
+     * carries the same battery design as the live one. Takes the level explicitly, since
+     * a static image is a snapshot: it shows the charge at the moment it was applied.
+     */
+    fun generateWithBattery(
+        theme: Profile, width: Int, height: Int,
+        level: Int, charging: Boolean, batteryStyle: Int
+    ): Bitmap {
+        val bmp = generate(theme, width, height)
+        val canvas = Canvas(bmp)
+        BatteryModule.draw(
+            canvas, bmp.width.toFloat(), bmp.height.toFloat(),
+            theme, level, charging, batteryStyle, 0f   // t=0: a still frame of the live design
+        )
+        return bmp
+    }
+
+    /**
      * A still field of sparkles in the theme colours — the same visual language the live
      * wallpaper animates, captured as one composed moment. Uses a fixed seed so the
      * layout is deliberate and repeatable, not random noise each time.

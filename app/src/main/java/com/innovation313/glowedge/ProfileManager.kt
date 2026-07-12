@@ -65,6 +65,7 @@ object ProfileManager {
     private const val KEY_ONBOARDED = "onboarded"
     private const val KEY_GLOW_EDGES = "glow_edges"
     private const val KEY_CALL_GLOW = "call_glow"
+    private const val KEY_BATTERY_STYLE = "battery_style"
 
     val themes = listOf(
         // Vivid, distinct designer palette: each theme is a clearly different hue pair,
@@ -180,4 +181,12 @@ object ProfileManager {
 
     fun callGlow(context: Context): Boolean =
         prefs(context).getBoolean(KEY_CALL_GLOW, false)
+
+    // Which battery module design the wallpapers show: 0 = Orbit, 1 = Segments, 2 = Capsule
+    fun setBatteryStyle(context: Context, style: Int) =
+        prefs(context).edit().putInt(KEY_BATTERY_STYLE, style).apply()
+
+    fun batteryStyle(context: Context): Int =
+        prefs(context).getInt(KEY_BATTERY_STYLE, BatteryModule.STYLE_ORBIT)
+            .coerceIn(0, BatteryModule.STYLE_COUNT - 1)
 }
