@@ -137,6 +137,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        buildPresetChips()
         buildStyleCards()
         buildThemeButtons()
         buildWallpaperCards()
@@ -218,9 +219,9 @@ class MainActivity : AppCompatActivity() {
                 notifyService()
                 Toast.makeText(this, getString(R.string.call_glow_ready), Toast.LENGTH_SHORT).show()
             } else {
-                // Denied — turn the toggle back off so it reflects reality.
+                // Denied — turn the chip back off so it reflects reality.
                 ProfileManager.setCallGlow(this, false)
-                findViewById<MaterialSwitch>(R.id.switchCallGlow)?.isChecked = false
+                buildShowOnChips()
                 Toast.makeText(this, getString(R.string.call_glow_denied), Toast.LENGTH_LONG).show()
             }
             return
@@ -287,6 +288,70 @@ class MainActivity : AppCompatActivity() {
     private val styleCards = HashMap<Int, LinearLayout>()
 
     private fun dp(v: Int): Int = (v * resources.displayMetrics.density).toInt()
+
+    /**
+     * One-tap preset cards: each bundles a style + theme + motion settings under a name,
+     * so a new user gets a finished look in a single tap. The card shows the preset's
+     * two theme colours as dots so you can feel its palette before applying.
+     */
+    private fun buildPresetChips() {
+        val container = findViewById<LinearLayout>(R.id.presetsContainer) ?: return
+        container.removeAllViews()
+        Presets.all.forEach { p ->
+            val theme = ProfileManager.themes.getOrNull(p.themeIndex) ?: return@forEach
+
+            val card = LinearLayout(this)
+            card.orientation = LinearLayout.VERTICAL
+            card.gravity = Gravity.CENTER
+            card.setBackgroundResource(R.drawable.bg_card)
+            card.setPadding(dp(16), dp(14), dp(16), dp(14))
+            val lp = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            lp.marginEnd = dp(10)
+            card.layoutParams = lp
+
+            // Two colour dots side by side — the preset's palette at a glance.
+            val dots = LinearLayout(this)
+            dots.orientation = LinearLayout.HORIZONTAL
+            dots.gravity = Gravity.CENTER
+            for (color in intArrayOf(theme.colorStart, theme.colorEnd)) {
+                val dot = View(this)
+                val dlp = LinearLayout.LayoutParams(dp(14), dp(14))
+                dlp.marginEnd = dp(4)
+                dot.layoutParams = dlp
+                val bg = android.graphics.drawable.GradientDrawable()
+                bg.shape = android.graphics.drawable.GradientDrawable.OVAL
+                bg.setColor(color)
+                dot.background = bg
+                dots.addView(dot)
+            }
+            card.addView(dots)
+
+            val name = TextView(this)
+            name.text = p.name
+            name.textSize = 13f
+            name.setTextColor(Color.WHITE)
+            name.gravity = Gravity.CENTER
+            name.setPadding(0, dp(8), 0, 0)
+            card.addView(name)
+
+            card.setOnClickListener {
+                ProfileManager.setStyle(this, p.styleId)
+                ProfileManager.setTheme(this, p.themeIndex)
+                ProfileManager.setSpeed(this, p.speed)
+                ProfileManager.setIntensity(this, p.intensity)
+                ProfileManager.setThickness(this, p.thickness)
+                refreshStyleHighlights()
+                refreshThemeHighlights()
+                setupSliders()
+                findViewById<PreviewView?>(R.id.previewView)?.refresh()
+                notifyService()
+                Toast.makeText(this, getString(R.string.preset_applied, p.name), Toast.LENGTH_SHORT).show()
+            }
+            container.addView(card)
+        }
+    }
 
     private fun buildStyleCards() {
         val container = findViewById<LinearLayout>(R.id.stylesContainer)
@@ -881,19 +946,6 @@ class MainActivity : AppCompatActivity() {
             prefs.edit().putBoolean("autostart", checked).apply()
         }
 
-        val notifGlow = findViewById<MaterialSwitch>(R.id.switchNotifGlow)
-        notifGlow.isChecked = prefs.getBoolean("notif_glow", false)
-        notifGlow.setOnCheckedChangeListener { _, checked ->
-            prefs.edit().putBoolean("notif_glow", checked).apply()
-            if (checked && !hasNotificationAccess()) {
-                Toast.makeText(this, R.string.notif_glow_need_access, Toast.LENGTH_LONG).show()
-                openNotificationAccess()
-            }
-        }
-        findViewById<TextView>(R.id.btnNotifAccess).setOnClickListener {
-            openNotificationAccess()
-        }
-
         val saver = findViewById<MaterialSwitch>(R.id.switchSaver)
         saver.isChecked = ProfileManager.batterySaver(this)
         saver.setOnCheckedChangeListener { _, checked ->
@@ -924,12 +976,7 @@ class MainActivity : AppCompatActivity() {
 
         updateMusicStatus()
 
-        val chargingGlow = findViewById<MaterialSwitch>(R.id.switchChargingGlow)
-        chargingGlow.isChecked = ProfileManager.chargingGlow(this)
-        chargingGlow.setOnCheckedChangeListener { _, checked ->
-            ProfileManager.setChargingGlow(this, checked)
-            notifyService()
-        }
+        buildShowOnChips()
 
         val nowPlaying = findViewById<MaterialSwitch>(R.id.switchNowPlaying)
         nowPlaying.isChecked = ProfileManager.nowPlayingEnabled(this)
@@ -953,23 +1000,59 @@ class MainActivity : AppCompatActivity() {
 
         buildGlowEdgesButtons()
         buildBatteryStyleButtons()
+    }
 
-        val callGlow = findViewById<MaterialSwitch>(R.id.switchCallGlow)
-        callGlow.isChecked = ProfileManager.callGlow(this)
-        callGlow.setOnCheckedChangeListener { _, checked ->
-            if (checked) {
-                if (ContextCompat.checkSelfPermission(
+    /**
+     * The unified "Glow shows on" chips: Calls / Charging / Notifications. Each chip is
+     * an independent toggle — gold when active. Handles the permission each one needs
+     * (phone state for calls, Notification Access for notifications) when switched on.
+     */
+    private fun buildShowOnChips() {
+        val container = findViewById<LinearLayout>(R.id.showOnContainer) ?: return
+        container.removeAllViews()
+        data class Chip(val label: String, val isOn: Boolean, val toggle: () -> Unit)
+        val chips = listOf(
+            Chip(getString(R.string.show_on_calls), ProfileManager.callGlow(this)) {
+                val turningOn = !ProfileManager.callGlow(this)
+                if (turningOn && ContextCompat.checkSelfPermission(
                         this, android.Manifest.permission.READ_PHONE_STATE
                     ) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
                     androidx.core.app.ActivityCompat.requestPermissions(
                         this, arrayOf(android.Manifest.permission.READ_PHONE_STATE), REQ_PHONE_STATE
                     )
                 }
-                ProfileManager.setCallGlow(this, true)
-            } else {
-                ProfileManager.setCallGlow(this, false)
+                ProfileManager.setCallGlow(this, turningOn)
+            },
+            Chip(getString(R.string.show_on_charging), ProfileManager.chargingGlow(this)) {
+                ProfileManager.setChargingGlow(this, !ProfileManager.chargingGlow(this))
+            },
+            Chip(getString(R.string.show_on_notifications), prefs.getBoolean("notif_glow", false)) {
+                val turningOn = !prefs.getBoolean("notif_glow", false)
+                prefs.edit().putBoolean("notif_glow", turningOn).apply()
+                if (turningOn && !hasNotificationAccess()) {
+                    Toast.makeText(this, R.string.notif_glow_need_access, Toast.LENGTH_LONG).show()
+                    openNotificationAccess()
+                }
             }
-            notifyService()
+        )
+        chips.forEachIndexed { index, chip ->
+            val v = TextView(this)
+            v.text = chip.label
+            v.textSize = 13f
+            v.gravity = Gravity.CENTER
+            v.setPadding(dp(10), dp(12), dp(10), dp(12))
+            val lp = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            lp.marginEnd = if (index < chips.size - 1) dp(8) else 0
+            v.layoutParams = lp
+            v.setBackgroundResource(R.drawable.bg_card)
+            v.setTextColor(if (chip.isOn) ContextCompat.getColor(this, R.color.gold) else Color.WHITE)
+            v.alpha = if (chip.isOn) 1f else 0.6f
+            v.setOnClickListener {
+                chip.toggle()
+                notifyService()
+                buildShowOnChips()
+            }
+            container.addView(v)
         }
     }
 
