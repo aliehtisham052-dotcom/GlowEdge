@@ -63,7 +63,7 @@
     <string name="feedback_body">My feedback / reason:\n\n\n\n— Please describe what you liked, what to improve, or the problem you faced.</string>
     <string name="developer_name">Innovation-313</string>
     <string name="support_email">innovation313.support@gmail.com</string>
-    <string name="app_version">Version 6.48</string>
+    <string name="app_version">Version 6.49</string>
     <string name="notif_glow_need_access">Please allow notification access for GlowEdge to detect calls and messages.</string>
     <string name="live_preview">Live Preview</string>
     <string name="battery_saver">Battery Saver</string>

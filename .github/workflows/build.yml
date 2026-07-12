@@ -71,27 +71,27 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.48.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.48.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.49.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.49.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.48.apk
-            GlowEdge-v6.48.aab
+            GlowEdge-v6.49.apk
+            GlowEdge-v6.49.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.48
-          name: GlowEdge v6.48 - True full-spectrum rainbow
+          tag_name: v6.49
+          name: GlowEdge v6.49 - Quiet Hours audit fix
           body: |
-            GlowEdge v6.48 - Spectrum now shows ALL colours
-            - FIXED: the Spectrum theme was only rendering about three quarters of the colour wheel on the wallpaper edge (6 colour anchors covering 283 of 360 degrees - the violet/magenta family never appeared). The flowing edge now uses 13 stops across the full wheel, so every colour is present around the border.
-            - Sparkles in Spectrum mode now each carry their own drifting hue instead of just the theme pair - the whole field is multicolour.
-            - The static wallpaper rainbow was missing orange and deep blue; its palette is now the full 8-stop wheel, and its sparkles are multicolour too.
+            GlowEdge v6.49 - audit fix
+            - Full audit of the Spectrum and trigger paths after v6.48. One gap found and fixed: notification flashes were ignoring Quiet Hours - night-time notification light is exactly what that setting exists to stop. Now silenced inside the quiet window.
+            - Call Glow stays deliberately exempt from Quiet Hours: a ringing call is urgent and the feature is explicitly opt-in.
+            - Verified clean: full-wheel rainbow loop, multicolour sparkles, preset theme indices, notification-glow preference chain, charging-glow quiet gate.
           files: |
-            GlowEdge-v6.48.apk
-            GlowEdge-v6.48.aab
+            GlowEdge-v6.49.apk
+            GlowEdge-v6.49.aab

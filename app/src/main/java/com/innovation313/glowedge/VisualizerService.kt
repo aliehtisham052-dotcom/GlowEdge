@@ -98,6 +98,10 @@ class VisualizerService : Service() {
         override fun onReceive(context: android.content.Context?, intent: Intent?) {
             when (intent?.action) {
                 GlowNotificationService.ACTION_NOTIFICATION_GLOW -> {
+                    // Quiet Hours silences notification flashes — night-time notification
+                    // light is exactly what that setting exists to stop. (Call Glow stays
+                    // deliberately exempt: a ringing call is urgent and opt-in.)
+                    if (ProfileManager.isQuietNow(this@VisualizerService)) return
                     val color = intent.getIntExtra(GlowNotificationService.EXTRA_COLOR, 0)
                     val repeat = intent.getBooleanExtra("repeat", false)
                     if (color != 0) {
