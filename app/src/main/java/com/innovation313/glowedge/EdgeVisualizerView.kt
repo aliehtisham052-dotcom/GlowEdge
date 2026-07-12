@@ -241,7 +241,6 @@ class EdgeVisualizerView(context: Context) : View(context) {
                 GlowStyles.COMET -> drawComet(canvas)
                 GlowStyles.RIPPLE -> drawRipple(canvas)
                 GlowStyles.SEGMENTS -> drawSegments(canvas)
-                GlowStyles.NEON_LINES -> drawNeonLines(canvas)
                 else -> drawGlowLine(canvas)
             }
             postInvalidateDelayed(33L)
@@ -354,7 +353,6 @@ class EdgeVisualizerView(context: Context) : View(context) {
             GlowStyles.COMET -> drawComet(canvas)
             GlowStyles.RIPPLE -> drawRipple(canvas)
             GlowStyles.SEGMENTS -> drawSegments(canvas)
-            GlowStyles.NEON_LINES -> drawNeonLines(canvas)
             else -> drawGlowLine(canvas)
         }
         if (restoreCount >= 0) canvas.restoreToCount(restoreCount)
@@ -606,60 +604,6 @@ class EdgeVisualizerView(context: Context) : View(context) {
         return (width.coerceAtMost(height) * 0.09f).coerceIn(40f, 130f)
     }
 
-    /**
-     * Neon Lines: two concentric neon frames that rotate in opposite directions at
-     * slightly different speeds, so they weave past each other. The outer frame is a
-     * soft wide bloom, the inner is a crisp bright line — together they read like layered
-     * flowing neon tubing around the screen. Both react to loudness for thickness and glow.
-     */
-    private fun drawNeonLines(canvas: Canvas) {
-        val loud = easeOut(displayLevel)
-        val corner = screenCornerRadius()
-
-        val colors = if (rainbow) RAINBOW
-                     else intArrayOf(colorStart, colorEnd, colorStart, colorEnd, colorStart)
-
-        // --- Outer frame: wide soft bloom, rotating one way ---
-        val outerSweep = SweepGradient(width / 2f, height / 2f, colors, null)
-        shaderMatrix.setRotate(rotationDeg * 1.0f, width / 2f, height / 2f)
-        outerSweep.setLocalMatrix(shaderMatrix)
-        paint.shader = outerSweep
-        paint.style = Paint.Style.STROKE
-        paint.strokeCap = Paint.Cap.ROUND
-
-        val outerThick = baseThickness * (0.30f + loud * 1.4f * intensity)
-        paint.strokeWidth = max(3f, outerThick)
-        paint.maskFilter = blur(max(3f, outerThick * (0.9f + loud)))
-        var inset = width * 0.02f + outerThick * 0.5f
-        rect.set(inset, inset, width - inset, height - inset)
-        paint.alpha = 200
-        canvas.drawRoundRect(rect, corner, corner, paint)
-
-        // --- Inner frame: crisp bright line, rotating the other way, tighter inset ---
-        val innerColors = if (rainbow) RAINBOW
-                          else intArrayOf(colorEnd, colorStart, colorEnd, colorStart, colorEnd)
-        val innerSweep = SweepGradient(width / 2f, height / 2f, innerColors, null)
-        shaderMatrix.setRotate(-rotationDeg * 1.35f, width / 2f, height / 2f)
-        innerSweep.setLocalMatrix(shaderMatrix)
-        paint.shader = innerSweep
-
-        val innerThick = baseThickness * (0.18f + loud * 0.8f * intensity)
-        // Soft glow pass
-        paint.strokeWidth = max(2f, innerThick * 1.6f)
-        paint.maskFilter = blur(max(2f, innerThick * 1.2f))
-        val innerInset = width * 0.055f + innerThick
-        rect.set(innerInset, innerInset, width - innerInset, height - innerInset)
-        val innerCorner = (corner * 0.8f).coerceAtLeast(24f)
-        paint.alpha = 180
-        canvas.drawRoundRect(rect, innerCorner, innerCorner, paint)
-        // Crisp bright core on top
-        paint.maskFilter = null
-        paint.strokeWidth = max(1.5f, innerThick * 0.5f)
-        paint.alpha = 255
-        canvas.drawRoundRect(rect, innerCorner, innerCorner, paint)
-
-        paint.alpha = 255
-    }
 
     /** Eased 0..1 curve so quiet stays subtle and loud pops - like a designer's response curve. */
     private fun easeOut(x: Float): Float {

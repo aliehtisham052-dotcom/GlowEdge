@@ -71,26 +71,27 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.54.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.54.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.55.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.55.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.54.apk
-            GlowEdge-v6.54.aab
+            GlowEdge-v6.55.apk
+            GlowEdge-v6.55.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.54
-          name: GlowEdge v6.54 - Remove Capsule battery style
+          tag_name: v6.55
+          name: GlowEdge v6.55 - Remove Neon Lines style
           body: |
-            GlowEdge v6.54 - Battery styles refined to two
-            - Removed the Capsule battery style: its percentage and temperature sat below the bar and hung awkwardly. The two dial styles remain - Orbit and Segments - both with the number, status word and temperature cleanly centred.
-            - Anyone who had Capsule selected is automatically moved to Segments.
+            GlowEdge v6.55 - Remove Neon Lines style
+            - Removed the Neon Lines (twin counter-rotating frames) glow style. Anyone who had it selected falls back to Glow Line automatically.
+            - The Mirror Rain preset now uses the Dots style (rain-like falling points) instead.
+            - 12 glow styles remain.
           files: |
-            GlowEdge-v6.54.apk
-            GlowEdge-v6.54.aab
+            GlowEdge-v6.55.apk
+            GlowEdge-v6.55.aab

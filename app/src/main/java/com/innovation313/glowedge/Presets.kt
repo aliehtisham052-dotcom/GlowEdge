@@ -30,7 +30,7 @@ object Presets {
         // Fiery ember particles rising.
         GlowPreset("Ember Storm",   GlowStyles.EMBER,      5, 8, 9, 7),
         // Cool blue rain over neon lines.
-        GlowPreset("Mirror Rain",   GlowStyles.NEON_LINES, 9, 5, 7, 5),
+        GlowPreset("Mirror Rain",   GlowStyles.DOTS,       9, 5, 7, 5),
         // Deep purple ripples, slow and soft.
         GlowPreset("Velvet Ripple", GlowStyles.RIPPLE,    10, 3, 6, 6),
         // Icy chase around the frame.
