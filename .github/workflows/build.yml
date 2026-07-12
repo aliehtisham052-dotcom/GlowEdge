@@ -86,15 +86,15 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v6.42
-          name: GlowEdge v6.42 — Battery module on all wallpapers
+          name: GlowEdge v6.42 - Battery styles on all wallpapers
           body: |
-            GlowEdge v6.42 - Battery module on ALL wallpapers, 3 unique designs
-            - The battery module now appears on the STATIC wallpaper too, not just the live one - both share one renderer, so they always match.
-            - THREE unique battery designs, selectable in Settings:
-              Orbit - a ring with tick marks and a bright bead orbiting the filled arc
-              Segments - a dial split into discrete lit segments, like a premium fuel gauge
-              Capsule - a minimal horizontal capsule that fills, with a travelling shine
-            - The static wallpaper snapshots the charge at the moment you apply it; the live one keeps it current.
+            GlowEdge v6.42 - Battery module on every wallpaper, in three designs
+            - The battery module now appears on the STATIC wallpaper too, not just the live one - both share one renderer, so they look identical.
+            - THREE distinct battery designs, selectable in Settings:
+              * Orbit - a ring with tick marks and a bright bead orbiting the filled arc
+              * Segments - a dial split into lit segments like a premium gauge, leading segment pulsing
+              * Capsule - a minimal horizontal capsule that fills, with a travelling shine
+            - Note: the static wallpaper is an image, so it shows the charge at the moment you applied it; the live wallpaper stays current.
           files: |
             GlowEdge-v6.42.apk
             GlowEdge-v6.42.aab
