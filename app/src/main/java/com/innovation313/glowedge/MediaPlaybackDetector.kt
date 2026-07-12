@@ -68,7 +68,14 @@ object MediaPlaybackDetector {
                     for (controller in msm.getActiveSessions(listener)) {
                         if (controller.playbackState?.state == PlaybackState.STATE_PLAYING) return true
                     }
-                    return false
+                    // NOTE: deliberately NOT returning false here. Plenty of real playback
+                    // never publishes a MediaSession — WhatsApp voice notes and forwarded
+                    // clips, status videos, some browsers and in-app players — which made
+                    // the glow feel random (the same naat glowed on YouTube but not on
+                    // WhatsApp). Fall through to the music-stream check below, which sees
+                    // ANY media the phone plays, while room conversation (mic input, not
+                    // playback), notification pings and ringtones still stay excluded
+                    // because they don't use the music stream.
                 }
             } catch (_: SecurityException) {
                 // Listener not bound yet — ask for a rebind and fall through this once.
@@ -76,7 +83,7 @@ object MediaPlaybackDetector {
             } catch (_: Exception) {
             }
         }
-        // Fallback: is the music stream active at all?
+        // Is the music stream active at all?
         return try {
             val am = context.getSystemService(Context.AUDIO_SERVICE) as? android.media.AudioManager
             am?.isMusicActive == true

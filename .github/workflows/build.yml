@@ -71,27 +71,26 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.52.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.52.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.53.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.53.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.52.apk
-            GlowEdge-v6.52.aab
+            GlowEdge-v6.53.apk
+            GlowEdge-v6.53.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.52
-          name: GlowEdge v6.52 - Battery temperature; Call/Charging Glow removed
+          tag_name: v6.53
+          name: GlowEdge v6.53 - Consistent music detection
           body: |
-            GlowEdge v6.52 - Battery temperature, and a deliberate removal
-            - NEW: battery TEMPERATURE now shows under the battery module on both wallpapers. It turns amber above 40C and red above 45C - the point where heat actually starts hurting the cell. This is real battery info the phone does not surface on the lock screen, unlike signal or WiFi which the status bar already shows.
-            - REMOVED: Call Glow and Charging Glow. On the phones this app targets, aggressive battery management kills the background service, so those flashes fired unreliably - the feature promised more than it could deliver. Better to ship fewer things that always work.
-            - As a result the app no longer needs the READ_PHONE_STATE or WAKE_LOCK permissions at all. Two fewer permissions, a smaller privacy surface.
+            GlowEdge v6.53 - Music Only now consistent across all players
+            - FIXED: the glow felt random - the same naat glowed in YouTube but not on WhatsApp. Cause: with Notification Access granted, detection relied ONLY on MediaSession, and plenty of real playback never publishes one (WhatsApp voice notes and forwarded clips, status videos, some browsers and in-app players).
+            - Detection now checks the music stream as well when no session is playing, so ANY media the phone actually plays lights the glow - while room conversation, notification pings and ringtones still stay excluded (they do not use the music stream).
           files: |
-            GlowEdge-v6.52.apk
-            GlowEdge-v6.52.aab
+            GlowEdge-v6.53.apk
+            GlowEdge-v6.53.aab
