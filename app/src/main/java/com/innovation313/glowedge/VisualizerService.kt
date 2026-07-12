@@ -65,6 +65,9 @@ class VisualizerService : Service() {
             if (intent?.action != Intent.ACTION_POWER_CONNECTED) return
             if (!ProfileManager.chargingGlow(this@VisualizerService)) return
             if (ProfileManager.isQuietNow(this@VisualizerService)) return
+            // Wake the screen first — the charger is normally plugged in while the screen
+            // is off, and an overlay can't be seen on a dark screen.
+            wakeScreenForGlow("GlowEdge:ChargingGlow", 2500L)
             val theme = ProfileManager.theme(this@VisualizerService)
             edgeView?.triggerCallFlash(theme.colorEnd)
         }
@@ -137,12 +140,14 @@ class VisualizerService : Service() {
     private var callReceiverRegistered = false
 
     /**
-     * Turns the screen on when a call arrives so the glow flash is actually visible in
-     * rest/screen-off mode (an overlay can't draw on a dark screen). We briefly acquire
-     * a screen-on wake lock, then release it — the incoming-call UI keeps the screen on
-     * after that, so we don't hold it and drain the battery.
+     * Turns the screen on so a glow flash is actually visible when the phone is at rest.
+     * An overlay cannot draw on a dark screen, so without this the flash fires but nobody
+     * sees it — which is exactly why Charging Glow appeared not to work: you plug the
+     * charger in while the screen is off.
+     *
+     * We acquire a screen-on wake lock briefly and release it, rather than holding it.
      */
-    private fun wakeScreenForCall() {
+    private fun wakeScreenForGlow(tag: String, holdMs: Long) {
         try {
             val pm = getSystemService(POWER_SERVICE) as android.os.PowerManager
             @Suppress("DEPRECATION")
@@ -150,14 +155,16 @@ class VisualizerService : Service() {
                 android.os.PowerManager.FULL_WAKE_LOCK or
                 android.os.PowerManager.ACQUIRE_CAUSES_WAKEUP or
                 android.os.PowerManager.ON_AFTER_RELEASE,
-                "GlowEdge:CallGlow"
+                tag
             )
-            wl.acquire(3000L)   // auto-releases after 3s; the call UI keeps the screen on
+            wl.acquire(holdMs)
             edgeView?.postDelayed({
                 try { if (wl.isHeld) wl.release() } catch (_: Exception) {}
-            }, 2500L)
+            }, holdMs - 500L)
         } catch (_: Exception) {}
     }
+
+    private fun wakeScreenForCall() = wakeScreenForGlow("GlowEdge:CallGlow", 3000L)
 
     private fun registerCallListener() {
         if (!ProfileManager.callGlow(this)) return
