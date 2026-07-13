@@ -72,6 +72,14 @@ class EdgeVisualizerView(context: Context) : View(context) {
     companion object {
         private const val SOUND_THRESHOLD = 0.06f
         private const val HOLD_MS = 1200L
+        // This overlay sits ABOVE every other app and must be software-rendered (the
+        // glow's blur needs BlurMaskFilter, which forces LAYER_TYPE_SOFTWARE — it isn't
+        // hardware-accelerated). Redrawing a full-screen software layer competes directly
+        // for CPU with whatever app is in the foreground, which is the real mechanism by
+        // which an always-on overlay can make OTHER apps feel sluggish, especially on
+        // weaker phones. A slow ambient border glow doesn't need 30fps to look smooth, so
+        // we run at 20fps here — a third less CPU/compositing work, no visible difference.
+        private const val FRAME_INTERVAL_MS = 50L
         private val RAINBOW = intArrayOf(
             Color.parseColor("#FF3B5C"), Color.parseColor("#FF8A3B"),
             Color.parseColor("#FFD93B"), Color.parseColor("#3BE885"),
@@ -121,17 +129,6 @@ class EdgeVisualizerView(context: Context) : View(context) {
 
     private var lastRealData = 0L
     private var demoMode = false
-
-    companion object {
-        // This overlay sits ABOVE every other app and must be software-rendered (the
-        // glow's blur needs BlurMaskFilter, which forces LAYER_TYPE_SOFTWARE — it isn't
-        // hardware-accelerated). Redrawing a full-screen software layer competes directly
-        // for CPU with whatever app is in the foreground, which is the real mechanism by
-        // which an always-on overlay can make OTHER apps feel sluggish, especially on
-        // weaker phones. A slow ambient border glow doesn't need 30fps to look smooth, so
-        // we run at 20fps here — a third less CPU/compositing work, no visible difference.
-        private const val FRAME_INTERVAL_MS = 50L
-    }
     private var demoPhase = 0f
 
     /** Force a self-animating demo glow (used when the device blocks audio capture). */
