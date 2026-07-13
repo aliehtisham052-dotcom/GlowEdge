@@ -121,6 +121,17 @@ class EdgeVisualizerView(context: Context) : View(context) {
 
     private var lastRealData = 0L
     private var demoMode = false
+
+    companion object {
+        // This overlay sits ABOVE every other app and must be software-rendered (the
+        // glow's blur needs BlurMaskFilter, which forces LAYER_TYPE_SOFTWARE — it isn't
+        // hardware-accelerated). Redrawing a full-screen software layer competes directly
+        // for CPU with whatever app is in the foreground, which is the real mechanism by
+        // which an always-on overlay can make OTHER apps feel sluggish, especially on
+        // weaker phones. A slow ambient border glow doesn't need 30fps to look smooth, so
+        // we run at 20fps here — a third less CPU/compositing work, no visible difference.
+        private const val FRAME_INTERVAL_MS = 50L
+    }
     private var demoPhase = 0f
 
     /** Force a self-animating demo glow (used when the device blocks audio capture). */
@@ -256,7 +267,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
                 GlowStyles.SEGMENTS -> drawSegments(canvas)
                 else -> drawGlowLine(canvas)
             }
-            postInvalidateDelayed(33L)
+            postInvalidateDelayed(FRAME_INTERVAL_MS)
             return
         }
 
@@ -267,7 +278,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
             alpha = 1f
             drawIntro(canvas, t)
             if (t >= 1f) introActive = false
-            postInvalidateDelayed(33L)
+            postInvalidateDelayed(FRAME_INTERVAL_MS)
             return
         }
 
@@ -305,7 +316,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
         if (flashing) {
             drawNotificationFlash(canvas, now)
             alpha = 1f
-            postInvalidateDelayed(33L)
+            postInvalidateDelayed(FRAME_INTERVAL_MS)
             if (!soundActive) return
         }
         alpha = if (flashing) 1f else visibility01 * (0.80f + 0.20f * loudEnv.coerceIn(0f, 1f))
@@ -374,7 +385,7 @@ class EdgeVisualizerView(context: Context) : View(context) {
         }
         if (restoreCount >= 0) canvas.restoreToCount(restoreCount)
 
-        postInvalidateDelayed(33L)
+        postInvalidateDelayed(FRAME_INTERVAL_MS)
     }
 
     /**

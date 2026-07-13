@@ -71,27 +71,28 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.56.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.56.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.57.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.57.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.56.apk
-            GlowEdge-v6.56.aab
+            GlowEdge-v6.57.apk
+            GlowEdge-v6.57.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.56
-          name: GlowEdge v6.56 - Fix contradicting settings
+          tag_name: v6.57
+          name: GlowEdge v6.57 - Reduce overlay CPU load
           body: |
-            GlowEdge v6.56 - Settings no longer contradict each other
-            - FIXED: demo mode (the fallback glow used when a device blocks the mic) was only ever switched ON, never off. Once started, it kept glowing forever - even after you turned Music Only back ON, directly contradicting that setting. It is now cleared whenever Music Only is active.
-            - FIXED: demo mode also ignored Quiet Hours entirely. The quiet gate lived in the service and only covered mic-driven levels, while demo mode fabricates its own levels in the view - so it glowed all night regardless. Quiet Hours now silences it too. (Test Glow stays exempt, as it is a deliberate user action.)
-            - Consolidated a duplicated Notification Access check that existed in two places and could have drifted apart.
+            GlowEdge v6.57 - Lighter overlay, less impact on other apps
+            - FOUND THE CAUSE: the glow overlay sits above every app and must render in software (the blur effect forces LAYER_TYPE_SOFTWARE, which is not hardware-accelerated). It was redrawing the full screen 30 times a second whenever active - that competes directly for CPU with whatever app is in the foreground, which is the real way an always-on overlay makes OTHER apps feel sluggish, especially on weaker phones.
+            - Lowered the overlay to 20fps (was 30fps) - a third less CPU/compositing work with no visible difference for a slow ambient border glow.
+            - Fixed the notification listener touching disk (SharedPreferences) on every single notification from every app on the device - now reads it once and reuses it.
+            - Honest note: this reduces the impact significantly but does not eliminate it completely - a full fix would mean moving the blur to the GPU (RenderEffect, Android 12+), a bigger rendering change we can tackle separately if still needed after this.
           files: |
-            GlowEdge-v6.56.apk
-            GlowEdge-v6.56.aab
+            GlowEdge-v6.57.apk
+            GlowEdge-v6.57.aab

@@ -7,6 +7,11 @@ import android.service.notification.StatusBarNotification
 
 class GlowNotificationService : NotificationListenerService() {
 
+    // Cached once instead of reopened on every call — this callback fires for every
+    // notification from every app on the device, so repeated SharedPreferences lookups
+    // here would add avoidable latency on a hot, system-invoked path.
+    private val prefs by lazy { getSharedPreferences("glowedge_prefs", MODE_PRIVATE) }
+
     companion object {
         const val ACTION_NOTIFICATION_GLOW = "com.innovation313.glowedge.NOTIF_GLOW"
         const val EXTRA_COLOR = "color"
@@ -31,7 +36,6 @@ class GlowNotificationService : NotificationListenerService() {
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification) {
-        val prefs = getSharedPreferences("glowedge_prefs", MODE_PRIVATE)
         if (!prefs.getBoolean("notif_glow", false)) return
 
         val pkg = sbn.packageName ?: return
