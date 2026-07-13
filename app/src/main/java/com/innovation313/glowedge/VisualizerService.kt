@@ -129,6 +129,10 @@ class VisualizerService : Service() {
 
     private fun applyCurrentSettings() {
         musicOnly = ProfileManager.musicOnly(this)
+        // Force an immediate re-check on the next audio frame instead of trusting whatever
+        // was cached before this refresh — otherwise toggling Music Only ON could show up
+        // to a second of stale "no music" state even while a naat is already playing.
+        lastMusicCheckTime = 0L
         // Demo mode is a fallback for when the mic is unavailable. It was only ever
         // switched ON, never off — so if it had started (Music Only off + mic blocked),
         // it kept glowing forever even after the user turned Music Only back ON, which

@@ -71,25 +71,26 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.58.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.58.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.59.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.59.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.58.apk
-            GlowEdge-v6.58.aab
+            GlowEdge-v6.59.apk
+            GlowEdge-v6.59.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.58
-          name: GlowEdge v6.58 - Fix missing percent sign
+          tag_name: v6.59
+          name: GlowEdge v6.59 - Snappier Music Only response
           body: |
-            GlowEdge v6.58 - Fix missing % sign on battery number
-            - FIXED: the battery number on the wallpaper (Orbit and Segments styles) was showing just the bare number (e.g. "78") with no percent sign. Now shows "78%". Applies to both live and static wallpaper since they share the same battery renderer.
+            GlowEdge v6.59 - Snappier Music Only toggle
+            - Found via the same audit approach used on the settings/contradiction fixes: toggling Music Only ON did not reset the cached "is music playing" result, so it could show up to a second of stale "no music" state even while a naat was already playing. Settings refresh now forces an immediate re-check on the very next audio frame.
+            - Audited the rest of the music detection path (route changes, ringtone/call exclusion, multi-session handling) and found it solid after v6.53 - no other gaps found this pass.
           files: |
-            GlowEdge-v6.58.apk
-            GlowEdge-v6.58.aab
+            GlowEdge-v6.59.apk
+            GlowEdge-v6.59.aab
