@@ -71,28 +71,25 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.57.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.57.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.58.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.58.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.57.apk
-            GlowEdge-v6.57.aab
+            GlowEdge-v6.58.apk
+            GlowEdge-v6.58.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.57
-          name: GlowEdge v6.57 - Reduce overlay CPU load
+          tag_name: v6.58
+          name: GlowEdge v6.58 - Fix missing percent sign
           body: |
-            GlowEdge v6.57 - Lighter overlay, less impact on other apps
-            - FOUND THE CAUSE: the glow overlay sits above every app and must render in software (the blur effect forces LAYER_TYPE_SOFTWARE, which is not hardware-accelerated). It was redrawing the full screen 30 times a second whenever active - that competes directly for CPU with whatever app is in the foreground, which is the real way an always-on overlay makes OTHER apps feel sluggish, especially on weaker phones.
-            - Lowered the overlay to 20fps (was 30fps) - a third less CPU/compositing work with no visible difference for a slow ambient border glow.
-            - Fixed the notification listener touching disk (SharedPreferences) on every single notification from every app on the device - now reads it once and reuses it.
-            - Honest note: this reduces the impact significantly but does not eliminate it completely - a full fix would mean moving the blur to the GPU (RenderEffect, Android 12+), a bigger rendering change we can tackle separately if still needed after this.
+            GlowEdge v6.58 - Fix missing % sign on battery number
+            - FIXED: the battery number on the wallpaper (Orbit and Segments styles) was showing just the bare number (e.g. "78") with no percent sign. Now shows "78%". Applies to both live and static wallpaper since they share the same battery renderer.
           files: |
-            GlowEdge-v6.57.apk
-            GlowEdge-v6.57.aab
+            GlowEdge-v6.58.apk
+            GlowEdge-v6.58.aab

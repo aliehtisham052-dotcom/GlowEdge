@@ -207,7 +207,7 @@ object BatteryModule {
         paint.textSize = w * 0.105f
         paint.color = Color.WHITE
         paint.setShadowLayer(w * 0.02f, 0f, 0f, withAlpha(color, 150))
-        canvas.drawText("$level", cx, cy + w * 0.018f, paint)
+        canvas.drawText("$level%", cx, cy + w * 0.018f, paint)
         paint.clearShadowLayer()
 
         paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL)
