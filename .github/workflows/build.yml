@@ -71,26 +71,26 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.60.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.60.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.61.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.61.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.60.apk
-            GlowEdge-v6.60.aab
+            GlowEdge-v6.61.apk
+            GlowEdge-v6.61.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.60
-          name: GlowEdge v6.60 - Charging watts
+          tag_name: v6.61
+          name: GlowEdge v6.61 - Remove charging watts
           body: |
-            GlowEdge v6.60 - Charging watts on the wallpaper
-            - NEW: while charging, the battery module now shows the charging wattage in green, alongside the temperature (e.g. "18W - 34C"). Works on both live and static wallpaper, both battery styles.
-            - Built defensively on purpose. Phones genuinely disagree here: the Android spec says the current is in microamps but several manufacturers report milliamps, the sign convention varies, and some charger drivers report a configured value rather than a real measurement. The reading is therefore normalised by magnitude, the sign ignored, and the result sanity-checked - if the phone reports something implausible, nothing is shown at all. Showing no number is honest; showing a wrong one is not.
+            GlowEdge v6.61 - Charging watts removed
+            - Removed the charging wattage display added in v6.60. Real-device testing confirmed what the research warned about: phones disagree on the unit and sign of the current reading, and some report a configured value rather than a real measurement - so the figure could not be trusted. A wrong number is worse than no number, so it is gone.
+            - Battery temperature stays: that comes from a real sensor and is reliable.
           files: |
-            GlowEdge-v6.60.apk
-            GlowEdge-v6.60.aab
+            GlowEdge-v6.61.apk
+            GlowEdge-v6.61.aab
