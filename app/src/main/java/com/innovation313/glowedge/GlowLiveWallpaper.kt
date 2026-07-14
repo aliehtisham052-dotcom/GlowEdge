@@ -32,6 +32,11 @@ import kotlin.random.Random
  * background. That's the trade for the motion — it's deliberately lightweight: a small
  * fixed number of sparkles, no bitmaps, no allocation inside the frame loop.
  */
+/** Battery snapshot: level, charging, temperature C, charging watts (-1f = unavailable). */
+private data class BatteryInfo(
+    val level: Int, val charging: Boolean, val tempC: Float, val watts: Float
+)
+
 class GlowLiveWallpaper : WallpaperService() {
 
     override fun onCreateEngine(): Engine = GlowEngine()
@@ -123,11 +128,6 @@ class GlowLiveWallpaper : WallpaperService() {
         }
 
         /** Level, charging state, and temperature in Celsius (-1 if unreported). */
-        /** level, charging, temperature C, charging watts (-1f when unavailable). */
-        private data class BatteryInfo(
-            val level: Int, val charging: Boolean, val tempC: Float, val watts: Float
-        )
-
         private fun batteryInfo(): BatteryInfo {
             val bm = getSystemService(BATTERY_SERVICE) as BatteryManager
             val level = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
