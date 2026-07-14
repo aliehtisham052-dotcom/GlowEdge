@@ -33,7 +33,8 @@ object BatteryModule {
      */
     fun draw(
         canvas: Canvas, w: Float, h: Float, theme: Profile,
-        level: Int, charging: Boolean, style: Int, t: Float, tempC: Float = -1f
+        level: Int, charging: Boolean, style: Int, t: Float,
+        tempC: Float = -1f, watts: Float = -1f
     ) {
         val color = when {
             charging -> theme.colorEnd
@@ -44,34 +45,113 @@ object BatteryModule {
             STYLE_SEGMENTS -> drawSegments(canvas, w, h, theme, level, charging, color, t)
             else -> drawOrbit(canvas, w, h, theme, level, charging, color, t)
         }
-        drawTemperature(canvas, w, h, tempC)
+        drawTemperature(canvas, w, h, tempC, if (charging) watts else -1f)
     }
 
     /**
-     * Battery temperature, in a small line under the module. This is real battery info the
-     * phone does not surface anywhere on the lock screen — unlike signal or WiFi, which the
-     * status bar already shows, so it adds something instead of duplicating it.
+     * Turns the phone's raw current + voltage readings into charging watts.
      *
-     * Turns amber above 40C and red above 45C, which is when heat actually starts hurting
-     * the cell. Skipped entirely if the device didn't report a temperature.
+     * This needs care, because phones genuinely disagree here:
+     *   - The Android spec says CURRENT_NOW is in MICROamps, but several manufacturers
+     *     (Samsung among them) report MILLIamps instead — so the unit must be inferred
+     *     from the magnitude rather than trusted.
+     *   - The sign convention varies too (positive vs negative while charging), so we
+     *     take the absolute value.
+     *   - Some charger drivers report a *configured* value rather than a real measurement,
+     *     which is meaningless.
+     *
+     * Because of that, the result is sanity-checked: if it isn't a plausible charging
+     * figure we return -1 and simply show nothing. Showing no number is honest; showing
+     * a wrong one is not.
+     *
+     * @param currentRaw BatteryManager.BATTERY_PROPERTY_CURRENT_NOW as reported
+     * @param voltageMilliVolts BatteryManager.EXTRA_VOLTAGE as reported
+     * @return watts, or -1f if the device's numbers can't be trusted
      */
-    private fun drawTemperature(canvas: Canvas, w: Float, h: Float, tempC: Float) {
-        if (tempC <= 0f) return
+    fun computeWatts(currentRaw: Int, voltageMilliVolts: Int): Float {
+        if (currentRaw == 0 || voltageMilliVolts <= 0) return -1f
+        val magnitude = kotlin.math.abs(currentRaw.toLong())
+
+        // Infer the unit from the magnitude. A real charging current is roughly
+        // 0.1A–10A, which is 100,000–10,000,000 µA or 100–10,000 mA.
+        val amps: Float = when {
+            magnitude > 50_000L -> magnitude / 1_000_000f    // reported in microamps
+            magnitude > 50L -> magnitude / 1_000f            // reported in milliamps
+            else -> return -1f                               // implausibly small
+        }
+
+        // Voltage is normally millivolts (~3,700–4,500), but be tolerant of volts.
+        val volts: Float = if (voltageMilliVolts > 100) voltageMilliVolts / 1000f
+                           else voltageMilliVolts.toFloat()
+        if (volts < 2f || volts > 30f) return -1f            // not a believable pack voltage
+
+        val watts = amps * volts
+        // Anything outside this range is the device reporting nonsense, not a real charger.
+        return if (watts in 0.4f..250f) watts else -1f
+    }
+
+    /**
+     * Battery temperature — and, while charging, the charging wattage — in a small line
+     * under the module. This is real battery info the phone does not surface anywhere on
+     * the lock screen, unlike signal or WiFi which the status bar already shows.
+     *
+     * Temperature turns amber above 40C and red above 45C, which is when heat actually
+     * starts hurting the cell. Either value is skipped if the device didn't report it.
+     */
+    private fun drawTemperature(canvas: Canvas, w: Float, h: Float, tempC: Float, watts: Float) {
+        val hasTemp = tempC > 0f
+        val hasWatts = watts > 0f
+        if (!hasTemp && !hasWatts) return
+
         val cy = h * 0.60f
         val y = cy + w * 0.125f
 
-        val color = when {
-            tempC >= 45f -> Color.parseColor("#FF5252")
-            tempC >= 40f -> Color.parseColor("#FFB300")
-            else -> withAlpha(Color.WHITE, 150)
-        }
         val paint = Paint(Paint.ANTI_ALIAS_FLAG)
         paint.textAlign = Paint.Align.CENTER
         paint.typeface = Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL)
         paint.textSize = w * 0.032f
         paint.letterSpacing = 0.10f
-        paint.color = color
-        canvas.drawText(String.format("%.0f\u00B0C", tempC), w * 0.5f, y, paint)
+
+        // Watts alone, temperature alone, or both separated by a thin divider.
+        val wattText = if (hasWatts) {
+            if (watts >= 10f) String.format("%.0fW", watts) else String.format("%.1fW", watts)
+        } else null
+        val tempText = if (hasTemp) String.format("%.0f\u00B0C", tempC) else null
+
+        if (wattText != null && tempText != null) {
+            // Draw them side by side so the charging figure gets its own colour.
+            val gap = w * 0.018f
+            val wWatt = paint.measureText(wattText)
+            val wTemp = paint.measureText(tempText)
+            val divider = "\u00B7"
+            val wDiv = paint.measureText(divider)
+            val total = wWatt + gap + wDiv + gap + wTemp
+            var x = w * 0.5f - total / 2f
+
+            paint.textAlign = Paint.Align.LEFT
+            paint.color = withAlpha(Color.parseColor("#69F0AE"), 210)   // charging = green
+            canvas.drawText(wattText, x, y, paint)
+            x += wWatt + gap
+
+            paint.color = withAlpha(Color.WHITE, 90)
+            canvas.drawText(divider, x, y, paint)
+            x += wDiv + gap
+
+            paint.color = tempColor(tempC)
+            canvas.drawText(tempText, x, y, paint)
+        } else if (wattText != null) {
+            paint.color = withAlpha(Color.parseColor("#69F0AE"), 210)
+            canvas.drawText(wattText, w * 0.5f, y, paint)
+        } else if (tempText != null) {
+            paint.color = tempColor(tempC)
+            canvas.drawText(tempText, w * 0.5f, y, paint)
+        }
+    }
+
+    private fun tempColor(tempC: Float): Int = when {
+        tempC >= 45f -> Color.parseColor("#FF5252")
+        tempC >= 40f -> Color.parseColor("#FFB300")
+        else -> withAlpha(Color.WHITE, 150)
     }
 
     // ---------------------------------------------------------------- ORBIT

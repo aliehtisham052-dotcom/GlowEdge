@@ -71,26 +71,26 @@ jobs:
 
       - name: Rename outputs
         run: |
-          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.59.apk
-          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.59.aab
+          cp app/build/outputs/apk/debug/app-debug.apk GlowEdge-v6.60.apk
+          cp app/build/outputs/bundle/release/app-release.aab GlowEdge-v6.60.aab
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: GlowEdge-Build
           path: |
-            GlowEdge-v6.59.apk
-            GlowEdge-v6.59.aab
+            GlowEdge-v6.60.apk
+            GlowEdge-v6.60.aab
 
       - name: Publish to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v6.59
-          name: GlowEdge v6.59 - Snappier Music Only response
+          tag_name: v6.60
+          name: GlowEdge v6.60 - Charging watts
           body: |
-            GlowEdge v6.59 - Snappier Music Only toggle
-            - Found via the same audit approach used on the settings/contradiction fixes: toggling Music Only ON did not reset the cached "is music playing" result, so it could show up to a second of stale "no music" state even while a naat was already playing. Settings refresh now forces an immediate re-check on the very next audio frame.
-            - Audited the rest of the music detection path (route changes, ringtone/call exclusion, multi-session handling) and found it solid after v6.53 - no other gaps found this pass.
+            GlowEdge v6.60 - Charging watts on the wallpaper
+            - NEW: while charging, the battery module now shows the charging wattage in green, alongside the temperature (e.g. "18W - 34C"). Works on both live and static wallpaper, both battery styles.
+            - Built defensively on purpose. Phones genuinely disagree here: the Android spec says the current is in microamps but several manufacturers report milliamps, the sign convention varies, and some charger drivers report a configured value rather than a real measurement. The reading is therefore normalised by magnitude, the sign ignored, and the result sanity-checked - if the phone reports something implausible, nothing is shown at all. Showing no number is honest; showing a wrong one is not.
           files: |
-            GlowEdge-v6.59.apk
-            GlowEdge-v6.59.aab
+            GlowEdge-v6.60.apk
+            GlowEdge-v6.60.aab

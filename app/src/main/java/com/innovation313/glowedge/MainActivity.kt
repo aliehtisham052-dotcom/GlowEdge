@@ -664,10 +664,20 @@ class MainActivity : AppCompatActivity() {
                 // EXTRA_TEMPERATURE is in tenths of a degree Celsius.
                 val rawTemp = bi?.getIntExtra(android.os.BatteryManager.EXTRA_TEMPERATURE, -1) ?: -1
                 val tempC = if (rawTemp > 0) rawTemp / 10f else -1f
+                // Charging watts — sanity-checked inside computeWatts, since phones disagree
+                // on the unit and sign and some report a configured value, not a real one.
+                val watts = if (chg) {
+                    val bm = getSystemService(BATTERY_SERVICE) as android.os.BatteryManager
+                    val current = try {
+                        bm.getIntProperty(android.os.BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)
+                    } catch (_: Exception) { 0 }
+                    val mV = bi?.getIntExtra(android.os.BatteryManager.EXTRA_VOLTAGE, -1) ?: -1
+                    BatteryModule.computeWatts(current, mV)
+                } else -1f
                 val bmp = WallpaperGenerator.generateWithBattery(
                     theme, dm.widthPixels, dm.heightPixels, pct, chg, bs,
                     aurora = ProfileManager.wallpaperGlow(this) == 1,
-                    tempC = tempC
+                    tempC = tempC, watts = watts
                 )
                 val wm = WallpaperManager.getInstance(this)
                 // Lock screen only, as requested — a static wallpaper can target just the

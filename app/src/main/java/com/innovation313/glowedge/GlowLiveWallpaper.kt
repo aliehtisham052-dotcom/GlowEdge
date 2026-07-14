@@ -123,7 +123,12 @@ class GlowLiveWallpaper : WallpaperService() {
         }
 
         /** Level, charging state, and temperature in Celsius (-1 if unreported). */
-        private fun batteryInfo(): Triple<Int, Boolean, Float> {
+        /** level, charging, temperature C, charging watts (-1f when unavailable). */
+        private data class BatteryInfo(
+            val level: Int, val charging: Boolean, val tempC: Float, val watts: Float
+        )
+
+        private fun batteryInfo(): BatteryInfo {
             val bm = getSystemService(BATTERY_SERVICE) as BatteryManager
             val level = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
             val intent = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
@@ -133,7 +138,19 @@ class GlowLiveWallpaper : WallpaperService() {
             // EXTRA_TEMPERATURE is in tenths of a degree Celsius.
             val rawTemp = intent?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1) ?: -1
             val tempC = if (rawTemp > 0) rawTemp / 10f else -1f
-            return Triple(level.coerceIn(0, 100), charging, tempC)
+
+            // Charging watts. BatteryModule.computeWatts sanity-checks this, because phones
+            // disagree on the unit and sign, and some report a configured value rather than
+            // a real reading — it returns -1f when the numbers can't be trusted.
+            val watts = if (charging) {
+                val current = try {
+                    bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)
+                } catch (_: Exception) { 0 }
+                val mV = intent?.getIntExtra(BatteryManager.EXTRA_VOLTAGE, -1) ?: -1
+                BatteryModule.computeWatts(current, mV)
+            } else -1f
+
+            return BatteryInfo(level.coerceIn(0, 100), charging, tempC, watts)
         }
 
         private fun draw() {
@@ -396,9 +413,11 @@ class GlowLiveWallpaper : WallpaperService() {
         /** Battery module — delegated to the shared renderer so the static wallpaper
          *  shows exactly the same design. Style is chosen in Settings. */
         private fun drawBatteryRing(canvas: Canvas, w: Float, h: Float, theme: Profile, t: Float) {
-            val (level, charging, tempC) = batteryInfo()
+            val bi = batteryInfo()
+            val level = bi.level; val charging = bi.charging
+            val tempC = bi.tempC; val watts = bi.watts
             val style = ProfileManager.batteryStyle(this@GlowLiveWallpaper)
-            BatteryModule.draw(canvas, w, h, theme, level, charging, style, t, tempC)
+            BatteryModule.draw(canvas, w, h, theme, level, charging, style, t, tempC, watts)
         }
 
         private fun withAlpha(color: Int, alpha: Int): Int =
